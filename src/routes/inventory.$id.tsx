@@ -129,7 +129,7 @@ function CarDetailPage() {
           </div>
 
           <div className="mt-3 grid grid-cols-6 gap-2">
-            {car.photos.map((src, i) => (
+            {car.photos.map((src: string, i: number) => (
               <button
                 key={i}
                 onClick={() => setActivePhoto(i)}

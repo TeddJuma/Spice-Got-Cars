@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
+import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
 
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
@@ -28,28 +29,36 @@ const InventoryIndexRoute = InventoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => InventoryRoute,
 } as any)
+const InventoryIdRoute = InventoryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => InventoryRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/inventory/$id': typeof InventoryIdRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/inventory/$id': typeof InventoryIdRoute
   '/inventory': typeof InventoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/inventory/$id': typeof InventoryIdRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/inventory' | '/inventory/'
+  fullPaths: '/' | '/inventory' | '/inventory/$id' | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/inventory'
-  id: '__root__' | '/' | '/inventory' | '/inventory/'
+  to: '/' | '/inventory/$id' | '/inventory'
+  id: '__root__' | '/' | '/inventory' | '/inventory/$id' | '/inventory/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -80,14 +89,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIndexRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/inventory/$id': {
+      id: '/inventory/$id'
+      path: '/$id'
+      fullPath: '/inventory/$id'
+      preLoaderRoute: typeof InventoryIdRouteImport
+      parentRoute: typeof InventoryRoute
+    }
   }
 }
 
 interface InventoryRouteChildren {
+  InventoryIdRoute: typeof InventoryIdRoute
   InventoryIndexRoute: typeof InventoryIndexRoute
 }
 
 const InventoryRouteChildren: InventoryRouteChildren = {
+  InventoryIdRoute: InventoryIdRoute,
   InventoryIndexRoute: InventoryIndexRoute,
 }
 
