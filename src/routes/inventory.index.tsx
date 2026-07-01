@@ -28,10 +28,10 @@ const searchSchema = z.object({
   transmission: fallback(z.string(), "").default(""),
   fuel: fallback(z.string(), "").default(""),
   condition: fallback(z.string(), "").default(""),
-  minPrice: fallback(z.number().optional(), undefined).default(undefined),
-  maxPrice: fallback(z.number().optional(), undefined).default(undefined),
-  minYear: fallback(z.number().optional(), undefined).default(undefined),
-  maxYear: fallback(z.number().optional(), undefined).default(undefined),
+  minPrice: fallback(z.number().optional(), undefined),
+  maxPrice: fallback(z.number().optional(), undefined),
+  minYear: fallback(z.number().optional(), undefined),
+  maxYear: fallback(z.number().optional(), undefined),
   sort: fallback(z.enum(sortOptions), "newest").default("newest"),
 });
 
@@ -105,7 +105,10 @@ function InventoryPage() {
   }, [search]);
 
   const update = (patch: Record<string, unknown>) =>
-    navigate({ search: (prev) => ({ ...prev, ...patch }) as never });
+    navigate({
+      search: (prev: Record<string, unknown>) =>
+        ({ ...prev, ...patch }) as never,
+    });
 
   const clearAll = () =>
     navigate({
