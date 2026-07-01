@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SellRouteImport } from './routes/sell'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
@@ -24,6 +25,11 @@ const SellRoute = SellRouteImport.update({
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -50,6 +56,7 @@ const InventoryIdRoute = InventoryIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/sell': typeof SellRoute
   '/inventory/$id': typeof InventoryIdRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/sell': typeof SellRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/inventory': typeof InventoryIndexRoute
@@ -66,6 +74,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/contact': typeof ContactRoute
   '/inventory': typeof InventoryRouteWithChildren
   '/sell': typeof SellRoute
   '/inventory/$id': typeof InventoryIdRoute
@@ -76,16 +85,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/contact'
     | '/inventory'
     | '/sell'
     | '/inventory/$id'
     | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/sell' | '/inventory/$id' | '/inventory'
+  to: '/' | '/about' | '/contact' | '/sell' | '/inventory/$id' | '/inventory'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/contact'
     | '/inventory'
     | '/sell'
     | '/inventory/$id'
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  ContactRoute: typeof ContactRoute
   InventoryRoute: typeof InventoryRouteWithChildren
   SellRoute: typeof SellRoute
 }
@@ -113,6 +125,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -163,6 +182,7 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  ContactRoute: ContactRoute,
   InventoryRoute: InventoryRouteWithChildren,
   SellRoute: SellRoute,
 }
