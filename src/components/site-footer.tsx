@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import {
   CONTACT_EMAIL,
-  PHONE_TEL,
   RUAKA_ADDRESS,
-  WHATSAPP_DISPLAY,
+  PHONE_PRIMARY_DISPLAY,
+  PHONE_PRIMARY_TEL,
+  PHONE_SECONDARY_DISPLAY,
+  PHONE_SECONDARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
+import logoAsset from "@/assets/maclen-logo.png.asset.json";
 
 export function SiteFooter() {
   return (
@@ -13,13 +16,16 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="md:col-span-2">
-            <span className="mb-4 block text-2xl font-bold uppercase">
-              Maclen Autos <span className="text-brand-accent">Ltd</span>
-            </span>
+            <img
+              src={logoAsset.url}
+              alt="Maclen Auto Limited"
+              className="mb-4 h-14 w-auto"
+            />
             <p className="mb-6 max-w-sm text-brand-muted">
               Your trusted automotive partner in Ruaka. We deal in high-quality
               foreign-used and clean locally used vehicles for buyers all
-              across Kenya.
+              across Kenya. Import, buy &amp; sell, trade-in, and finance
+              options available.
             </p>
             <div className="space-y-2 text-sm">
               <p>
@@ -40,6 +46,11 @@ export function SiteFooter() {
               <li>
                 <Link to="/inventory" className="hover:text-brand-accent">
                   Browse Inventory
+                </Link>
+              </li>
+              <li>
+                <Link to="/services" className="hover:text-brand-accent">
+                  Services
                 </Link>
               </li>
               <li>
@@ -65,10 +76,16 @@ export function SiteFooter() {
             </h4>
             <div className="space-y-3 text-sm">
               <a
-                href={`tel:${PHONE_TEL}`}
+                href={`tel:${PHONE_PRIMARY_TEL}`}
                 className="block font-bold text-brand-navy"
               >
-                {WHATSAPP_DISPLAY}
+                {PHONE_PRIMARY_DISPLAY}
+              </a>
+              <a
+                href={`tel:${PHONE_SECONDARY_TEL}`}
+                className="block font-bold text-brand-navy"
+              >
+                {PHONE_SECONDARY_DISPLAY}
               </a>
               <a
                 href={buildGeneralInquiryLink()}

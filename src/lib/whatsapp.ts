@@ -2,9 +2,13 @@ import type { Car } from "@/data/listings";
 
 // Central WhatsApp Business number for Maclen Autos.
 // Placeholder — replace with the real number when provided (no leading +).
-export const WHATSAPP_NUMBER = "254700000000";
-export const WHATSAPP_DISPLAY = "+254 700 000 000";
-export const PHONE_TEL = "+254700000000";
+export const WHATSAPP_NUMBER = "254726870901";
+export const WHATSAPP_DISPLAY = "+254 726 870 901";
+export const PHONE_TEL = "+254726870901";
+export const PHONE_PRIMARY_DISPLAY = "0726 870 901";
+export const PHONE_PRIMARY_TEL = "+254726870901";
+export const PHONE_SECONDARY_DISPLAY = "0722 793 535";
+export const PHONE_SECONDARY_TEL = "+254722793535";
 export const CONTACT_EMAIL = "info@maclenautos.co.ke";
 export const RUAKA_ADDRESS = "Limuru Road, Ruaka Town, Kiambu County, Kenya";
 

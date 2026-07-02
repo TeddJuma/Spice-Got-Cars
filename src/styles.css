@@ -20,9 +20,9 @@
 
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
-  --color-brand-navy: #0f172a;
-  --color-brand-accent: #059669;
-  --color-brand-accent-hover: #047857;
+  --color-brand-navy: #111111;
+  --color-brand-accent: #e30613;
+  --color-brand-accent-hover: #b8050f;
   --color-brand-muted: #64748b;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --radius-md: calc(var(--radius) - 2px);
