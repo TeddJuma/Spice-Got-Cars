@@ -11,11 +11,11 @@ import {
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Maclen Autos — Ruaka, Kenya" },
+      { title: "Contact Maclen Autos - Ruaka, Kenya" },
       {
         name: "description",
         content:
-          "Visit Maclen Autos on Limuru Road, Ruaka. Call, WhatsApp, or email us — we reply fast.",
+          "Visit Maclen Autos on Limuru Road, Ruaka. Call, WhatsApp, or email us - we reply fast.",
       },
       { property: "og:title", content: "Contact Maclen Autos" },
       {
@@ -33,7 +33,7 @@ function ContactPage() {
       <div className="mb-10">
         <h1 className="text-3xl font-bold md:text-4xl">Get in touch</h1>
         <p className="mt-2 text-brand-muted">
-          Most buyers reach us on WhatsApp — expect a reply within minutes
+          Most buyers reach us on WhatsApp - expect a reply within minutes
           during business hours.
         </p>
       </div>

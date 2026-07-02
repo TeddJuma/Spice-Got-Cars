@@ -16,9 +16,6 @@ function Index() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-brand-navy px-4 py-16 text-white md:py-24">
         <div className="mx-auto max-w-7xl">
-          <span className="mb-4 inline-block rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-accent">
-            Now in Ruaka
-          </span>
           <h1 className="mb-6 max-w-2xl text-4xl leading-[1.05] font-bold md:text-6xl">
             Find your next drive in{" "}
             <span className="text-brand-accent">pristine</span> condition.

@@ -4,7 +4,7 @@ import { ShieldCheck, MapPin, HandshakeIcon, Users } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Maclen Autos — Trusted Car Dealer in Ruaka" },
+      { title: "About Maclen Autos - Trusted Car Dealer in Ruaka" },
       {
         name: "description",
         content:

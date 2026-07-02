@@ -102,7 +102,7 @@ export function ListingCard({ car }: { car: Car }) {
             disabled
             className="w-full cursor-not-allowed rounded-lg bg-slate-200 py-3 text-sm font-bold text-slate-400"
           >
-            Sold — Out of Stock
+            Sold - Out of Stock
           </button>
         ) : (
           <div className="flex gap-2">

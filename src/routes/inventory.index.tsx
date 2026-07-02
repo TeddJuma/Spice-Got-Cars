@@ -39,7 +39,7 @@ export const Route = createFileRoute("/inventory/")({
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
-      { title: "Inventory — Maclen Autos Ruaka" },
+      { title: "Inventory - Maclen Autos Ruaka" },
       {
         name: "description",
         content:

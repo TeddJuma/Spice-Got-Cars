@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Menu, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
-import logoAsset from "@/assets/maclen-logo.png.asset.json";
 import { PHONE_PRIMARY_DISPLAY, PHONE_PRIMARY_TEL } from "@/lib/whatsapp";
+
+const logoUrl = "/logo.png";
 
 const nav = [
   { to: "/inventory", label: "Inventory" },
@@ -19,12 +20,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2" aria-label="Maclen Auto Limited — home">
-          <img
-            src={logoAsset.url}
-            alt="Maclen Auto Limited"
-            className="h-10 w-auto sm:h-12"
-          />
+        <Link to="/" className="flex items-center gap-2"           aria-label="Maclen Auto Limited - home">
+           <img src={logoUrl} alt="Maclen Auto Limited" className="h-[52px] w-auto sm:h-[62px]" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -57,10 +54,7 @@ export function SiteHeader() {
       </div>
 
       <div
-        className={cn(
-          "border-t border-slate-100 bg-white md:hidden",
-          open ? "block" : "hidden",
-        )}
+        className={cn("border-t border-slate-100 bg-white md:hidden", open ? "block" : "hidden")}
       >
         <nav className="mx-auto flex max-w-7xl flex-col px-4 py-2">
           {nav.map((item) => (

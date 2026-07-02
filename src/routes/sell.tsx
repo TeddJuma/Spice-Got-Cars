@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/sell")({
   head: () => ({
     meta: [
-      { title: "Sell Your Car — Maclen Autos Ruaka" },
+      { title: "Sell Your Car - Maclen Autos Ruaka" },
       {
         name: "description",
         content:
@@ -75,12 +75,12 @@ function SellPage() {
   });
 
   const onSubmit = async (_data: SellForm) => {
-    // Backend not wired up yet — simulate submission.
+    // Backend not wired up yet - simulate submission.
     await new Promise((r) => setTimeout(r, 600));
     setSubmitted(true);
     reset();
     setFileNames([]);
-    toast.success("Submission received — we'll be in touch shortly.");
+    toast.success("Submission received - we'll be in touch shortly.");
   };
 
   if (submitted) {
@@ -89,7 +89,7 @@ function SellPage() {
         <div className="mx-auto mb-6 grid size-16 place-items-center rounded-full bg-emerald-50">
           <CheckCircle2 className="size-8 text-brand-accent" />
         </div>
-        <h1 className="text-3xl font-bold">Thanks — we've got your details.</h1>
+        <h1 className="text-3xl font-bold">Thanks - we've got your details.</h1>
         <p className="mx-auto mt-3 max-w-lg text-brand-muted">
           Our team will review your car and call or WhatsApp you within 1
           business day to discuss next steps.
@@ -111,7 +111,7 @@ function SellPage() {
         <p className="mt-2 max-w-2xl text-brand-muted">
           Send us the details of your car. Our team reviews every submission
           and gets back to you with an offer or lists it for our nationwide
-          buyer network. No public self-listing — we handle inquiries for you.
+          buyer network. No public self-listing - we handle inquiries for you.
         </p>
       </div>
 

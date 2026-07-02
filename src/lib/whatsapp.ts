@@ -1,7 +1,7 @@
 import type { Car } from "@/data/listings";
 
 // Central WhatsApp Business number for Maclen Autos.
-// Placeholder — replace with the real number when provided (no leading +).
+// Placeholder - replace with the real number when provided (no leading +).
 export const WHATSAPP_NUMBER = "254726870901";
 export const WHATSAPP_DISPLAY = "+254 726 870 901";
 export const PHONE_TEL = "+254726870901";

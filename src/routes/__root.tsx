@@ -81,14 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Maclen Autos Limited — Trusted Car Sales in Ruaka, Kenya" },
+      { title: "Maclen Autos Limited - Trusted Car Sales in Ruaka, Kenya" },
       {
         name: "description",
         content:
           "Buy quality foreign-used and locally used cars in Ruaka, Kenya. Verified logbooks, NTSA inspection, and a WhatsApp-first buying experience.",
       },
       { name: "author", content: "Maclen Autos Limited" },
-      { property: "og:title", content: "Maclen Autos Limited — Ruaka, Kenya" },
+      { property: "og:title", content: "Maclen Autos Limited - Ruaka, Kenya" },
       {
         property: "og:description",
         content:
