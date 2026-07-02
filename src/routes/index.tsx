@@ -155,7 +155,7 @@ function TrustItem({
 }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-emerald-50">
+      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-red-50">
         {icon}
       </div>
       <div className="min-w-0">

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/maclen-logo.png.asset.json";
+import { PHONE_PRIMARY_DISPLAY, PHONE_PRIMARY_TEL } from "@/lib/whatsapp";
 
 const nav = [
   { to: "/inventory", label: "Inventory" },
+  { to: "/services", label: "Services" },
   { to: "/sell", label: "Sell Your Car" },
   { to: "/about", label: "About Us" },
   { to: "/contact", label: "Contact" },
@@ -16,16 +19,15 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex flex-col leading-none">
-          <span className="text-lg font-bold uppercase tracking-tight sm:text-xl">
-            Maclen <span className="text-brand-accent">Autos</span>
-          </span>
-          <span className="text-[10px] uppercase tracking-widest text-brand-muted">
-            Ruaka, Kenya
-          </span>
+        <Link to="/" className="flex items-center gap-2" aria-label="Maclen Auto Limited — home">
+          <img
+            src={logoAsset.url}
+            alt="Maclen Auto Limited"
+            className="h-10 w-auto sm:h-12"
+          />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-7 md:flex">
           {nav.map((item) => (
             <Link
               key={item.to}
@@ -36,6 +38,12 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <a
+            href={`tel:${PHONE_PRIMARY_TEL}`}
+            className="inline-flex items-center gap-2 rounded-lg bg-brand-accent px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover"
+          >
+            <Phone className="size-4" /> {PHONE_PRIMARY_DISPLAY}
+          </a>
         </nav>
 
         <button
@@ -66,6 +74,13 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          <a
+            href={`tel:${PHONE_PRIMARY_TEL}`}
+            onClick={() => setOpen(false)}
+            className="mt-2 mb-3 inline-flex items-center justify-center gap-2 rounded-lg bg-brand-accent px-4 py-3 text-sm font-bold text-white"
+          >
+            <Phone className="size-4" /> Call {PHONE_PRIMARY_DISPLAY}
+          </a>
         </nav>
       </div>
     </header>
