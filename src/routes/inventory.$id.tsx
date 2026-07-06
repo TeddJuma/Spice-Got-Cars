@@ -13,13 +13,18 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { getCarById, formatKes, formatMileage } from "@/data/listings";
+import { fetchListingById } from "@/data/listings-supabase";
 import { buildCarInquiryLink, PHONE_TEL, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/inventory/$id")({
-  loader: ({ params }) => {
-    const car = getCarById(params.id);
-    if (!car) throw notFound();
+  loader: async ({ params }) => {
+    const car = await fetchListingById(params.id);
+    if (!car) {
+      const localCar = getCarById(params.id);
+      if (!localCar) throw notFound();
+      return { car: localCar };
+    }
     return { car };
   },
   head: ({ loaderData }) => {

@@ -11,12 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SellRouteImport } from './routes/sell'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
 import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
+import { Route as AdminCreateRouteImport } from './routes/admin.create'
+import { Route as AdminIdRouteImport } from './routes/admin.$id'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -28,6 +33,11 @@ const SellRoute = SellRouteImport.update({
   path: '/sell',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
@@ -36,6 +46,16 @@ const InventoryRoute = InventoryRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth-callback',
+  path: '/auth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -58,23 +78,43 @@ const InventoryIdRoute = InventoryIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => InventoryRoute,
 } as any)
+const AdminCreateRoute = AdminCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminIdRoute = AdminIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/admin/$id': typeof AdminIdRoute
+  '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/admin/$id': typeof AdminIdRoute
+  '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/inventory': typeof InventoryIndexRoute
 }
@@ -82,10 +122,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/auth-callback': typeof AuthCallbackRoute
   '/contact': typeof ContactRoute
   '/inventory': typeof InventoryRouteWithChildren
+  '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/admin/$id': typeof AdminIdRoute
+  '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/inventory/': typeof InventoryIndexRoute
 }
@@ -94,29 +139,44 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admin'
+    | '/auth-callback'
     | '/contact'
     | '/inventory'
+    | '/login'
     | '/sell'
     | '/services'
+    | '/admin/$id'
+    | '/admin/create'
     | '/inventory/$id'
     | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/admin'
+    | '/auth-callback'
     | '/contact'
+    | '/login'
     | '/sell'
     | '/services'
+    | '/admin/$id'
+    | '/admin/create'
     | '/inventory/$id'
     | '/inventory'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/admin'
+    | '/auth-callback'
     | '/contact'
     | '/inventory'
+    | '/login'
     | '/sell'
     | '/services'
+    | '/admin/$id'
+    | '/admin/create'
     | '/inventory/$id'
     | '/inventory/'
   fileRoutesById: FileRoutesById
@@ -124,8 +184,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AuthCallbackRoute: typeof AuthCallbackRoute
   ContactRoute: typeof ContactRoute
   InventoryRoute: typeof InventoryRouteWithChildren
+  LoginRoute: typeof LoginRoute
   SellRoute: typeof SellRoute
   ServicesRoute: typeof ServicesRoute
 }
@@ -146,6 +209,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/inventory': {
       id: '/inventory'
       path: '/inventory'
@@ -158,6 +228,20 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth-callback': {
+      id: '/auth-callback'
+      path: '/auth-callback'
+      fullPath: '/auth-callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -188,8 +272,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIdRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/admin/create': {
+      id: '/admin/create'
+      path: '/create'
+      fullPath: '/admin/create'
+      preLoaderRoute: typeof AdminCreateRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/$id': {
+      id: '/admin/$id'
+      path: '/$id'
+      fullPath: '/admin/$id'
+      preLoaderRoute: typeof AdminIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
+
+interface AdminRouteChildren {
+  AdminIdRoute: typeof AdminIdRoute
+  AdminCreateRoute: typeof AdminCreateRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminIdRoute: AdminIdRoute,
+  AdminCreateRoute: AdminCreateRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface InventoryRouteChildren {
   InventoryIdRoute: typeof InventoryIdRoute
@@ -208,8 +318,11 @@ const InventoryRouteWithChildren = InventoryRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AuthCallbackRoute: AuthCallbackRoute,
   ContactRoute: ContactRoute,
   InventoryRoute: InventoryRouteWithChildren,
+  LoginRoute: LoginRoute,
   SellRoute: SellRoute,
   ServicesRoute: ServicesRoute,
 }

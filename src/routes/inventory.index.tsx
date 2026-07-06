@@ -4,7 +4,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
-  listings,
+  type Car,
   type BodyType,
   type Condition,
   type FuelType,
@@ -12,6 +12,7 @@ import {
 } from "@/data/listings";
 import { ListingCard } from "@/components/listing-card";
 import { cn } from "@/lib/utils";
+import { fetchListings } from "@/data/listings-supabase";
 
 const sortOptions = [
   "newest",
@@ -37,6 +38,10 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/inventory/")({
   validateSearch: zodValidator(searchSchema),
+  loader: async () => {
+    const data = await fetchListings();
+    return { listings: data };
+  },
   head: () => ({
     meta: [
       { title: "Inventory - Maclen Autos Ruaka" },
@@ -57,6 +62,7 @@ export const Route = createFileRoute("/inventory/")({
 });
 
 function InventoryPage() {
+  const { listings } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);

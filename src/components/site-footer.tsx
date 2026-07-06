@@ -104,6 +104,14 @@ export function SiteFooter() {
             </div>
           </div>
         </div>
+        <div className="border-t border-slate-100 pt-6 text-center">
+          <Link
+            to="/login"
+            className="text-xs font-medium text-brand-muted hover:text-brand-accent"
+          >
+            Owner Login
+          </Link>
+        </div>
         <div className="border-t border-slate-100 pt-8 text-center">
           <p className="text-[10px] uppercase tracking-widest text-brand-muted">
             © {new Date().getFullYear()} Maclen Autos Limited. All rights

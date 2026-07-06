@@ -1,15 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { Search, ShieldCheck, FileCheck, Award, Sparkles } from "lucide-react";
-import { listings } from "@/data/listings";
 import { ListingCard } from "@/components/listing-card";
+import { fetchListings } from "@/data/listings-supabase";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    const data = await fetchListings();
+    return { featured: data.slice(0, 6) };
+  },
   component: Index,
 });
 
 function Index() {
-  const featured = listings.slice(0, 6);
+  const { featured } = Route.useLoaderData();
 
   return (
     <>
