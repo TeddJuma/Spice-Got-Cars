@@ -16,11 +16,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="md:col-span-2">
-            <img
-              src={logoAsset.url}
-              alt="Maclen Auto Limited"
-              className="mb-4 h-14 w-auto"
-            />
+            <h2>Maclen Auto Limited</h2>
             <p className="mb-6 max-w-sm text-brand-muted">
               Your trusted automotive partner in Ruaka. We deal in high-quality
               foreign-used and clean locally used vehicles for buyers all

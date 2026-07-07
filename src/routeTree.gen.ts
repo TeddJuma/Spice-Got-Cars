@@ -20,8 +20,9 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
 import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
-import { Route as AdminCreateRouteImport } from './routes/admin.create'
 import { Route as AdminIdRouteImport } from './routes/admin.$id'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminCreateRouteImport } from './routes/admin.create'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -88,6 +89,11 @@ const AdminIdRoute = AdminIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,22 +107,9 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
+  '/admin/': typeof AdminIndexRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/inventory/': typeof InventoryIndexRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
-  '/auth-callback': typeof AuthCallbackRoute
-  '/contact': typeof ContactRoute
-  '/login': typeof LoginRoute
-  '/sell': typeof SellRoute
-  '/services': typeof ServicesRoute
-  '/admin/$id': typeof AdminIdRoute
-  '/admin/create': typeof AdminCreateRoute
-  '/inventory/$id': typeof InventoryIdRoute
-  '/inventory': typeof InventoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -148,6 +141,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
+    | '/admin/'
     | '/inventory/$id'
     | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
@@ -162,6 +156,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
+    | '/admin/'
     | '/inventory/$id'
     | '/inventory'
   id:
@@ -177,6 +172,7 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
+    | '/admin/'
     | '/inventory/$id'
     | '/inventory/'
   fileRoutesById: FileRoutesById
@@ -286,16 +282,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminIdRoute: typeof AdminIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
   AdminCreateRoute: typeof AdminCreateRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIdRoute: AdminIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
   AdminCreateRoute: AdminCreateRoute,
 }
 

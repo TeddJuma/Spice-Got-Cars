@@ -3,8 +3,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CheckCircle2, Upload } from "lucide-react";
+import { CheckCircle2, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { createClient } from "@/lib/supabase";
+import { createSellSubmission } from "@/data/sell-submissions";
+import { sendNewSubmissionEmail } from "@/lib/email";
 
 export const Route = createFileRoute("/sell")({
   head: () => ({
@@ -62,7 +65,7 @@ type SellForm = z.infer<typeof sellSchema>;
 
 function SellPage() {
   const [submitted, setSubmitted] = useState(false);
-  const [fileNames, setFileNames] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const {
     register,
@@ -74,13 +77,94 @@ function SellPage() {
     defaultValues: { condition: "Locally Used" },
   });
 
-  const onSubmit = async (_data: SellForm) => {
-    // Backend not wired up yet - simulate submission.
-    await new Promise((r) => setTimeout(r, 600));
-    setSubmitted(true);
-    reset();
-    setFileNames([]);
-    toast.success("Submission received - we'll be in touch shortly.");
+  const uploadPhotos = async (submissionId: string, files: File[]): Promise<string[]> => {
+    const supabase = createClient();
+    const uploadedUrls: string[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `submissions/${submissionId}/${Date.now()}-${i}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("car-photos")
+        .upload(path, file, { contentType: file.type, upsert: false });
+
+      if (uploadError) {
+        console.error("Photo upload failed:", uploadError);
+        continue;
+      }
+
+      const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
+      uploadedUrls.push(publicUrlData.publicUrl);
+    }
+
+    return uploadedUrls;
+  };
+
+  const onSubmit = async (data: SellForm) => {
+    try {
+      console.log("[sell] submit start", data);
+      const supabase = createClient();
+      if (!supabase) {
+        toast.error("Supabase is not configured.");
+        return;
+      }
+
+      const submission = await createSellSubmission({
+        name: data.name,
+        phone: data.phone,
+        make: data.make,
+        model: data.model,
+        year: data.year,
+        mileageKm: data.mileage,
+        condition: data.condition,
+        askingPrice: data.askingPrice,
+        location: data.location,
+        notes: data.notes || undefined,
+        photos: [],
+      }, supabase);
+      console.log("[sell] submission created", submission.id);
+
+      let photoUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        photoUrls = await uploadPhotos(submission.id, selectedFiles);
+
+        const { error: updateError } = await supabase
+          .from("sell_submissions")
+          .update({ photos: photoUrls })
+          .eq("id", submission.id);
+
+        if (updateError) {
+          console.error("Failed to update submission photos:", updateError);
+        }
+      }
+
+      try {
+        await sendNewSubmissionEmail({
+          make: data.make,
+          model: data.model,
+          year: data.year,
+          askingPrice: data.askingPrice,
+          sellerName: data.name,
+          sellerPhone: data.phone,
+          submissionId: submission.id,
+        });
+      } catch (emailErr) {
+        console.error("[sell] email notification failed:", emailErr);
+      }
+
+      setSubmitted(true);
+      reset();
+      setSelectedFiles([]);
+      toast.success("Submission received - we'll be in touch shortly.");
+    } catch (err: any) {
+      console.error("[sell] submit error:", err);
+      const message =
+        err?.message ||
+        "Something went wrong. Please try again.";
+      toast.error(message);
+    }
   };
 
   if (submitted) {
@@ -212,8 +296,8 @@ function SellPage() {
           </label>
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-brand-muted transition-colors hover:border-brand-accent hover:text-brand-accent">
             <Upload className="size-4" />
-            {fileNames.length > 0
-              ? `${fileNames.length} file(s) selected`
+            {selectedFiles.length > 0
+              ? `${selectedFiles.length} file(s) selected`
               : "Tap to add photos"}
             <input
               type="file"
@@ -222,14 +306,14 @@ function SellPage() {
               className="hidden"
               onChange={(e) => {
                 const files = Array.from(e.target.files ?? []);
-                setFileNames(files.map((f) => f.name));
+                setSelectedFiles(files);
               }}
             />
           </label>
-          {fileNames.length > 0 && (
+          {selectedFiles.length > 0 && (
             <ul className="mt-2 space-y-1 text-xs text-brand-muted">
-              {fileNames.map((n) => (
-                <li key={n}>• {n}</li>
+              {selectedFiles.map((f, idx) => (
+                <li key={idx}>• {f.name}</li>
               ))}
             </ul>
           )}
@@ -240,7 +324,14 @@ function SellPage() {
           disabled={isSubmitting}
           className="mt-2 rounded-lg bg-brand-accent px-6 py-3 text-sm font-black uppercase tracking-wider text-white transition-colors hover:bg-brand-accent-hover disabled:opacity-60"
         >
-          {isSubmitting ? "Sending..." : "Submit for review"}
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <Loader2 className="size-4 animate-spin" />
+              Submitting...
+            </span>
+          ) : (
+            "Submit for review"
+          )}
         </button>
 
         <p className="text-center text-xs text-brand-muted">

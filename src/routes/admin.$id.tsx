@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { createClient } from "@/lib/supabase";
@@ -35,6 +35,33 @@ export const Route = createFileRoute("/admin/$id")({
       .order("sort_order", { ascending: true });
 
     return { listing: { ...data, photos: photos || [] } };
+  },
+  notFoundComponent: () => (
+    <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+      <h1 className="text-3xl font-bold">Listing not found</h1>
+      <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
+      <Link
+        to="/admin"
+        className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+      >
+        Back to admin
+      </Link>
+    </div>
+  ),
+  errorComponent: ({ error, reset }) => {
+    console.error(error);
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="text-2xl font-bold">Something went wrong</h1>
+        <p className="mt-2 text-brand-muted">{error.message}</p>
+        <button
+          onClick={reset}
+          className="mt-4 rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+        >
+          Try again
+        </button>
+      </div>
+    );
   },
   component: EditListingPage,
 });
@@ -95,6 +122,7 @@ function EditListingPage() {
   };
 
   const removeExistingPhoto = async (photo: any) => {
+    if (!supabase) return;
     if (!confirm("Remove this photo?")) return;
     await supabase.from("listing_photos").delete().eq("id", photo.id);
     const path = photo.storage_path.split("/car-photos/")[1];
@@ -146,9 +174,7 @@ function EditListingPage() {
 
           if (uploadError) continue;
 
-          const { data: publicUrlData } = supabase.storage
-            .from("car-photos")
-            .getPublicUrl(path);
+          const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
 
           await supabase.from("listing_photos").insert({
             listing_id: listing.id,
@@ -178,7 +204,10 @@ function EditListingPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <Link to="/admin" className="inline-flex items-center text-sm text-brand-muted hover:text-brand-navy">
+      <Link
+        to="/admin"
+        className="inline-flex items-center text-sm text-brand-muted hover:text-brand-navy"
+      >
         <ArrowLeft className="mr-1 size-4" /> Back to admin
       </Link>
       <h1 className="mt-4 text-3xl font-bold text-brand-navy">Edit listing</h1>
@@ -187,11 +216,19 @@ function EditListingPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Make</Label>
-            <Input required value={form.make} onChange={(e) => updateField("make", e.target.value)} />
+            <Input
+              required
+              value={form.make}
+              onChange={(e) => updateField("make", e.target.value)}
+            />
           </div>
           <div>
             <Label>Model</Label>
-            <Input required value={form.model} onChange={(e) => updateField("model", e.target.value)} />
+            <Input
+              required
+              value={form.model}
+              onChange={(e) => updateField("model", e.target.value)}
+            />
           </div>
           <div>
             <Label>Trim</Label>
@@ -199,15 +236,30 @@ function EditListingPage() {
           </div>
           <div>
             <Label>Year</Label>
-            <Input type="number" required value={form.year} onChange={(e) => updateField("year", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.year}
+              onChange={(e) => updateField("year", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Price (KES)</Label>
-            <Input type="number" required value={form.priceKes} onChange={(e) => updateField("priceKes", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.priceKes}
+              onChange={(e) => updateField("priceKes", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Mileage (km)</Label>
-            <Input type="number" required value={form.mileageKm} onChange={(e) => updateField("mileageKm", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.mileageKm}
+              onChange={(e) => updateField("mileageKm", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Transmission</Label>
@@ -223,11 +275,18 @@ function EditListingPage() {
           </div>
           <div>
             <Label>Fuel Type</Label>
-            <Input value={form.fuelType} onChange={(e) => updateField("fuelType", e.target.value)} />
+            <Input
+              value={form.fuelType}
+              onChange={(e) => updateField("fuelType", e.target.value)}
+            />
           </div>
           <div>
             <Label>Engine Size</Label>
-            <Input required value={form.engineSize} onChange={(e) => updateField("engineSize", e.target.value)} />
+            <Input
+              required
+              value={form.engineSize}
+              onChange={(e) => updateField("engineSize", e.target.value)}
+            />
           </div>
           <div>
             <Label>Body Type</Label>
@@ -275,20 +334,33 @@ function EditListingPage() {
 
         <div>
           <Label>Description</Label>
-          <Textarea required value={form.description} onChange={(e) => updateField("description", e.target.value)} />
+          <Textarea
+            required
+            value={form.description}
+            onChange={(e) => updateField("description", e.target.value)}
+          />
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Switch checked={form.negotiable} onCheckedChange={(v) => updateField("negotiable", v)} />
+            <Switch
+              checked={form.negotiable}
+              onCheckedChange={(v) => updateField("negotiable", v)}
+            />
             <Label className="!mt-0">Negotiable price</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.ntsaInspected} onCheckedChange={(v) => updateField("ntsaInspected", v)} />
+            <Switch
+              checked={form.ntsaInspected}
+              onCheckedChange={(v) => updateField("ntsaInspected", v)}
+            />
             <Label className="!mt-0">NTSA inspected</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.logbookVerified} onCheckedChange={(v) => updateField("logbookVerified", v)} />
+            <Switch
+              checked={form.logbookVerified}
+              onCheckedChange={(v) => updateField("logbookVerified", v)}
+            />
             <Label className="!mt-0">Logbook verified</Label>
           </div>
         </div>
@@ -299,7 +371,11 @@ function EditListingPage() {
             <div className="mt-4 flex flex-wrap gap-3">
               {existingPhotos.map((photo) => (
                 <div key={photo.id} className="relative">
-                  <img src={photo.storage_path} alt="" className="h-24 w-32 rounded-lg object-cover" />
+                  <img
+                    src={photo.storage_path}
+                    alt=""
+                    className="h-24 w-32 rounded-lg object-cover"
+                  />
                   <button
                     type="button"
                     onClick={() => removeExistingPhoto(photo)}

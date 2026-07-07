@@ -89,9 +89,7 @@ function CreateListingPage() {
         continue;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from("car-photos")
-        .getPublicUrl(path);
+      const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
 
       uploadedPaths.push(publicUrlData.publicUrl);
 
@@ -160,7 +158,10 @@ function CreateListingPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
-      <Link to="/admin" className="inline-flex items-center text-sm text-brand-muted hover:text-brand-navy">
+      <Link
+        to="/admin"
+        className="inline-flex items-center text-sm text-brand-muted hover:text-brand-navy"
+      >
         <ArrowLeft className="mr-1 size-4" /> Back to admin
       </Link>
       <h1 className="mt-4 text-3xl font-bold text-brand-navy">Add new listing</h1>
@@ -169,11 +170,19 @@ function CreateListingPage() {
         <div className="grid gap-4 md:grid-cols-2">
           <div>
             <Label>Make</Label>
-            <Input required value={form.make} onChange={(e) => updateField("make", e.target.value)} />
+            <Input
+              required
+              value={form.make}
+              onChange={(e) => updateField("make", e.target.value)}
+            />
           </div>
           <div>
             <Label>Model</Label>
-            <Input required value={form.model} onChange={(e) => updateField("model", e.target.value)} />
+            <Input
+              required
+              value={form.model}
+              onChange={(e) => updateField("model", e.target.value)}
+            />
           </div>
           <div>
             <Label>Trim</Label>
@@ -181,15 +190,30 @@ function CreateListingPage() {
           </div>
           <div>
             <Label>Year</Label>
-            <Input type="number" required value={form.year} onChange={(e) => updateField("year", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.year}
+              onChange={(e) => updateField("year", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Price (KES)</Label>
-            <Input type="number" required value={form.priceKes} onChange={(e) => updateField("priceKes", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.priceKes}
+              onChange={(e) => updateField("priceKes", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Mileage (km)</Label>
-            <Input type="number" required value={form.mileageKm} onChange={(e) => updateField("mileageKm", parseInt(e.target.value))} />
+            <Input
+              type="number"
+              required
+              value={form.mileageKm}
+              onChange={(e) => updateField("mileageKm", parseInt(e.target.value))}
+            />
           </div>
           <div>
             <Label>Transmission</Label>
@@ -205,11 +229,18 @@ function CreateListingPage() {
           </div>
           <div>
             <Label>Fuel Type</Label>
-            <Input value={form.fuelType} onChange={(e) => updateField("fuelType", e.target.value)} />
+            <Input
+              value={form.fuelType}
+              onChange={(e) => updateField("fuelType", e.target.value)}
+            />
           </div>
           <div>
             <Label>Engine Size</Label>
-            <Input required value={form.engineSize} onChange={(e) => updateField("engineSize", e.target.value)} />
+            <Input
+              required
+              value={form.engineSize}
+              onChange={(e) => updateField("engineSize", e.target.value)}
+            />
           </div>
           <div>
             <Label>Body Type</Label>
@@ -257,20 +288,33 @@ function CreateListingPage() {
 
         <div>
           <Label>Description</Label>
-          <Textarea required value={form.description} onChange={(e) => updateField("description", e.target.value)} />
+          <Textarea
+            required
+            value={form.description}
+            onChange={(e) => updateField("description", e.target.value)}
+          />
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <Switch checked={form.negotiable} onCheckedChange={(v) => updateField("negotiable", v)} />
+            <Switch
+              checked={form.negotiable}
+              onCheckedChange={(v) => updateField("negotiable", v)}
+            />
             <Label className="!mt-0">Negotiable price</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.ntsaInspected} onCheckedChange={(v) => updateField("ntsaInspected", v)} />
+            <Switch
+              checked={form.ntsaInspected}
+              onCheckedChange={(v) => updateField("ntsaInspected", v)}
+            />
             <Label className="!mt-0">NTSA inspected</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch checked={form.logbookVerified} onCheckedChange={(v) => updateField("logbookVerified", v)} />
+            <Switch
+              checked={form.logbookVerified}
+              onCheckedChange={(v) => updateField("logbookVerified", v)}
+            />
             <Label className="!mt-0">Logbook verified</Label>
           </div>
         </div>

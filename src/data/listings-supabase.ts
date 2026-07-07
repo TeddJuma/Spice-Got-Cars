@@ -1,14 +1,7 @@
 import { createServerClient } from "../lib/supabase-server";
 import { listings as fallbackListings, type Car } from "./listings";
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL ?? "";
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY ?? "";
-
 export async function fetchListings(): Promise<Car[]> {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return fallbackListings;
-  }
-
   try {
     const supabase = createServerClient();
     const { data, error } = await supabase
@@ -61,10 +54,6 @@ export async function fetchListings(): Promise<Car[]> {
 }
 
 export async function fetchListingById(id: string): Promise<Car | null> {
-  if (!supabaseUrl || !supabaseAnonKey) {
-    return null;
-  }
-
   try {
     const supabase = createServerClient();
     const { data, error } = await supabase
