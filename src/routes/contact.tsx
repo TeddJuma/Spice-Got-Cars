@@ -15,7 +15,7 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Visit Maclen Autos on Limuru Road, Ruaka. Call, WhatsApp, or email us - we reply fast.",
+          "Visit Maclen Autos on Limuru Rd, Ruaka. Call, WhatsApp, or email us - we reply fast.",
       },
       { property: "og:title", content: "Contact Maclen Autos" },
       {
@@ -99,7 +99,7 @@ function ContactPage() {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <iframe
             title="Maclen Autos Ruaka location"
-            src="https://www.google.com/maps?q=Ruaka+Town,+Limuru+Road,+Kenya&output=embed"
+            src={`https://www.google.com/maps?q=-1.2052640472733878,36.77947581183896&z=16&output=embed`}
             className="h-[400px] w-full"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"

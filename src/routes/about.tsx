@@ -29,7 +29,7 @@ function AboutPage() {
           Our story
         </span>
         <h1 className="mt-2 text-3xl font-bold md:text-5xl">
-          Kenyan-owned. Ruaka-based. Nationwide reach.
+          Your Trusted automotive partner.
         </h1>
       </div>
 

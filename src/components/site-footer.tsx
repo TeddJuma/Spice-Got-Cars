@@ -23,6 +23,15 @@ export function SiteFooter() {
               across Kenya. Import, buy &amp; sell, trade-in, and finance
               options available.
             </p>
+            <div className="mb-4 overflow-hidden rounded-xl border border-slate-200">
+              <iframe
+                title="Maclen Autos Ruaka location"
+                src={`https://www.google.com/maps?q=-1.2052640472733878,36.77947581183896&z=16&output=embed`}
+                className="h-40 w-full md:w-80"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
             <div className="space-y-2 text-sm">
               <p>
                 <strong className="font-semibold">Location:</strong>{" "}

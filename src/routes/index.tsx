@@ -87,7 +87,7 @@ function Index() {
       <section className="border-b border-slate-100 bg-white py-8">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 md:grid-cols-4">
           <TrustItem stat="500+" label="Cars delivered" icon={<Award className="size-5 text-brand-accent" />} />
-          <TrustItem stat="12 yrs" label="Serving Kenya" icon={<Sparkles className="size-5 text-brand-accent" />} />
+          {/* <TrustItem stat="12 yrs" label="Serving Kenya" icon={<Sparkles className="size-5 text-brand-accent" />} /> */}
           <TrustItem stat="100%" label="Logbook verified" icon={<FileCheck className="size-5 text-brand-accent" />} />
           <TrustItem stat="NTSA" label="Certified inspection" icon={<ShieldCheck className="size-5 text-brand-accent" />} />
         </div>

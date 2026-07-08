@@ -10,7 +10,7 @@ export const PHONE_PRIMARY_TEL = "+254726870901";
 export const PHONE_SECONDARY_DISPLAY = "0722 793 535";
 export const PHONE_SECONDARY_TEL = "+254722793535";
 export const CONTACT_EMAIL = "info@maclenautos.co.ke";
-export const RUAKA_ADDRESS = "Limuru Road, Ruaka Town, Kiambu County, Kenya";
+export const RUAKA_ADDRESS = "Limuru Rd, Ruaka";
 
 function formatKes(amount: number) {
   return `KES ${amount.toLocaleString("en-KE")}`;

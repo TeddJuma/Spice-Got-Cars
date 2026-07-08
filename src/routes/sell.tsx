@@ -175,8 +175,8 @@ function SellPage() {
         </div>
         <h1 className="text-3xl font-bold">Thanks - we've got your details.</h1>
         <p className="mx-auto mt-3 max-w-lg text-brand-muted">
-          Our team will review your car and call or WhatsApp you within 1
-          business day to discuss next steps.
+          Our team will review your car and call or WhatsApp you within 3 5
+          business days to discuss next steps.
         </p>
         <button
           onClick={() => setSubmitted(false)}
