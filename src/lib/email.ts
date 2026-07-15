@@ -9,6 +9,7 @@ export async function sendNewSubmissionEmail(data: {
   sellerName: string;
   sellerPhone: string;
   submissionId: string;
+  engineCapacityCc?: number;
 }): Promise<boolean> {
   if (!RESEND_API_KEY) {
     console.warn("VITE_RESEND_API_KEY is not configured. Email notification skipped.");
@@ -30,6 +31,7 @@ export async function sendNewSubmissionEmail(data: {
           <h2>New Car Sell Submission</h2>
           <p><strong>Vehicle:</strong> ${data.year} ${data.make} ${data.model}</p>
           <p><strong>Asking Price:</strong> KES ${data.askingPrice.toLocaleString()}</p>
+          ${data.engineCapacityCc != null ? `<p><strong>Engine capacity:</strong> ${data.engineCapacityCc.toLocaleString()} cc</p>` : ""}
           <p><strong>Seller:</strong> ${data.sellerName}</p>
           <p><strong>Phone:</strong> ${data.sellerPhone}</p>
           <p><strong>Submission ID:</strong> ${data.submissionId}</p>

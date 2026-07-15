@@ -52,6 +52,13 @@ const sellSchema = z.object({
     .int()
     .min(0)
     .max(1_000_000),
+  engineCapacity: z
+    .number({ invalid_type_error: "Enter engine capacity" })
+    .int()
+    .min(0)
+    .max(10_000)
+    .optional()
+    .or(z.literal("")),
   condition: z.enum(["New", "Foreign Used", "Locally Used"]),
   askingPrice: z
     .number({ invalid_type_error: "Enter asking price" })
@@ -118,6 +125,7 @@ function SellPage() {
         model: data.model,
         year: data.year,
         mileageKm: data.mileage,
+        engineCapacityCc: data.engineCapacity || undefined,
         condition: data.condition,
         askingPrice: data.askingPrice,
         location: data.location,
@@ -149,6 +157,7 @@ function SellPage() {
           sellerName: data.name,
           sellerPhone: data.phone,
           submissionId: submission.id,
+          engineCapacityCc: data.engineCapacity || undefined,
         });
       } catch (emailErr) {
         console.error("[sell] email notification failed:", emailErr);
@@ -175,8 +184,8 @@ function SellPage() {
         </div>
         <h1 className="text-3xl font-bold">Thanks - we've got your details.</h1>
         <p className="mx-auto mt-3 max-w-lg text-brand-muted">
-          Our team will review your car and call or WhatsApp you within 3 5
-          business days to discuss next steps.
+          Our team will review your car and contact you as soon as possible
+          to discuss the next steps.
         </p>
         <button
           onClick={() => setSubmitted(false)}
@@ -246,7 +255,16 @@ function SellPage() {
           </Field>
         </div>
 
-        <div className="grid gap-5 md:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2">
+          <Field label="Engine capacity (cc)" error={errors.engineCapacity?.message}>
+            <input
+              type="number"
+              inputMode="numeric"
+              {...register("engineCapacity", { valueAsNumber: true })}
+              className="input"
+              placeholder="2000"
+            />
+          </Field>
           <Field label="Mileage (km)" error={errors.mileage?.message}>
             <input
               type="number"
@@ -256,6 +274,9 @@ function SellPage() {
               placeholder="60000"
             />
           </Field>
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
           <Field label="Condition" error={errors.condition?.message}>
             <select {...register("condition")} className="input">
               <option value="New">New</option>

@@ -6,6 +6,8 @@ import {
   PHONE_PRIMARY_TEL,
   PHONE_SECONDARY_DISPLAY,
   PHONE_SECONDARY_TEL,
+  PHONE_TERTIARY_DISPLAY,
+  PHONE_TERTIARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
 import logoAsset from "@/assets/maclen-logo.png.asset.json";
@@ -91,6 +93,12 @@ export function SiteFooter() {
                 className="block font-bold text-brand-navy"
               >
                 {PHONE_SECONDARY_DISPLAY}
+              </a>
+              <a
+                href={`tel:${PHONE_TERTIARY_TEL}`}
+                className="block font-bold text-brand-navy"
+              >
+                {PHONE_TERTIARY_DISPLAY}
               </a>
               <a
                 href={buildGeneralInquiryLink()}

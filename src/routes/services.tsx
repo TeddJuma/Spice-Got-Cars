@@ -5,6 +5,8 @@ import {
   PHONE_PRIMARY_TEL,
   PHONE_SECONDARY_DISPLAY,
   PHONE_SECONDARY_TEL,
+  PHONE_TERTIARY_DISPLAY,
+  PHONE_TERTIARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
 
@@ -53,7 +55,7 @@ const services = [
     icon: Banknote,
     title: "Finance Options",
     body: "Drive off with flexible financing through our partner banks and SACCOs. We help structure asset finance with competitive rates and short approval timelines.",
-    points: ["Partner banks & SACCOs", "Up to 80% financing", "Approvals in days, not weeks"],
+    points: ["Partner banks & SACCOs", "Up to 50% financing", "Approvals in days, not weeks"],
   },
 ];
 
@@ -101,7 +103,7 @@ function ServicesPage() {
 
       <section className="bg-slate-50 px-4 py-16">
         <div className="mx-auto max-w-4xl rounded-2xl bg-brand-navy p-10 text-center text-white md:p-14">
-          <h2 className="text-3xl font-bold md:text-4xl">Talk to a Maclen advisor</h2>
+          <h2 className="text-3xl font-bold md:text-4xl">Talk to a Maclen representative</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-300">
             Call either line, or start a WhatsApp chat and we'll walk you through your options.
           </p>
@@ -117,6 +119,12 @@ function ServicesPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 font-bold text-white transition-colors hover:bg-white/10"
             >
               <Phone className="size-4" /> {PHONE_SECONDARY_DISPLAY}
+            </a>
+            <a
+              href={`tel:${PHONE_TERTIARY_TEL}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 font-bold text-white transition-colors hover:bg-white/10"
+            >
+              <Phone className="size-4" /> {PHONE_TERTIARY_DISPLAY}
             </a>
             <a
               href={buildGeneralInquiryLink()}

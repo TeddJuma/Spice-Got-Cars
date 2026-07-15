@@ -10,6 +10,7 @@ export interface SellSubmission {
   model: string;
   year: number;
   mileage_km: number;
+  engine_capacity?: number;
   condition: "New" | "Foreign Used" | "Locally Used";
   asking_price: number;
   location: string;
@@ -40,6 +41,7 @@ export async function createSellSubmission(
     model: string;
     year: number;
     mileageKm: number;
+    engineCapacityCc?: number;
     condition: "New" | "Foreign Used" | "Locally Used";
     askingPrice: number;
     location: string;
@@ -56,6 +58,7 @@ export async function createSellSubmission(
     model: data.model,
     year: data.year,
     mileage_km: data.mileageKm,
+    engine_capacity: data.engineCapacityCc || null,
     condition: data.condition,
     asking_price: data.askingPrice,
     location: data.location,

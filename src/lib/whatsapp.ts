@@ -1,15 +1,16 @@
 import type { Car } from "@/data/listings";
 
-// Central WhatsApp Business number for Maclen Autos.
-// Placeholder - replace with the real number when provided (no leading +).
-export const WHATSAPP_NUMBER = "254726870901";
-export const WHATSAPP_DISPLAY = "+254 726 870 901";
-export const PHONE_TEL = "+254726870901";
-export const PHONE_PRIMARY_DISPLAY = "0726 870 901";
-export const PHONE_PRIMARY_TEL = "+254726870901";
-export const PHONE_SECONDARY_DISPLAY = "0722 793 535";
-export const PHONE_SECONDARY_TEL = "+254722793535";
-export const CONTACT_EMAIL = "info@maclenautos.co.ke";
+// Contact numbers ranked by importance. All support calls and WhatsApp.
+export const WHATSAPP_NUMBER = "254726443197";
+export const WHATSAPP_DISPLAY = "+254 726 443 197";
+export const PHONE_PRIMARY_DISPLAY = "0726 443 197";
+export const PHONE_PRIMARY_TEL = "+254726443197";
+export const PHONE_SECONDARY_DISPLAY = "0721 957 142";
+export const PHONE_SECONDARY_TEL = "+254721957142";
+export const PHONE_TERTIARY_DISPLAY = "0722 793 535";
+export const PHONE_TERTIARY_TEL = "+254722793535";
+export const PHONE_TEL = PHONE_PRIMARY_TEL;
+export const CONTACT_EMAIL = "maclenautolimited@gmail.com";
 export const RUAKA_ADDRESS = "Limuru Rd, Ruaka";
 
 function formatKes(amount: number) {
