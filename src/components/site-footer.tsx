@@ -112,9 +112,23 @@ export function SiteFooter() {
         <div className="border-t border-slate-100 pt-6 text-center">
           <Link
             to="/login"
-            className="text-xs font-medium text-brand-muted hover:text-brand-accent"
+            aria-label="Owner Login"
+            className="inline-flex size-9 items-center justify-center rounded-full text-brand-muted transition-all duration-300 [filter:drop-shadow(0_0_0_rgba(239,68,68,0))] hover:text-red-400 hover:[filter:drop-shadow(0_0_10px_rgba(239,68,68,0.85))]"
           >
-            Owner Login
+            <svg
+              viewBox="0 0 64 32"
+              className="size-6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M3 23 L3 18.5 Q3 16.5 6 15.5 L17 14.5 L24 8.5 Q26 6.5 29 6.5 L40 6.5 Q43 6.5 45.5 9.5 L51 15 L60 16 Q62.5 16.5 62.5 19 L62.5 23" />
+              <circle cx="16" cy="23" r="4.5" />
+              <circle cx="48" cy="23" r="4.5" />
+            </svg>
           </Link>
         </div>
         <div className="border-t border-slate-100 pt-8 text-center">

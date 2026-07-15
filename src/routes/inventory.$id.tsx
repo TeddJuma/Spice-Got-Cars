@@ -90,7 +90,6 @@ function CarDetailPage() {
     ["Engine", car.engineSize],
     ["Body type", car.bodyType],
     ["Condition", car.condition],
-    ["Reference", car.id],
   ];
 
   return (
@@ -213,7 +212,7 @@ function CarDetailPage() {
         <aside className="lg:sticky lg:top-24 lg:self-start">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-1 text-xs font-bold uppercase tracking-wider text-brand-muted">
-              {car.condition} · Ref {car.id}
+              {car.condition}
             </div>
             <h1 className="text-2xl font-bold leading-tight text-brand-navy">
               {car.year} {car.make} {car.model}

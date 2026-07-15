@@ -19,10 +19,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
-import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
-import { Route as AdminIdRouteImport } from './routes/admin.$id'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
 import { Route as AdminCreateRouteImport } from './routes/admin.create'
+import { Route as AdminIdRouteImport } from './routes/admin.$id'
 
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
@@ -74,6 +74,11 @@ const InventoryIndexRoute = InventoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => InventoryRoute,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const InventoryIdRoute = InventoryIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -89,11 +94,6 @@ const AdminIdRoute = AdminIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -107,9 +107,23 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
-  '/admin/': typeof AdminIndexRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/auth-callback': typeof AuthCallbackRoute
+  '/contact': typeof ContactRoute
+  '/login': typeof LoginRoute
+  '/sell': typeof SellRoute
+  '/services': typeof ServicesRoute
+  '/admin/$id': typeof AdminIdRoute
+  '/admin/create': typeof AdminCreateRoute
+  '/inventory/$id': typeof InventoryIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/inventory': typeof InventoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,6 +139,7 @@ export interface FileRoutesById {
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
+  '/admin/': typeof AdminIndexRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRouteTypes {
@@ -141,14 +156,13 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
-    | '/admin/'
     | '/inventory/$id'
+    | '/admin/'
     | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/auth-callback'
     | '/contact'
     | '/login'
@@ -156,8 +170,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
-    | '/admin/'
     | '/inventory/$id'
+    | '/admin'
     | '/inventory'
   id:
     | '__root__'
@@ -172,8 +186,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/admin/$id'
     | '/admin/create'
-    | '/admin/'
     | '/inventory/$id'
+    | '/admin/'
     | '/inventory/'
   fileRoutesById: FileRoutesById
 }
@@ -261,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIndexRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/inventory/$id': {
       id: '/inventory/$id'
       path: '/$id'
@@ -282,26 +303,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIdRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRoute
-    }
   }
 }
 
 interface AdminRouteChildren {
   AdminIdRoute: typeof AdminIdRoute
-  AdminIndexRoute: typeof AdminIndexRoute
   AdminCreateRoute: typeof AdminCreateRoute
+  AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminIdRoute: AdminIdRoute,
-  AdminIndexRoute: AdminIndexRoute,
   AdminCreateRoute: AdminCreateRoute,
+  AdminIndexRoute: AdminIndexRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
