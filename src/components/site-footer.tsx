@@ -10,7 +10,7 @@ import {
   PHONE_TERTIARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
-import logoAsset from "@/assets/maclen-logo.png.asset.json";
+import logoAsset from "@/assets/spice-got-cars-logo.png.asset.json";
 
 export function SiteFooter() {
   return (
@@ -18,7 +18,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
           <div className="md:col-span-2">
-            <h2>Maclen Auto Limited</h2>
+            <h2>Spice Got Cars</h2>
             <p className="mb-6 max-w-sm text-brand-muted">
               Your trusted automotive partner in Ruaka. We deal in high-quality
               foreign-used and clean locally used vehicles for buyers all
@@ -27,7 +27,7 @@ export function SiteFooter() {
             </p>
             <div className="mb-4 overflow-hidden rounded-xl border border-slate-200">
               <iframe
-                title="Maclen Autos Ruaka location"
+                title="Spice Got Cars Ruaka location"
                 src={`https://www.google.com/maps?q=-1.2052640472733878,36.77947581183896&z=16&output=embed`}
                 className="h-40 w-full md:w-80"
                 loading="lazy"
@@ -141,7 +141,7 @@ export function SiteFooter() {
         </div>
         <div className="border-t border-slate-100 pt-8 text-center">
           <p className="text-[10px] uppercase tracking-widest text-brand-muted">
-            © {new Date().getFullYear()} Maclen Autos Limited. All rights
+            © {new Date().getFullYear()} Spice Got Cars. All rights
             reserved.
           </p>
         </div>

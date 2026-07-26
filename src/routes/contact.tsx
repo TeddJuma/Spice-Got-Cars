@@ -11,13 +11,13 @@ import {
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
-      { title: "Contact Maclen Autos - Ruaka, Kenya" },
+      { title: "Contact Spice Got Cars - Ruaka, Kenya" },
       {
         name: "description",
         content:
-          "Visit Maclen Autos on Limuru Rd, Ruaka. Call, WhatsApp, or email us - we reply fast.",
+          "Visit Spice Got Cars on Limuru Rd, Ruaka. Call, WhatsApp, or email us - we reply fast.",
       },
-      { property: "og:title", content: "Contact Maclen Autos" },
+      { property: "og:title", content: "Contact Spice Got Cars" },
       {
         property: "og:description",
         content: "Find us in Ruaka, or reach out on WhatsApp for a quick reply.",
@@ -98,7 +98,7 @@ function ContactPage() {
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <iframe
-            title="Maclen Autos Ruaka location"
+            title="Spice Got Cars Ruaka location"
             src={`https://www.google.com/maps?q=-1.2052640472733878,36.77947581183896&z=16&output=embed`}
             className="h-[400px] w-full"
             loading="lazy"

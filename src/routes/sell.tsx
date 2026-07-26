@@ -12,13 +12,13 @@ import { sendNewSubmissionEmail } from "@/lib/email";
 export const Route = createFileRoute("/sell")({
   head: () => ({
     meta: [
-      { title: "Sell Your Car - Maclen Autos Ruaka" },
+      { title: "Sell Your Car - Spice Got Cars Ruaka" },
       {
         name: "description",
         content:
-          "Sell your car through Maclen Autos in Ruaka. Submit your details and our team will get back to you with an offer.",
+          "Sell your car through Spice Got Cars in Ruaka. Submit your details and our team will get back to you with an offer.",
       },
-      { property: "og:title", content: "Sell Your Car with Maclen Autos" },
+      { property: "og:title", content: "Sell Your Car with Spice Got Cars" },
       {
         property: "og:description",
         content:
@@ -210,7 +210,7 @@ function SellPage() {
 
       <div className="mb-10 grid gap-4 md:grid-cols-3">
         <HowStep n={1} title="Submit details" body="Fill in your car's basics and upload photos." />
-        <HowStep n={2} title="Maclen reviews" body="Our team validates the condition and paperwork." />
+        <HowStep n={2} title="Spice Got Cars review" body="Our team validates the condition and paperwork." />
         <HowStep n={3} title="Offer or list" body="Cash offer or we list it for you within 24 hours." />
       </div>
 
@@ -356,7 +356,7 @@ function SellPage() {
         </button>
 
         <p className="text-center text-xs text-brand-muted">
-          By submitting, you agree that a Maclen representative may contact you
+          By submitting, you agree that a Spice Got Cars representative may contact you
           about your listing.
         </p>
       </form>

@@ -18,8 +18,8 @@ serve(async (req) => {
     const { make, model, year, askingPrice, sellerName, sellerPhone, submissionId } = await req.json();
 
     const data = await resend.emails.send({
-      from: "Maclen Autos <noreply@maclenautos.co.ke>",
-      to: [Deno.env.get("OWNER_EMAIL") || "info@maclenautos.co.ke"],
+      from: "Spice Got Cars <noreply@spicegotcars.co.ke>",
+      to: [Deno.env.get("OWNER_EMAIL") || "info@spicegotcars.co.ke"],
       subject: `New Sell Submission: ${year} ${make} ${model}`,
       html: `
         <h2>New Car Sell Submission</h2>

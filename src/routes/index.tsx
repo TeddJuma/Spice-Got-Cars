@@ -130,7 +130,7 @@ function Index() {
           </p>
           <div className="mb-12 grid gap-8 md:grid-cols-3">
             <SellStep n={1} title="Submit details" body="Send us photos and specs via our form." />
-            <SellStep n={2} title="Maclen review" body="We inspect and give a fair offer." />
+            <SellStep n={2} title="Spice Got Cars review" body="We inspect and give a fair offer." />
             <SellStep n={3} title="Fast sale" body="Cash offer or listed within 24 hours." />
           </div>
           <Link

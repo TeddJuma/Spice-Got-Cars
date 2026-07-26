@@ -11,7 +11,7 @@ export function FloatingWhatsApp() {
       href={buildGeneralInquiryLink()}
       target="_blank"
       rel="noreferrer"
-      aria-label="Chat with Maclen Autos on WhatsApp"
+      aria-label="Chat with Spice Got Cars on WhatsApp"
       className="fixed right-5 bottom-5 z-50 flex size-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-2xl shadow-emerald-900/30 ring-4 ring-white transition-transform hover:scale-105 active:scale-95"
     >
       <span className="absolute -top-0.5 -right-0.5 flex size-3">

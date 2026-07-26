@@ -1,4 +1,4 @@
-# Maclen Autos — Build Plan
+# Spice Got Cars — Build Plan
 
 Build a mobile-first car sales site using the selected "Kenya road ready" direction (navy + emerald on slate, Inter). Demo data now; backend later. Placeholder WhatsApp number (`254700000000`) and Ruaka address that you can swap later.
 

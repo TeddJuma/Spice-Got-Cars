@@ -1,5 +1,5 @@
 const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
-const OWNER_EMAIL = import.meta.env.VITE_OWNER_EMAIL || "info@maclenautos.co.ke";
+const OWNER_EMAIL = import.meta.env.VITE_OWNER_EMAIL || "info@spicegotcars.co.ke";
 
 export async function sendNewSubmissionEmail(data: {
   make: string;
@@ -24,7 +24,7 @@ export async function sendNewSubmissionEmail(data: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Maclen Autos <noreply@maclenautos.co.ke>",
+        from: "Spice Got Cars <noreply@spicegotcars.co.ke>",
         to: [OWNER_EMAIL],
         subject: `New Sell Submission: ${data.year} ${data.make} ${data.model}`,
         html: `

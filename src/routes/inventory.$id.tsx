@@ -30,10 +30,10 @@ export const Route = createFileRoute("/inventory/$id")({
   head: ({ loaderData }) => {
     const car = loaderData?.car;
     if (!car) {
-      return { meta: [{ title: "Listing not found - Maclen Autos" }] };
+      return { meta: [{ title: "Listing not found - Spice Got Cars" }] };
     }
-    const title = `${car.year} ${car.make} ${car.model} - ${formatKes(car.priceKes)} | Maclen Autos`;
-    const desc = `${car.condition}. ${formatMileage(car.mileageKm)}, ${car.transmission}, ${car.fuelType}. Listed in Ruaka by Maclen Autos.`;
+    const title = `${car.year} ${car.make} ${car.model} - ${formatKes(car.priceKes)} | Spice Got Cars`;
+    const desc = `${car.condition}. ${formatMileage(car.mileageKm)}, ${car.transmission}, ${car.fuelType}. Listed in Ruaka by Spice Got Cars.`;
     return {
       meta: [
         { title },
@@ -201,7 +201,7 @@ function CarDetailPage() {
                 />
                 <TrustLine
                   ok
-                  label="Logbook transfer supported by Maclen team"
+                  label="Logbook transfer supported by Spice Got Cars team"
                 />
               </ul>
             </section>

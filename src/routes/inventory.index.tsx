@@ -44,13 +44,13 @@ export const Route = createFileRoute("/inventory/")({
   },
   head: () => ({
     meta: [
-      { title: "Inventory - Maclen Autos Ruaka" },
+      { title: "Inventory - Spice Got Cars Ruaka" },
       {
         name: "description",
         content:
-          "Browse verified cars for sale at Maclen Autos in Ruaka. Filter by price, year, body type, transmission and fuel type.",
+          "Browse verified cars for sale at Spice Got Cars in Ruaka. Filter by price, year, body type, transmission and fuel type.",
       },
-      { property: "og:title", content: "Maclen Autos Inventory" },
+      { property: "og:title", content: "Spice Got Cars Inventory" },
       {
         property: "og:description",
         content:

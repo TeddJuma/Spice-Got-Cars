@@ -5,7 +5,7 @@
 1. Go to [https://supabase.com/dashboard](https://supabase.com/dashboard)
 2. Click **New Project**
 3. Fill in:
-   - **Name**: `maclen-auto-hub`
+   - **Name**: `spice-got-cars`
    - **Database Password**: choose a strong one (save it safely)
    - **Region**: pick the closest (e.g. `af-south-1` for Nairobi)
 4. Wait for provisioning (~2 minutes)

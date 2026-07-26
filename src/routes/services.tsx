@@ -14,13 +14,13 @@ export const Route = createFileRoute("/services")({
   component: ServicesPage,
   head: () => ({
     meta: [
-      { title: "Services - Maclen Auto Limited" },
+      { title: "Services - Spice Got Cars" },
       {
         name: "description",
         content:
-          "Maclen Auto Limited services: car imports, buy & sell used cars, trade-ins, and flexible finance options in Ruaka, Kenya.",
+          "Spice Got Cars services: car imports, buy & sell used cars, trade-ins, and flexible finance options in Ruaka, Kenya.",
       },
-      { property: "og:title", content: "Services - Maclen Auto Limited" },
+      { property: "og:title", content: "Services - Spice Got Cars" },
       {
         property: "og:description",
         content:
@@ -71,7 +71,7 @@ function ServicesPage() {
             Everything you need to <span className="text-brand-accent">own the car</span> you want.
           </h1>
           <p className="mt-4 max-w-2xl text-slate-300">
-            From imports to trade-ins and finance, Maclen Auto Limited is a one-stop shop for buyers across Kenya.
+            From imports to trade-ins and finance, Spice Got Cars is a one-stop shop for buyers across Kenya.
           </p>
         </div>
       </section>
@@ -103,7 +103,7 @@ function ServicesPage() {
 
       <section className="bg-slate-50 px-4 py-16">
         <div className="mx-auto max-w-4xl rounded-2xl bg-brand-navy p-10 text-center text-white md:p-14">
-          <h2 className="text-3xl font-bold md:text-4xl">Talk to a Maclen representative</h2>
+          <h2 className="text-3xl font-bold md:text-4xl">Talk to a Spice Got Cars representative</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-300">
             Call either line, or start a WhatsApp chat and we'll walk you through your options.
           </p>

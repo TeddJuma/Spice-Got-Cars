@@ -10,7 +10,7 @@ export const PHONE_SECONDARY_TEL = "+254721957142";
 export const PHONE_TERTIARY_DISPLAY = "0722 793 535";
 export const PHONE_TERTIARY_TEL = "+254722793535";
 export const PHONE_TEL = PHONE_PRIMARY_TEL;
-export const CONTACT_EMAIL = "maclenautolimited@gmail.com";
+export const CONTACT_EMAIL = "spicegotcars@gmail.com";
 export const RUAKA_ADDRESS = "Limuru Rd, Ruaka";
 
 function formatKes(amount: number) {
@@ -22,10 +22,10 @@ export function buildWaLink(message: string) {
 }
 
 export function buildCarInquiryLink(car: Car) {
-  const msg = `Hi Maclen Autos, I'm interested in the ${car.year} ${car.make} ${car.model} listed at ${formatKes(car.priceKes)} (Ref: ${car.id}). Is it still available?`;
+  const msg = `Hi Spice Got Cars, I'm interested in the ${car.year} ${car.make} ${car.model} listed at ${formatKes(car.priceKes)} (Ref: ${car.id}). Is it still available?`;
   return buildWaLink(msg);
 }
 
 export function buildGeneralInquiryLink() {
-  return buildWaLink("Hi Maclen Autos, I have a question about your vehicles.");
+  return buildWaLink("Hi Spice Got Cars, I have a question about your vehicles.");
 }

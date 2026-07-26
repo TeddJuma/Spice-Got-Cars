@@ -4,17 +4,17 @@ import { ShieldCheck, MapPin, HandshakeIcon, Users } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Maclen Autos - Trusted Car Dealer in Ruaka" },
+      { title: "About Spice Got Cars - Trusted Car Dealer in Ruaka" },
       {
         name: "description",
         content:
-          "Maclen Autos Limited is a Ruaka-based car sales and reselling company serving buyers across Kenya. Verified logbooks, NTSA inspection, and honest service.",
+          "Spice Got Cars is a Ruaka-based car sales and reselling company serving buyers across Kenya. Verified logbooks, NTSA inspection, and honest service.",
       },
-      { property: "og:title", content: "About Maclen Autos" },
+      { property: "og:title", content: "About Spice Got Cars" },
       {
         property: "og:description",
         content:
-          "Learn about Maclen Autos Limited, our Ruaka showroom, and why buyers across Kenya trust us.",
+          "Learn about Spice Got Cars, our Ruaka showroom, and why buyers across Kenya trust us.",
       },
     ],
   }),
@@ -35,7 +35,7 @@ function AboutPage() {
 
       <div className="prose prose-slate max-w-none">
         <p className="text-lg text-slate-700">
-          Maclen Autos Limited is a car sales and reselling company built on a
+          Spice Got Cars is a car sales and reselling company built on a
           simple principle: buyers deserve honest information, fair prices, and
           a car that's ready to drive. From our yard on Limuru Road in Ruaka,
           we deliver vehicles to families and businesses across Kenya.
