@@ -44,11 +44,11 @@ export const Route = createFileRoute("/inventory/")({
   },
   head: () => ({
     meta: [
-      { title: "Inventory - Spice Got Cars Ruaka" },
+      { title: "Inventory - Spice Got Cars Nairobi" },
       {
         name: "description",
         content:
-          "Browse verified cars for sale at Spice Got Cars in Ruaka. Filter by price, year, body type, transmission and fuel type.",
+          "Browse verified cars for sale at Spice Got Cars in Nairobi. Filter by price, year, body type, transmission and fuel type.",
       },
       { property: "og:title", content: "Spice Got Cars Inventory" },
       {

@@ -12,11 +12,11 @@ import { sendNewSubmissionEmail } from "@/lib/email";
 export const Route = createFileRoute("/sell")({
   head: () => ({
     meta: [
-      { title: "Sell Your Car - Spice Got Cars Ruaka" },
+      { title: "Sell Your Car - Spice Got Cars Nairobi" },
       {
         name: "description",
         content:
-          "Sell your car through Spice Got Cars in Ruaka. Submit your details and our team will get back to you with an offer.",
+          "Sell your car through Spice Got Cars in Nairobi. Submit your details and our team will get back to you with an offer.",
       },
       { property: "og:title", content: "Sell Your Car with Spice Got Cars" },
       {
@@ -299,7 +299,7 @@ function SellPage() {
           <input
             {...register("location")}
             className="input"
-            placeholder="Ruaka, Kiambu"
+            placeholder="Kahawa west, Nairobi"
           />
         </Field>
 

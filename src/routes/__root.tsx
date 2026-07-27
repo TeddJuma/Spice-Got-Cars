@@ -81,18 +81,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Spice Got Cars - Trusted Car Sales in Ruaka, Kenya" },
+      { title: "Spice Got Cars - Trusted Car Sales in Nairobi, Kenya" },
       {
         name: "description",
         content:
-          "Buy quality foreign-used and locally used cars in Ruaka, Kenya. Verified logbooks, NTSA inspection, and a WhatsApp-first buying experience.",
+          "Buy quality foreign-used and locally used cars in Nairobi, Kenya. Verified logbooks, NTSA inspection, and a WhatsApp-first buying experience.",
       },
       { name: "author", content: "Spice Got Cars" },
-      { property: "og:title", content: "Spice Got Cars - Ruaka, Kenya" },
+      { property: "og:title", content: "Spice Got Cars - Nairobi, Kenya" },
       {
         property: "og:description",
         content:
-          "Kenya-wide car sales and reselling based in Ruaka. Browse verified inventory or sell your car through Spice Got Cars.",
+          "Kenya-wide car sales and reselling based in Nairobi. Browse verified inventory or sell your car through Spice Got Cars.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

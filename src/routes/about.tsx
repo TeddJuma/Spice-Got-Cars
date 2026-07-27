@@ -4,17 +4,17 @@ import { ShieldCheck, MapPin, HandshakeIcon, Users } from "lucide-react";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About Spice Got Cars - Trusted Car Dealer in Ruaka" },
+      { title: "About Spice Got Cars - Trusted Car Dealer in Nairobi" },
       {
         name: "description",
         content:
-          "Spice Got Cars is a Ruaka-based car sales and reselling company serving buyers across Kenya. Verified logbooks, NTSA inspection, and honest service.",
+          "Spice Got Cars is a Nairobi-based car sales and reselling company serving buyers across Kenya. Verified logbooks, NTSA inspection, and honest service.",
       },
       { property: "og:title", content: "About Spice Got Cars" },
       {
         property: "og:description",
         content:
-          "Learn about Spice Got Cars, our Ruaka showroom, and why buyers across Kenya trust us.",
+          "Learn about Spice Got Cars, our Kahawa west showroom, and why buyers across Kenya trust us.",
       },
     ],
   }),
@@ -37,7 +37,7 @@ function AboutPage() {
         <p className="text-lg text-slate-700">
           Spice Got Cars is a car sales and reselling company built on a
           simple principle: buyers deserve honest information, fair prices, and
-          a car that's ready to drive. From our yard on Limuru Road in Ruaka,
+          a car that's ready to drive. From our yard on Kamiti Road in Kahawa west,
           we deliver vehicles to families and businesses across Kenya.
         </p>
         <p className="mt-4 text-slate-700">
@@ -62,7 +62,7 @@ function AboutPage() {
         <Feature
           icon={<MapPin className="size-5 text-brand-accent" />}
           title="Serving all of Kenya"
-          body="Buyers travel from Nakuru, Kisumu, Mombasa and beyond to view cars at our Ruaka yard."
+          body="Buyers travel from Nakuru, Kisumu, Mombasa and beyond to view cars at our Kahawa west yard."
         />
         <Feature
           icon={<Users className="size-5 text-brand-accent" />}
@@ -76,7 +76,7 @@ function AboutPage() {
           Ready to find your next car?
         </h2>
         <p className="mt-2 text-slate-300">
-          Browse the yard online or come visit us in Ruaka.
+          Browse the yard online or come visit us in Kahawa west.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link

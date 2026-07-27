@@ -33,7 +33,7 @@ export const Route = createFileRoute("/inventory/$id")({
       return { meta: [{ title: "Listing not found - Spice Got Cars" }] };
     }
     const title = `${car.year} ${car.make} ${car.model} - ${formatKes(car.priceKes)} | Spice Got Cars`;
-    const desc = `${car.condition}. ${formatMileage(car.mileageKm)}, ${car.transmission}, ${car.fuelType}. Listed in Ruaka by Spice Got Cars.`;
+    const desc = `${car.condition}. ${formatMileage(car.mileageKm)}, ${car.transmission}, ${car.fuelType}. Listed in Kahawa west by Spice Got Cars.`;
     return {
       meta: [
         { title },

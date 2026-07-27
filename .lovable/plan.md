@@ -1,6 +1,6 @@
 # Spice Got Cars — Build Plan
 
-Build a mobile-first car sales site using the selected "Kenya road ready" direction (navy + emerald on slate, Inter). Demo data now; backend later. Placeholder WhatsApp number (`254700000000`) and Ruaka address that you can swap later.
+Build a mobile-first car sales site using the selected "Kenya road ready" direction (navy + emerald on slate, Inter). Demo data now; backend later. Placeholder WhatsApp number (`254700000000`) and Nairobi address that you can swap later.
 
 ## Routes (TanStack Start file-based)
 
@@ -8,7 +8,7 @@ Build a mobile-first car sales site using the selected "Kenya road ready" direct
 - `/inventory` — Full grid with keyword search, filters (price, year, body, transmission, fuel, condition), sort (price/year/mileage/newest). Filters as a top bar on desktop, collapsible sheet on mobile.
 - `/inventory/$id` — Detail: photo gallery (thumbnails + main), full spec table, description, trust notes (logbook, NTSA), sticky WhatsApp + Call CTAs. Sold state visually locks CTAs.
 - `/sell` — Lead-capture form + 3-step "how it works" + success confirmation state. Floating WhatsApp hidden on this page.
-- `/about` — Company story, Ruaka location, trust points.
+- `/about` — Company story, Nairobi location, trust points.
 - `/contact` — Address, tap-to-call, WhatsApp button, hours, email, lazy-loaded Google Maps iframe embed.
 
 Each route sets its own `head()` metadata; `__root.tsx` gets a real site title/description and social tags.
@@ -63,6 +63,6 @@ Reuse existing shadcn Button/Input/Select/Sheet/Dialog/Form for interactive bits
 
 - Real database, admin CRUD, image uploads, auth.
 - Real WhatsApp Business number / real address (placeholders; swap when provided).
-- Real Google Maps embed src (uses a generic Ruaka `q=` embed URL; swap for exact pin later).
+- Real Google Maps embed src (uses a generic Nairobi `q=` embed URL; swap for exact pin later).
 
 Follow-up: enable Lovable Cloud to move listings into a DB with admin CRUD and image storage, wire the sell form to insert leads, and add an admin gate.

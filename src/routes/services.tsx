@@ -3,10 +3,6 @@ import { Ship, Repeat, Banknote, Handshake, Phone, MessageCircle, Car, FileText 
 import {
   PHONE_PRIMARY_DISPLAY,
   PHONE_PRIMARY_TEL,
-  PHONE_SECONDARY_DISPLAY,
-  PHONE_SECONDARY_TEL,
-  PHONE_TERTIARY_DISPLAY,
-  PHONE_TERTIARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
 
@@ -18,7 +14,7 @@ export const Route = createFileRoute("/services")({
       {
         name: "description",
         content:
-          "Spice Got Cars services: car imports, buy & sell used cars, salvage cars, logbook loans, trade-ins, and flexible finance options in Ruaka, Kenya.",
+          "Spice Got Cars services: car imports, buy & sell used cars, salvage cars, logbook loans, trade-ins, and flexible finance options in Nairobi, Kenya.",
       },
       { property: "og:title", content: "Services - Spice Got Cars" },
       {
@@ -36,7 +32,7 @@ const services = [
   {
     icon: Ship,
     title: "Import Cars",
-    body: "Order your next car directly from Japan, UK, or Dubai. We handle sourcing, shipping, clearing, and NTSA registration end-to-end - you receive a road-ready vehicle at our Ruaka yard.",
+    body: "Order your next car directly from Japan, UK, or Dubai. We handle sourcing, shipping, clearing, and NTSA registration end-to-end - you receive a road-ready vehicle at our Kahawa west yard.",
     points: ["Verified auction sourcing", "Transparent landed pricing", "Duty & clearing handled"],
   },
   {
@@ -125,18 +121,6 @@ function ServicesPage() {
               className="inline-flex items-center gap-2 rounded-lg bg-brand-accent px-6 py-3 font-bold text-white transition-colors hover:bg-brand-accent-hover"
             >
               <Phone className="size-4" /> {PHONE_PRIMARY_DISPLAY}
-            </a>
-            <a
-              href={`tel:${PHONE_SECONDARY_TEL}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 font-bold text-white transition-colors hover:bg-white/10"
-            >
-              <Phone className="size-4" /> {PHONE_SECONDARY_DISPLAY}
-            </a>
-            <a
-              href={`tel:${PHONE_TERTIARY_TEL}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 font-bold text-white transition-colors hover:bg-white/10"
-            >
-              <Phone className="size-4" /> {PHONE_TERTIARY_DISPLAY}
             </a>
             <a
               href={buildGeneralInquiryLink()}

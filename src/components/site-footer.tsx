@@ -4,10 +4,6 @@ import {
   RUAKA_ADDRESS,
   PHONE_PRIMARY_DISPLAY,
   PHONE_PRIMARY_TEL,
-  PHONE_SECONDARY_DISPLAY,
-  PHONE_SECONDARY_TEL,
-  PHONE_TERTIARY_DISPLAY,
-  PHONE_TERTIARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
 import logoAsset from "@/assets/spice-got-cars-logo.png.asset.json";
@@ -20,15 +16,15 @@ export function SiteFooter() {
           <div className="md:col-span-2">
             <h2>Spice Got Cars</h2>
             <p className="mb-6 max-w-sm text-brand-muted">
-              Your trusted automotive partner in Ruaka. We deal in high-quality
+              Your trusted automotive partner in Kahawa west. We deal in high-quality
               foreign-used and clean locally used vehicles for buyers all
-              across Kenya. Import, buy &amp; sell, trade-in, and finance
-              options available.
+              across Kenya. Import, buy &amp; sell, salvage cars, logbook loans,
+              trade-in, and finance options available.
             </p>
             <div className="mb-4 overflow-hidden rounded-xl border border-slate-200">
               <iframe
-                title="Spice Got Cars Ruaka location"
-                src={`https://www.google.com/maps?q=-1.2052640472733878,36.77947581183896&z=16&output=embed`}
+                title="Spice Got Cars Kahawa west location"
+                src={`https://www.google.com/maps?q=Kahawa+west+Kamiti+Road,+Nairobi,+Kenya&z=16&output=embed`}
                 className="h-40 w-full md:w-80"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -87,18 +83,6 @@ export function SiteFooter() {
                 className="block font-bold text-brand-navy"
               >
                 {PHONE_PRIMARY_DISPLAY}
-              </a>
-              <a
-                href={`tel:${PHONE_SECONDARY_TEL}`}
-                className="block font-bold text-brand-navy"
-              >
-                {PHONE_SECONDARY_DISPLAY}
-              </a>
-              <a
-                href={`tel:${PHONE_TERTIARY_TEL}`}
-                className="block font-bold text-brand-navy"
-              >
-                {PHONE_TERTIARY_DISPLAY}
               </a>
               <a
                 href={buildGeneralInquiryLink()}

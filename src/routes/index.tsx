@@ -18,67 +18,80 @@ function Index() {
   return (
     <>
       {/* Hero */}
-      <section className="relative overflow-hidden bg-brand-navy px-4 py-16 text-white md:py-24">
+      <section className="relative overflow-hidden bg-slate-50 px-4 py-12 md:py-20 lg:py-24">
         <div className="mx-auto max-w-7xl">
-          <h1 className="mb-6 max-w-2xl text-4xl leading-[1.05] font-bold md:text-6xl">
-            Find your next drive in{" "}
-            <span className="text-brand-accent">pristine</span> condition.
-          </h1>
-          <p className="mb-8 max-w-xl text-lg text-slate-300">
-            Premium car sales and reselling for buyers across Kenya. Every
-            vehicle in our yard is inspected, logbook-verified, and ready to
-            drive off.
-          </p>
+          <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+            <div className="max-w-xl">
+              <span className="mb-4 inline-block rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-accent">
+                Kahawa west, Nairobi
+              </span>
+              <h1 className="text-4xl leading-[1.1] font-bold text-brand-navy md:text-5xl lg:text-6xl">
+                Find your next drive in{" "}
+                <span className="text-brand-accent">pristine</span> condition.
+              </h1>
+              <p className="mt-6 text-lg text-brand-muted">
+                Quality cars, salvage vehicles, and flexible financing. Every
+                vehicle inspected, logbook-verified, and ready to drive off.
+              </p>
 
-          {/* Quick search */}
-          <form
-            action="/inventory"
-            method="get"
-            className="flex flex-col gap-2 rounded-xl bg-white p-2 text-brand-navy shadow-2xl md:flex-row"
-          >
-            <div className="flex flex-1 items-center gap-2 px-3">
-              <Search className="size-5 text-brand-muted" />
-              <input
-                name="q"
-                type="text"
-                placeholder="Search make or model (e.g. Prado)"
-                className="flex-1 bg-transparent py-3 text-sm placeholder:text-brand-muted focus:outline-none"
+              {/* Quick search */}
+              <form
+                action="/inventory"
+                method="get"
+                className="mt-8 flex flex-col gap-2 rounded-xl bg-white p-2 text-brand-navy shadow-lg md:flex-row"
+              >
+                <div className="flex flex-1 items-center gap-2 px-3">
+                  <Search className="size-5 text-brand-muted" />
+                  <input
+                    name="q"
+                    type="text"
+                    placeholder="Search make or model (e.g. Prado)"
+                    className="flex-1 bg-transparent py-3 text-sm placeholder:text-brand-muted focus:outline-none"
+                  />
+                </div>
+                <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
+                <select
+                  name="body"
+                  defaultValue=""
+                  className="bg-transparent px-3 py-3 text-sm focus:outline-none"
+                >
+                  <option value="">All body types</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Saloon">Saloon</option>
+                  <option value="Hatchback">Hatchback</option>
+                  <option value="Pickup">Pickup</option>
+                  <option value="Wagon">Wagon</option>
+                </select>
+                <button
+                  type="submit"
+                  className="rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover"
+                >
+                  Search cars
+                </button>
+              </form>
+
+              <div className="mt-6 flex flex-wrap gap-3 text-sm">
+                <Link
+                  to="/inventory"
+                  className="rounded-lg border border-slate-200 bg-white px-5 py-2 font-semibold text-brand-navy transition-colors hover:border-brand-accent hover:text-brand-accent"
+                >
+                  Browse all inventory
+                </Link>
+                <Link
+                  to="/sell"
+                  className="rounded-lg bg-brand-navy px-5 py-2 font-semibold text-white transition-colors hover:bg-slate-800"
+                >
+                  Sell your car
+                </Link>
+              </div>
+            </div>
+            <div className="relative">
+              <img
+                src="/Hero Image.jpg"
+                alt="Spice Got Cars showroom"
+                className="w-full rounded-2xl shadow-2xl object-cover aspect-[4/3]"
               />
             </div>
-            <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
-            <select
-              name="body"
-              defaultValue=""
-              className="bg-transparent px-3 py-3 text-sm focus:outline-none"
-            >
-              <option value="">All body types</option>
-              <option value="SUV">SUV</option>
-              <option value="Saloon">Saloon</option>
-              <option value="Hatchback">Hatchback</option>
-              <option value="Pickup">Pickup</option>
-              <option value="Wagon">Wagon</option>
-            </select>
-            <button
-              type="submit"
-              className="rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover"
-            >
-              Search cars
-            </button>
-          </form>
-
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <Link
-              to="/inventory"
-              className="rounded-lg border border-white/20 px-5 py-2 font-semibold transition-colors hover:bg-white/10"
-            >
-              Browse all inventory
-            </Link>
-            <Link
-              to="/sell"
-              className="rounded-lg bg-white px-5 py-2 font-semibold text-brand-navy transition-colors hover:bg-slate-100"
-            >
-              Sell your car
-            </Link>
           </div>
         </div>
       </section>
@@ -99,7 +112,7 @@ function Index() {
           <div>
             <h2 className="text-3xl font-bold">Latest arrivals</h2>
             <p className="text-brand-muted">
-              Hand-picked vehicles fresh in our Ruaka yard.
+               Hand-picked vehicles fresh in our Kahawa west yard.
             </p>
           </div>
           <Link
