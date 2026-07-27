@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Search, SlidersHorizontal, X, Timer, ShieldCheck } from "lucide-react";
 import { AuctionCard } from "@/components/auction-card";
 import { cn } from "@/lib/utils";
-import { auctionItems } from "@/data/auctions";
+import { createClient } from "@/lib/supabase";
 
 const sortOptions = [
   "ending-soon",
@@ -33,7 +33,13 @@ const PAGE_SIZE = 6;
 export const Route = createFileRoute("/auction/")({
   validateSearch: zodValidator(searchSchema),
   loader: async () => {
-    return { auctions: auctionItems };
+    const supabase = createClient();
+    const { data } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("is_auction", true)
+      .order("auction_ends_at", { ascending: true });
+    return { auctions: data ?? [] };
   },
   head: () => ({
     meta: [
@@ -54,9 +60,36 @@ function AuctionPage() {
   const navigate = Route.useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const items = useMemo(() => {
+    return auctions.map((a: any) => ({
+      id: a.id,
+      make: a.make,
+      model: a.model,
+      trim: a.trim,
+      year: a.year,
+      startingBidKes: a.starting_bid_kes ?? a.price_kes,
+      currentBidKes: a.current_bid_kes ?? a.price_kes,
+      negotiable: a.negotiable,
+      mileageKm: a.mileage_km,
+      transmission: a.transmission,
+      fuelType: a.fuel_type,
+      engineSize: a.engine_size,
+      bodyType: a.body_type,
+      condition: a.condition,
+      photos: a.photos ?? [],
+      description: a.description,
+      status: a.status === "sold" ? "sold" : a.status === "reserved" ? "ended" : a.auction_ends_at && new Date(a.auction_ends_at) < new Date() ? "ended" : "active",
+      ntsaInspected: a.ntsa_inspected,
+      logbookVerified: a.logbook_verified,
+      endsAt: a.auction_ends_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      bidCount: a.bid_count ?? 0,
+      highestBidder: a.highest_bidder,
+    }));
+  }, [auctions]);
+
   const results = useMemo(() => {
     const q = search.q.trim().toLowerCase();
-    let out = auctions.filter((item) => {
+    let out = items.filter((item) => {
       if (q) {
         const hay = `${item.make} ${item.model} ${item.trim ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -93,7 +126,7 @@ function AuctionPage() {
         );
     }
     return out;
-  }, [search, auctions]);
+  }, [search, items]);
 
   const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
   const safePage = Math.min(search.page || 1, totalPages);

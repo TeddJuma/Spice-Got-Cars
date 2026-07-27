@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon } from "lucide-react";
+import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon, Gavel } from "lucide-react";
 import {
   fetchSellSubmissions,
   fetchNotifications,
@@ -21,11 +21,12 @@ export const Route = createFileRoute("/admin/")({
   component: AdminIndexPage,
 });
 
-type Tab = "listings" | "submissions" | "notifications";
+type Tab = "listings" | "auctions" | "submissions" | "notifications";
 
 function AdminIndexPage() {
   const [activeTab, setActiveTab] = useState<Tab>("listings");
   const [listings, setListings] = useState<any[]>([]);
+  const [auctions, setAuctions] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<SellSubmission[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -45,14 +46,15 @@ function AdminIndexPage() {
     setNotifications(notificationsData);
     setUnreadCount(unread);
 
-    const { data } = await supabase
+    const { data: listingsData } = await supabase
       .from("listings")
       .select("*")
+      .eq("is_auction", false)
       .order("listed_at", { ascending: false });
 
-    if (data) {
+    if (listingsData) {
       const withPhotos = await Promise.all(
-        data.map(async (listing: any) => {
+        listingsData.map(async (listing: any) => {
           const { data: photos } = await supabase
             .from("listing_photos")
             .select("storage_path")
@@ -63,6 +65,27 @@ function AdminIndexPage() {
       );
       setListings(withPhotos);
     }
+
+    const { data: auctionsData } = await supabase
+      .from("listings")
+      .select("*")
+      .eq("is_auction", true)
+      .order("auction_ends_at", { ascending: true });
+
+    if (auctionsData) {
+      const withPhotos = await Promise.all(
+        auctionsData.map(async (listing: any) => {
+          const { data: photos } = await supabase
+            .from("listing_photos")
+            .select("storage_path")
+            .eq("listing_id", listing.id)
+            .order("sort_order", { ascending: true });
+          return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
+        }),
+      );
+      setAuctions(withPhotos);
+    }
+
     setLoading(false);
   };
 
@@ -84,30 +107,41 @@ function AdminIndexPage() {
     const { error } = await supabase.from("listings").delete().eq("id", id);
     if (!error) {
       setListings((prev) => prev.filter((l) => l.id !== id));
+      setAuctions((prev) => prev.filter((l) => l.id !== id));
     }
   };
 
-  const handleApprove = async (submission: SellSubmission) => {
+  const handleApprove = async (submission: SellSubmission, asAuction = false) => {
+    const insertData: any = {
+      make: submission.make,
+      model: submission.model,
+      year: submission.year,
+      price_kes: submission.asking_price,
+      negotiable: false,
+      mileage_km: submission.mileage_km,
+      transmission: "Automatic",
+      fuel_type: "Petrol",
+      engine_size: "Unknown",
+      body_type: "Other",
+      condition: submission.condition,
+      description: submission.notes || `Customer submission: ${submission.make} ${submission.model}`,
+      status: "available",
+      ntsa_inspected: false,
+      logbook_verified: false,
+      listed_at: new Date().toISOString().split("T")[0],
+      is_auction: asAuction,
+    };
+
+    if (asAuction) {
+      insertData.auction_ends_at = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      insertData.starting_bid_kes = submission.asking_price;
+      insertData.current_bid_kes = submission.asking_price;
+      insertData.bid_count = 0;
+    }
+
     const { data: listing, error } = await supabase
       .from("listings")
-      .insert({
-        make: submission.make,
-        model: submission.model,
-        year: submission.year,
-        price_kes: submission.asking_price,
-        negotiable: false,
-        mileage_km: submission.mileage_km,
-        transmission: "Automatic",
-        fuel_type: "Petrol",
-        engine_size: "Unknown",
-        body_type: "Other",
-        condition: submission.condition,
-        description: submission.notes || `Customer submission: ${submission.make} ${submission.model}`,
-        status: "available",
-        ntsa_inspected: false,
-        logbook_verified: false,
-        listed_at: new Date().toISOString().split("T")[0],
-      })
+      .insert(insertData)
       .select("*")
       .single();
 
@@ -128,10 +162,10 @@ function AdminIndexPage() {
     await updateSellSubmissionStatus(submission.id, "approved", supabase);
     await supabase.from("notifications").insert({
       type: "submission_approved",
-      message: `Approved sell submission: ${submission.year} ${submission.make} ${submission.model}`,
+      message: `Approved sell submission: ${submission.year} ${submission.make} ${submission.model}${asAuction ? " (Auction)" : ""}`,
     });
 
-    toast.success("Submission approved and listed.");
+    toast.success(asAuction ? "Submission approved as auction listing." : "Submission approved and listed.");
     loadData();
   };
 
@@ -203,6 +237,13 @@ function AdminIndexPage() {
             Approved Listings ({listings.length})
           </Button>
           <Button
+            variant={activeTab === "auctions" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveTab("auctions")}
+          >
+            Auctions ({auctions.length})
+          </Button>
+          <Button
             variant={activeTab === "submissions" ? "default" : "outline"}
             size="sm"
             onClick={() => setActiveTab("submissions")}
@@ -258,6 +299,24 @@ function AdminIndexPage() {
             </div>
           ) : (
             filteredListings.map((listing) => (
+              <AdminListingCard
+                key={listing.id}
+                listing={listing}
+                onDelete={handleDelete}
+              />
+            ))
+          )}
+        </div>
+      )}
+
+      {activeTab === "auctions" && (
+        <div className="space-y-3">
+          {auctions.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
+              <p className="text-brand-muted">No auction listings yet.</p>
+            </div>
+          ) : (
+            auctions.map((listing) => (
               <AdminListingCard
                 key={listing.id}
                 listing={listing}
@@ -451,8 +510,15 @@ function SubmissionCard({
                   <MessageCircle className="mr-1 size-4" /> WhatsApp
                 </a>
               </Button>
-              <Button size="sm" onClick={() => onApprove(submission)}>
-                <Check className="mr-1 size-4" /> Approve
+              <Button size="sm" onClick={() => onApprove(submission, false)}>
+                <Check className="mr-1 size-4" /> Approve as Listing
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => onApprove(submission, true)}
+              >
+                <Gavel className="mr-1 size-4" /> Send to Auction
               </Button>
               <Button
                 variant="destructive"
@@ -591,6 +657,7 @@ function AdminListingCard({
           </p>
           <p className="truncate text-sm text-brand-muted">
             {price} · {listing.transmission} · {listing.body_type}
+            {listing.is_auction && " · Auction"}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -599,6 +666,11 @@ function AdminListingCard({
           >
             {listing.status}
           </Badge>
+          {listing.is_auction && (
+            <Badge variant="outline" className="border-amber-500 text-amber-700">
+              Auction
+            </Badge>
+          )}
           <ChevronDown
             className={`size-5 text-brand-muted transition-transform ${
               expanded ? "rotate-180" : ""
@@ -630,6 +702,16 @@ function AdminListingCard({
             <Detail label="Body type" value={listing.body_type} />
             <Detail label="Condition" value={listing.condition} />
             <Detail label="Listed" value={String(listing.listed_at)} />
+            {listing.is_auction && (
+              <Detail
+                label="Bid Ends By"
+                value={
+                  listing.auction_ends_at
+                    ? new Date(listing.auction_ends_at).toLocaleString()
+                    : "—"
+                }
+              />
+            )}
           </dl>
 
           {listing.description && (

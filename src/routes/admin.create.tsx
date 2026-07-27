@@ -41,6 +41,8 @@ function CreateListingPage() {
     status: "available" as "available" | "reserved" | "sold",
     ntsaInspected: false,
     logbookVerified: false,
+    isAuction: false,
+    auctionEndsAt: "",
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
@@ -128,6 +130,8 @@ function CreateListingPage() {
           ntsa_inspected: form.ntsaInspected,
           logbook_verified: form.logbookVerified,
           listed_at: new Date().toISOString().split("T")[0],
+          is_auction: form.isAuction,
+          auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
         })
         .select()
         .single();
@@ -317,7 +321,26 @@ function CreateListingPage() {
             />
             <Label className="!mt-0">Logbook verified</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={form.isAuction}
+              onCheckedChange={(v) => updateField("isAuction", v)}
+            />
+            <Label className="!mt-0">Auction listing</Label>
+          </div>
         </div>
+
+        {form.isAuction && (
+          <div>
+            <Label>Bid Ends By</Label>
+            <Input
+              type="datetime-local"
+              required={form.isAuction}
+              value={form.auctionEndsAt}
+              onChange={(e) => updateField("auctionEndsAt", e.target.value)}
+            />
+          </div>
+        )}
 
         <div>
           <Label>Photos</Label>
