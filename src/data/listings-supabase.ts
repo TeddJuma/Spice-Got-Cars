@@ -4,6 +4,8 @@ import { listings as fallbackListings, type Car } from "./listings";
 export async function fetchListings(): Promise<Car[]> {
   try {
     const supabase = createServerClient();
+    if (!supabase) return fallbackListings;
+
     const { data, error } = await supabase
       .from("listings")
       .select("*")
@@ -42,6 +44,12 @@ export async function fetchListings(): Promise<Car[]> {
           ntsaInspected: row.ntsa_inspected,
           logbookVerified: row.logbook_verified,
           listedAt: row.listed_at,
+          isAuction: row.is_auction,
+          auctionEndsAt: row.auction_ends_at,
+          startingBidKes: row.starting_bid_kes,
+          currentBidKes: row.current_bid_kes,
+          bidCount: row.bid_count,
+          highestBidder: row.highest_bidder,
         };
       })
     );
@@ -56,6 +64,8 @@ export async function fetchListings(): Promise<Car[]> {
 export async function fetchListingById(id: string): Promise<Car | null> {
   try {
     const supabase = createServerClient();
+    if (!supabase) return null;
+
     const { data, error } = await supabase
       .from("listings")
       .select("*")

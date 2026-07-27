@@ -44,8 +44,8 @@ export const Route = createFileRoute("/inventory/$id")({
         { name: "description", content: desc },
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
-        { property: "og:image", content: car.photos[0] },
-        { name: "twitter:image", content: car.photos[0] },
+        { property: "og:image", content: car.photos?.[0] || "" },
+        { name: "twitter:image", content: car.photos?.[0] || "" },
       ],
     };
   },
@@ -152,7 +152,7 @@ function CarDetailPage() {
             )}
           >
             <img
-              src={car.photos[activePhoto]}
+              src={car.photos[activePhoto] || car.photos?.[0] || ""}
               alt={`${car.year} ${car.make} ${car.model}`}
               width={1280}
               height={960}

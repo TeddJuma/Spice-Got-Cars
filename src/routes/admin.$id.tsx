@@ -89,7 +89,7 @@ function EditListingPage() {
     ntsaInspected: listing.ntsa_inspected,
     logbookVerified: listing.logbook_verified,
     isAuction: listing.is_auction,
-    auctionEndsAt: listing.auction_ends_at ? new Date(listing.auction_ends_at).slice(0, 16) : "",
+    auctionEndsAt: listing.auction_ends_at ? new Date(listing.auction_ends_at).toISOString().slice(0, 16) : "",
     startingBidKes: listing.starting_bid_kes ?? listing.price_kes,
     currentBidKes: listing.current_bid_kes ?? listing.price_kes,
   });

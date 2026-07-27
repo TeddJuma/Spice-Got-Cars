@@ -15,8 +15,7 @@ import {
   updateSellSubmissionStatus,
 } from "@/data/sell-submissions";
 import type { SellSubmission, Notification } from "@/data/sell-submissions";
-import { listings as demoListings } from "@/data/listings";
-import { auctionItems as demoAuctions } from "@/data/auctions";
+import { formatKes } from "@/data/listings";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/")({
@@ -65,7 +64,8 @@ function AdminIndexPage() {
           return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
         }),
       );
-      setListings(withPhotos);
+      const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
+      setListings(unique);
     }
 
     const { data: auctionsData } = await supabase
@@ -85,81 +85,11 @@ function AdminIndexPage() {
           return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
         }),
       );
-      setAuctions(withPhotos);
+      const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
+      setAuctions(unique);
     }
 
     setLoading(false);
-  };
-
-  const seedDemoData = async () => {
-    if (!confirm("This will insert demo listings and auctions into your database. Continue?")) return;
-    setLoading(true);
-
-    for (const car of demoListings) {
-      const { error } = await supabase
-        .from("listings")
-        .insert({
-          make: car.make,
-          model: car.model,
-          trim: car.trim || null,
-          year: car.year,
-          price_kes: car.priceKes,
-          negotiable: car.negotiable,
-          mileage_km: car.mileageKm,
-          transmission: car.transmission,
-          fuel_type: car.fuelType,
-          engine_size: car.engineSize,
-          body_type: car.bodyType,
-          condition: car.condition,
-          description: car.description,
-          status: car.status,
-          ntsa_inspected: car.ntsaInspected,
-          logbook_verified: car.logbookVerified,
-          listed_at: car.listedAt,
-          is_auction: false,
-        });
-
-      if (error) {
-        console.error("Failed to insert listing:", car.id, error);
-      }
-    }
-
-    for (const item of demoAuctions) {
-      const { error } = await supabase
-        .from("listings")
-        .insert({
-          make: item.make,
-          model: item.model,
-          trim: item.trim || null,
-          year: item.year,
-          price_kes: item.startingBidKes,
-          negotiable: item.negotiable,
-          mileage_km: item.mileageKm,
-          transmission: item.transmission,
-          fuel_type: item.fuelType,
-          engine_size: item.engineSize,
-          body_type: item.bodyType,
-          condition: item.condition,
-          description: item.description,
-          status: item.status === "ended" ? "available" : item.status === "sold" ? "sold" : "available",
-          ntsa_inspected: item.ntsaInspected,
-          logbook_verified: item.logbookVerified,
-          listed_at: new Date().toISOString().split("T")[0],
-          is_auction: true,
-          auction_ends_at: item.endsAt,
-          starting_bid_kes: item.startingBidKes,
-          current_bid_kes: item.currentBidKes,
-          bid_count: item.bidCount,
-          highest_bidder: item.highestBidder || null,
-        });
-
-      if (error) {
-        console.error("Failed to insert auction:", item.id, error);
-      }
-    }
-
-    toast.success("Demo data imported!");
-    loadData();
   };
 
   useEffect(() => {
@@ -361,9 +291,6 @@ function AdminIndexPage() {
               Mark all read
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={seedDemoData}>
-            Seed demo data
-          </Button>
         </div>
       </div>
 
@@ -700,17 +627,39 @@ function AdminListingCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [bids, setBids] = useState<any[]>([]);
+  const [loadingBids, setLoadingBids] = useState(false);
   const photos: string[] = listing.photos ?? [];
   const price =
     listing.price_kes != null
       ? `KES ${Number(listing.price_kes).toLocaleString()}`
       : "—";
+  const cardSupabase = createClient();
+
+  const loadBids = async () => {
+    if (!listing.is_auction || !cardSupabase) return;
+    setLoadingBids(true);
+    const { data } = await cardSupabase
+      .from("auction_bids")
+      .select("*")
+      .eq("listing_id", listing.id)
+      .order("created_at", { ascending: false });
+    setBids(data || []);
+    setLoadingBids(false);
+  };
+
+  const handleExpand = async () => {
+    setExpanded((e) => !e);
+    if (!expanded && listing.is_auction) {
+      await loadBids();
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
       <button
         type="button"
-        onClick={() => setExpanded((e) => !e)}
+        onClick={handleExpand}
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-slate-50"
       >
         {photos[0] ? (
@@ -822,6 +771,38 @@ function AdminListingCard({
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+
+          {listing.is_auction && (
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">
+                Bidders ({bids.length})
+              </p>
+              {loadingBids ? (
+                <p className="text-sm text-brand-muted">Loading bids...</p>
+              ) : bids.length === 0 ? (
+                <p className="text-sm text-brand-muted">No bids yet.</p>
+              ) : (
+                <div className="space-y-2">
+                  {bids.map((bid) => (
+                    <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
+                        <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
+                      </div>
+                      <div className="mt-1 text-brand-muted">
+                        {bid.bidder_name} · {bid.bidder_phone} · ID: {bid.national_id}
+                      </div>
+                      {bid.payment_reference && (
+                        <div className="mt-1 text-xs text-brand-muted">
+                          Ref: {bid.payment_reference}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

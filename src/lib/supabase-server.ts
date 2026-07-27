@@ -13,9 +13,7 @@ export const supabaseAnonKey =
 
 export function createServerClient() {
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error(
-      "Missing Supabase configuration. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY.",
-    );
+    return null;
   }
   return createClient(supabaseUrl, supabaseAnonKey, {
     auth: { persistSession: false },
