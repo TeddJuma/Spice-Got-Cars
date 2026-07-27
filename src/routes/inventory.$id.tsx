@@ -75,6 +75,7 @@ export const Route = createFileRoute("/inventory/$id")({
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="text-2xl font-bold">Something went wrong</h1>
+        <p className="mt-2 text-brand-muted">{error?.message || "Unknown error"}</p>
         <button
           onClick={reset}
           className="mt-4 rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
@@ -91,6 +92,22 @@ function CarDetailPage() {
   const { car } = Route.useLoaderData();
   const [activePhoto, setActivePhoto] = useState(0);
   const [timeLeft, setTimeLeft] = useState("");
+
+  if (!car) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="text-3xl font-bold">Listing not found</h1>
+        <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
+        <Link
+          to="/inventory"
+          className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+        >
+          Back to inventory
+        </Link>
+      </div>
+    );
+  }
+
   const isSold = car.status === "sold";
   const isReserved = car.status === "reserved";
   const isAuction = car.isAuction && !isSold;
