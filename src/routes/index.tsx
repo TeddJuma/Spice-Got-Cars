@@ -27,72 +27,69 @@ function Index() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
-        <div className="relative z-10 mx-auto max-w-7xl w-full">
-          <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="max-w-2xl">
-              <span className="mb-4 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
-                Kahawa west, Nairobi
-              </span>
-              <h1 className="text-4xl leading-[1.1] font-bold text-white md:text-5xl lg:text-7xl">
-                Find your next drive in{" "}
-                <span className="text-brand-accent">pristine</span> condition.
-              </h1>
-              <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-200 md:mx-0">
-                Quality cars, salvage vehicles, and flexible financing. Every
-                vehicle inspected, logbook-verified, and ready to drive off.
-              </p>
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
+          <span className="mb-4 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+            Kahawa west, Nairobi
+          </span>
+          <h1 className="text-4xl leading-[1.1] font-bold text-white md:text-5xl lg:text-7xl">
+            Find your next drive in{" "}
+            <span className="text-brand-accent">pristine</span> condition.
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-200">
+            Quality cars, salvage vehicles, and flexible financing. Every
+            vehicle inspected, logbook-verified, and ready to drive off.
+          </p>
+
+          {/* Quick search */}
+          <form
+            action="/inventory"
+            method="get"
+            className="mx-auto mt-10 flex max-w-3xl rounded-2xl bg-white/95 p-2 text-brand-navy shadow-2xl backdrop-blur-sm"
+          >
+            <div className="flex flex-1 items-center gap-2 px-3">
+              <Search className="size-5 text-brand-muted" />
+              <input
+                name="q"
+                type="text"
+                placeholder="Search make or model (e.g. Prado)"
+                className="flex-1 bg-transparent py-3 text-sm placeholder:text-brand-muted focus:outline-none"
+              />
             </div>
-            <div className="w-full md:w-auto">
-              {/* Quick search */}
-              <form
-                action="/inventory"
-                method="get"
-                className="rounded-2xl bg-white/95 p-2 text-brand-navy shadow-2xl backdrop-blur-sm md:flex-row"
-              >
-                <div className="flex flex-1 items-center gap-2 px-3">
-                  <Search className="size-5 text-brand-muted" />
-                  <input
-                    name="q"
-                    type="text"
-                    placeholder="Search make or model (e.g. Prado)"
-                    className="flex-1 bg-transparent py-3 text-sm placeholder:text-brand-muted focus:outline-none"
-                  />
-                </div>
-                <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
-                <select
-                  name="body"
-                  defaultValue=""
-                  className="bg-transparent px-3 py-3 text-sm focus:outline-none"
-                >
-                  <option value="">All body types</option>
-                  <option value="SUV">SUV</option>
-                  <option value="Saloon">Saloon</option>
-                  <option value="Hatchback">Hatchback</option>
-                  <option value="Pickup">Pickup</option>
-                  <option value="Wagon">Wagon</option>
-                </select>
-                <button
-                  type="submit"
-                  className="w-full rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover md:w-auto"
-                >
-                  Search cars
-                </button>
-              </form>
-              <div className="mt-3 flex flex-wrap justify-end gap-3 text-sm">
-                <Link
-                  to="/inventory"
-                  className="rounded-lg border border-white/30 bg-white/10 px-5 py-2 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
-                >
-                  Browse all inventory
-                </Link>
-                <Link
-                  to="/sell"
-                  className="rounded-lg bg-white px-5 py-2 font-semibold text-brand-navy transition-colors hover:bg-slate-100"
-                >
-                  Sell your car
-                </Link>
-              </div>
-            </div>
+            <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
+            <select
+              name="body"
+              defaultValue=""
+              className="bg-transparent px-3 py-3 text-sm focus:outline-none"
+            >
+              <option value="">All body types</option>
+              <option value="SUV">SUV</option>
+              <option value="Saloon">Saloon</option>
+              <option value="Hatchback">Hatchback</option>
+              <option value="Pickup">Pickup</option>
+              <option value="Wagon">Wagon</option>
+            </select>
+            <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
+            <button
+              type="submit"
+              className="rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover"
+            >
+              Search cars
+            </button>
+          </form>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
+            <Link
+              to="/inventory"
+              className="rounded-lg border border-white/30 bg-white/10 px-5 py-2 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              Browse all inventory
+            </Link>
+            <Link
+              to="/sell"
+              className="rounded-lg bg-white px-5 py-2 font-semibold text-brand-navy transition-colors hover:bg-slate-100"
+            >
+              Sell your car
+            </Link>
           </div>
         </div>
       </section>
