@@ -19,7 +19,7 @@ serve(async (req) => {
 
     const data = await resend.emails.send({
       from: "Spice Got Cars <noreply@spicegotcars.co.ke>",
-      to: [Deno.env.get("OWNER_EMAIL") || "info@spicegotcars.co.ke"],
+      to: [Deno.env.get("OWNER_EMAIL") || "spicegotcars@gmail.com"],
       subject: `New Sell Submission: ${year} ${make} ${model}`,
       html: `
         <h2>New Car Sell Submission</h2>

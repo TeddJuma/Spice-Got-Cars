@@ -1,5 +1,5 @@
 const RESEND_API_KEY = import.meta.env.VITE_RESEND_API_KEY;
-const OWNER_EMAIL = import.meta.env.VITE_OWNER_EMAIL || "info@spicegotcars.co.ke";
+const OWNER_EMAIL = import.meta.env.VITE_OWNER_EMAIL || "spicegotcars@gmail.com";
 
 export async function sendNewSubmissionEmail(data: {
   make: string;

@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Ship, Repeat, Banknote, Handshake, Phone, MessageCircle } from "lucide-react";
+import { Ship, Repeat, Banknote, Handshake, Phone, MessageCircle, Car, FileText } from "lucide-react";
 import {
   PHONE_PRIMARY_DISPLAY,
   PHONE_PRIMARY_TEL,
@@ -18,13 +18,13 @@ export const Route = createFileRoute("/services")({
       {
         name: "description",
         content:
-          "Spice Got Cars services: car imports, buy & sell used cars, trade-ins, and flexible finance options in Ruaka, Kenya.",
+          "Spice Got Cars services: car imports, buy & sell used cars, salvage cars, logbook loans, trade-ins, and flexible finance options in Ruaka, Kenya.",
       },
       { property: "og:title", content: "Services - Spice Got Cars" },
       {
         property: "og:description",
         content:
-          "Import cars, buy & sell used cars, trade-in, and finance options across Kenya.",
+          "Import cars, buy & sell used cars, salvage cars, logbook loans, trade-in, and finance options across Kenya.",
       },
       { property: "og:url", content: "/services" },
     ],
@@ -56,6 +56,18 @@ const services = [
     title: "Finance Options",
     body: "Drive off with flexible financing through our partner banks and SACCOs. We help structure asset finance with competitive rates and short approval timelines.",
     points: ["Partner banks & SACCOs", "Up to 50% financing", "Approvals in days, not weeks"],
+  },
+  {
+    icon: Car,
+    title: "Salvage Cars",
+    body: "Quality salvage vehicles inspected and cleared for the road. We offer transparent condition reports and value pricing on salvage units ready for repair or rebuild.",
+    points: ["Inspected salvage units", "Transparent condition reports", "Great value pricing"],
+  },
+  {
+    icon: FileText,
+    title: "Logbook Loans",
+    body: "Access fast financing against your vehicle's logbook. Competitive rates with flexible repayment terms - keep using your car while you repay.",
+    points: ["Quick processing", "Competitive rates", "Keep driving your car"],
   },
 ];
 
