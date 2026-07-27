@@ -28,12 +28,12 @@ function Index() {
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         </div>
         <div className="relative z-10 mx-auto max-w-4xl text-center">
-          <span className="mb-4 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
+          {/* <span className="mb-4 inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-white backdrop-blur-sm">
             Kahawa west, Nairobi
-          </span>
+          </span> */}
           <h1 className="text-4xl leading-[1.1] font-bold text-white md:text-5xl lg:text-7xl">
-            Find your next drive in{" "}
-            <span className="text-brand-accent">pristine</span> condition.
+            Find a car that serves your needs{" "}
+            <span className="text-brand-accent">today</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-200">
             Quality cars, salvage vehicles, and flexible financing. Every

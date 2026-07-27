@@ -15,6 +15,8 @@ import {
   updateSellSubmissionStatus,
 } from "@/data/sell-submissions";
 import type { SellSubmission, Notification } from "@/data/sell-submissions";
+import { listings as demoListings } from "@/data/listings";
+import { auctionItems as demoAuctions } from "@/data/auctions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/")({
@@ -87,6 +89,80 @@ function AdminIndexPage() {
     }
 
     setLoading(false);
+  };
+
+  const seedDemoData = async () => {
+    if (!confirm("This will insert demo listings and auctions into your database. Continue?")) return;
+    setLoading(true);
+
+    for (const car of demoListings) {
+      const { data: listing, error } = await supabase
+        .from("listings")
+        .insert({
+          make: car.make,
+          model: car.model,
+          trim: car.trim || null,
+          year: car.year,
+          price_kes: car.priceKes,
+          negotiable: car.negotiable,
+          mileage_km: car.mileageKm,
+          transmission: car.transmission,
+          fuel_type: car.fuelType,
+          engine_size: car.engineSize,
+          body_type: car.bodyType,
+          condition: car.condition,
+          description: car.description,
+          status: car.status,
+          ntsa_inspected: car.ntsaInspected,
+          logbook_verified: car.logbookVerified,
+          listed_at: car.listedAt,
+          is_auction: false,
+        })
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("Failed to insert listing:", car.id, error);
+        continue;
+      }
+    }
+
+    for (const item of demoAuctions) {
+      const { error } = await supabase
+        .from("listings")
+        .insert({
+          make: item.make,
+          model: item.model,
+          trim: item.trim || null,
+          year: item.year,
+          price_kes: item.startingBidKes,
+          negotiable: item.negotiable,
+          mileage_km: item.mileageKm,
+          transmission: item.transmission,
+          fuel_type: item.fuelType,
+          engine_size: item.engineSize,
+          body_type: item.bodyType,
+          condition: item.condition,
+          description: item.description,
+          status: item.status === "ended" ? "available" : item.status === "sold" ? "sold" : "available",
+          ntsa_inspected: item.ntsaInspected,
+          logbook_verified: item.logbookVerified,
+          listed_at: new Date().toISOString().split("T")[0],
+          is_auction: true,
+          auction_ends_at: item.endsAt,
+          starting_bid_kes: item.startingBidKes,
+          current_bid_kes: item.currentBidKes,
+          bid_count: item.bidCount,
+          highest_bidder: item.highestBidder || null,
+        });
+
+      if (error) {
+        console.error("Failed to insert auction:", item.id, error);
+      }
+    }
+
+    toast.success("Demo data imported!");
+    loadData();
   };
 
   useEffect(() => {
@@ -288,6 +364,9 @@ function AdminIndexPage() {
               Mark all read
             </Button>
           )}
+          <Button variant="outline" size="sm" onClick={seedDemoData}>
+            Seed demo data
+          </Button>
         </div>
       </div>
 
