@@ -96,7 +96,7 @@ function AdminIndexPage() {
     setLoading(true);
 
     for (const car of demoListings) {
-      const { data: listing, error } = await supabase
+      const { error } = await supabase
         .from("listings")
         .insert({
           make: car.make,
@@ -117,13 +117,10 @@ function AdminIndexPage() {
           logbook_verified: car.logbookVerified,
           listed_at: car.listedAt,
           is_auction: false,
-        })
-        .select("*")
-        .single();
+        });
 
       if (error) {
         console.error("Failed to insert listing:", car.id, error);
-        continue;
       }
     }
 

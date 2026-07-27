@@ -88,6 +88,10 @@ function EditListingPage() {
     status: listing.status as "available" | "reserved" | "sold",
     ntsaInspected: listing.ntsa_inspected,
     logbookVerified: listing.logbook_verified,
+    isAuction: listing.is_auction,
+    auctionEndsAt: listing.auction_ends_at ? new Date(listing.auction_ends_at).slice(0, 16) : "",
+    startingBidKes: listing.starting_bid_kes ?? listing.price_kes,
+    currentBidKes: listing.current_bid_kes ?? listing.price_kes,
   });
 
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
@@ -157,6 +161,10 @@ function EditListingPage() {
           status: form.status,
           ntsa_inspected: form.ntsaInspected,
           logbook_verified: form.logbookVerified,
+          is_auction: form.isAuction,
+          auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
+          starting_bid_kes: form.isAuction ? form.startingBidKes : null,
+          current_bid_kes: form.isAuction ? form.currentBidKes : null,
         })
         .eq("id", listing.id);
 
@@ -363,7 +371,46 @@ function EditListingPage() {
             />
             <Label className="!mt-0">Logbook verified</Label>
           </div>
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={form.isAuction}
+              onCheckedChange={(v) => updateField("isAuction", v)}
+            />
+            <Label className="!mt-0">Auction listing</Label>
+          </div>
         </div>
+
+        {form.isAuction && (
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <Label>Bid Ends By</Label>
+              <Input
+                type="datetime-local"
+                required={form.isAuction}
+                value={form.auctionEndsAt}
+                onChange={(e) => updateField("auctionEndsAt", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label>Starting bid (KES)</Label>
+              <Input
+                type="number"
+                required={form.isAuction}
+                value={form.startingBidKes}
+                onChange={(e) => updateField("startingBidKes", parseInt(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label>Current bid (KES)</Label>
+              <Input
+                type="number"
+                required={form.isAuction}
+                value={form.currentBidKes}
+                onChange={(e) => updateField("currentBidKes", parseInt(e.target.value))}
+              />
+            </div>
+          </div>
+        )}
 
         <div>
           <Label>Photos</Label>

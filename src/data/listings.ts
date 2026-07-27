@@ -39,6 +39,12 @@ export interface Car {
   ntsaInspected: boolean;
   logbookVerified: boolean;
   listedAt: string; // ISO date
+  isAuction?: boolean;
+  auctionEndsAt?: string;
+  startingBidKes?: number;
+  currentBidKes?: number;
+  bidCount?: number;
+  highestBidder?: string;
 }
 
 export const listings: Car[] = [

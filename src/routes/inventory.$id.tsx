@@ -11,11 +11,15 @@ import {
   Phone,
   MessageCircle,
   ArrowLeft,
+  Timer,
+  CheckCircle2,
 } from "lucide-react";
 import { getCarById, formatKes, formatMileage } from "@/data/listings";
 import { fetchListingById } from "@/data/listings-supabase";
 import { buildCarInquiryLink, PHONE_TEL, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/inventory/$id")({
   loader: async ({ params }) => {
@@ -79,8 +83,37 @@ export const Route = createFileRoute("/inventory/$id")({
 function CarDetailPage() {
   const { car } = Route.useLoaderData();
   const [activePhoto, setActivePhoto] = useState(0);
+  const [timeLeft, setTimeLeft] = useState("");
   const isSold = car.status === "sold";
   const isReserved = car.status === "reserved";
+  const isAuction = car.isAuction && !isSold;
+  const supabase = createClient();
+
+  useEffect(() => {
+    if (!isAuction || !car.auctionEndsAt) return;
+    const tick = () => {
+      const now = new Date();
+      const end = new Date(car.auctionEndsAt!);
+      const diff = end.getTime() - now.getTime();
+      if (diff <= 0) {
+        setTimeLeft("Ended");
+        return;
+      }
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft(
+        `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`,
+      );
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [isAuction, car.auctionEndsAt]);
+
+  const displayPrice = isAuction
+    ? car.currentBidKes ?? car.startingBidKes ?? car.priceKes
+    : car.priceKes;
 
   const specs: [string, string][] = [
     ["Year", String(car.year)],
@@ -90,6 +123,13 @@ function CarDetailPage() {
     ["Engine", car.engineSize],
     ["Body type", car.bodyType],
     ["Condition", car.condition],
+    ...(isAuction
+      ? [
+          ["Starting bid", formatKes(car.startingBidKes ?? car.priceKes)],
+          ["Current bid", formatKes(car.currentBidKes ?? car.priceKes)],
+          ["Bids", String(car.bidCount ?? 0)],
+        ]
+      : []),
   ];
 
   return (
@@ -221,19 +261,35 @@ function CarDetailPage() {
               )}
             </h1>
 
-            <div
-              className={cn(
-                "mt-4 mb-6 text-3xl font-black",
-                isSold ? "text-brand-muted" : "text-brand-navy",
-              )}
-            >
-              {formatKes(car.priceKes)}{" "}
-              {car.negotiable && !isSold && (
-                <span className="text-sm font-normal text-brand-muted">
-                  Negotiable
-                </span>
-              )}
-            </div>
+            {isAuction ? (
+              <div className="mt-4 mb-6 space-y-3">
+                <div className="flex items-center gap-2 text-amber-700">
+                  <Timer className="size-5" />
+                  <span className="text-sm font-semibold">Time left:</span>
+                  <span className="text-lg font-black">{timeLeft || "Loading..."}</span>
+                </div>
+                <div className="text-3xl font-black text-brand-navy">
+                  {formatKes(displayPrice)}
+                </div>
+                <div className="text-sm text-brand-muted">
+                  {car.bidCount ?? 0} bids · Highest: {car.highestBidder ?? "No bids yet"}
+                </div>
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "mt-4 mb-6 text-3xl font-black",
+                  isSold ? "text-brand-muted" : "text-brand-navy",
+                )}
+              >
+                {formatKes(car.priceKes)}{" "}
+                {car.negotiable && !isSold && (
+                  <span className="text-sm font-normal text-brand-muted">
+                    Negotiable
+                  </span>
+                )}
+              </div>
+            )}
 
             <div className="mb-6 grid grid-cols-2 gap-y-3 text-sm text-brand-muted">
               <QuickSpec icon={<Calendar className="size-4" />} label={String(car.year)} />
@@ -252,6 +308,8 @@ function CarDetailPage() {
                 </Link>
                 .
               </div>
+            ) : isAuction ? (
+              <AuctionBidForm listingId={car.id} currentBid={car.currentBidKes ?? car.startingBidKes ?? car.priceKes} />
             ) : (
               <div className="space-y-2">
                 <a
@@ -275,6 +333,43 @@ function CarDetailPage() {
           </div>
         </aside>
       </div>
+
+      {isAuction && (
+        <section className="mt-12 rounded-2xl border border-slate-200 bg-white p-8 md:p-12">
+          <div className="grid gap-8 md:grid-cols-2 md:items-center">
+            <div>
+              <h2 className="text-2xl font-bold md:text-3xl">Auction terms and conditions</h2>
+              <div className="mt-4 space-y-3 text-sm text-brand-muted">
+                <p>
+                  <span className="font-bold text-brand-navy">Deposit:</span> A refundable deposit of <span className="font-bold">KES 5,000</span> is required to place a bid.
+                </p>
+                <p>
+                  <span className="font-bold text-brand-navy">Payment:</span> Winners must complete full payment within <span className="font-bold">48 hours</span> of auction close.
+                </p>
+                <p>
+                  <span className="font-bold text-brand-navy">Refunds:</span> Non-winning bidders receive full deposit refunds within 3 business days.
+                </p>
+                <p>
+                  <span className="font-bold text-brand-navy">Bidding:</span> All bids are binding. By placing a bid, you agree to purchase the vehicle at your bid price if you are the highest bidder.
+                </p>
+              </div>
+              <Link
+                to="/terms"
+                className="mt-6 inline-block rounded-lg bg-brand-navy px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+              >
+                Read full terms and conditions
+              </Link>
+            </div>
+            <div className="overflow-hidden rounded-2xl">
+              <img
+                src="/Hero Image.jpg"
+                alt="Auction terms"
+                className="aspect-[4/3] w-full object-cover"
+              />
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -305,5 +400,129 @@ function TrustLine({ ok, label }: { ok: boolean; label: string }) {
       />
       <span className={ok ? "text-slate-700" : "text-brand-muted"}>{label}</span>
     </li>
+  );
+}
+
+function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentBid: number }) {
+  const [amount, setAmount] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nationalId, setNationalId] = useState("");
+  const [paymentRef, setPaymentRef] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const supabase = createClient();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!terms) {
+      toast.error("Please accept the auction terms and conditions.");
+      return;
+    }
+    const bidAmount = Number(amount);
+    if (!bidAmount || bidAmount <= currentBid) {
+      toast.error(`Bid must be higher than current bid (${formatKes(currentBid)}).`);
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.from("auction_bids").insert({
+      listing_id: listingId,
+      bid_amount: bidAmount,
+      bidder_name: name,
+      bidder_phone: phone,
+      national_id: nationalId,
+      payment_reference: paymentRef,
+      terms_accepted: terms,
+    });
+    if (error) {
+      toast.error("Failed to place bid. Try again.");
+      console.error(error);
+    } else {
+      toast.success("Bid placed successfully!");
+      setAmount("");
+      setName("");
+      setPhone("");
+      setNationalId("");
+      setPaymentRef("");
+      setTerms(false);
+    }
+    setSubmitting(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <h3 className="text-lg font-bold text-brand-navy">Place a bid</h3>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">Bid amount (KES)</label>
+        <input
+          type="number"
+          required
+          min={currentBid + 1}
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+          placeholder={`Minimum: ${formatKes(currentBid + 1)}`}
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">First name</label>
+        <input
+          type="text"
+          required
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">Phone</label>
+        <input
+          type="tel"
+          required
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">National ID</label>
+        <input
+          type="text"
+          required
+          value={nationalId}
+          onChange={(e) => setNationalId(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">Payment reference (M-PESA / Bank code)</label>
+        <input
+          type="text"
+          required
+          value={paymentRef}
+          onChange={(e) => setPaymentRef(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+        />
+      </div>
+      <label className="flex items-start gap-2 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          required
+          checked={terms}
+          onChange={(e) => setTerms(e.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          I agree to the auction terms and conditions. I understand that a refundable deposit of KES 5,000 is required to place this bid, and payment must be completed within 48 hours if I win.
+        </span>
+      </label>
+      <button
+        type="submit"
+        disabled={submitting}
+        className="w-full rounded-lg bg-brand-navy py-3 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
+      >
+        {submitting ? "Submitting..." : "Place bid"}
+      </button>
+    </form>
   );
 }

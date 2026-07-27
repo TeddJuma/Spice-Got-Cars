@@ -90,6 +90,12 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       ntsaInspected: data.ntsa_inspected,
       logbookVerified: data.logbook_verified,
       listedAt: data.listed_at,
+      isAuction: data.is_auction,
+      auctionEndsAt: data.auction_ends_at,
+      startingBidKes: data.starting_bid_kes,
+      currentBidKes: data.current_bid_kes,
+      bidCount: data.bid_count,
+      highestBidder: data.highest_bidder,
     };
   } catch (err) {
     console.error("Failed to fetch listing from Supabase:", err);
