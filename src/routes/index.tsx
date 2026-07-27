@@ -79,6 +79,12 @@ function Index() {
 
           <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
             <Link
+              to="/auction"
+              className="rounded-lg border border-white/30 bg-white/10 px-5 py-2 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              Auction
+            </Link>
+            <Link
               to="/inventory"
               className="rounded-lg border border-white/30 bg-white/10 px-5 py-2 font-semibold text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >

@@ -8,6 +8,7 @@ const logoUrl = "/logo.png";
 
 const nav = [
   { to: "/inventory", label: "Inventory" },
+  { to: "/auction", label: "Auction" },
   { to: "/services", label: "Services" },
   { to: "/sell", label: "Sell Your Car" },
   { to: "/about", label: "About Us" },

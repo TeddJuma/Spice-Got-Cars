@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as SellRouteImport } from './routes/sell'
 import { Route as LoginRouteImport } from './routes/login'
@@ -19,11 +20,17 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
+import { Route as AuctionIndexRouteImport } from './routes/auction.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
 import { Route as AdminCreateRouteImport } from './routes/admin.create'
 import { Route as AdminIdRouteImport } from './routes/admin.$id'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicesRoute = ServicesRouteImport.update({
   id: '/services',
   path: '/services',
@@ -74,6 +81,11 @@ const InventoryIndexRoute = InventoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => InventoryRoute,
 } as any)
+const AuctionIndexRoute = AuctionIndexRouteImport.update({
+  id: '/auction/',
+  path: '/auction/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -105,10 +117,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/auction/': typeof AuctionIndexRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRoutesByTo {
@@ -119,10 +133,12 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin': typeof AdminIndexRoute
+  '/auction': typeof AuctionIndexRoute
   '/inventory': typeof InventoryIndexRoute
 }
 export interface FileRoutesById {
@@ -136,10 +152,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/sell': typeof SellRoute
   '/services': typeof ServicesRoute
+  '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/auction/': typeof AuctionIndexRoute
   '/inventory/': typeof InventoryIndexRoute
 }
 export interface FileRouteTypes {
@@ -154,10 +172,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/sell'
     | '/services'
+    | '/terms'
     | '/admin/$id'
     | '/admin/create'
     | '/inventory/$id'
     | '/admin/'
+    | '/auction/'
     | '/inventory/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -168,10 +188,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/sell'
     | '/services'
+    | '/terms'
     | '/admin/$id'
     | '/admin/create'
     | '/inventory/$id'
     | '/admin'
+    | '/auction'
     | '/inventory'
   id:
     | '__root__'
@@ -184,10 +206,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/sell'
     | '/services'
+    | '/terms'
     | '/admin/$id'
     | '/admin/create'
     | '/inventory/$id'
     | '/admin/'
+    | '/auction/'
     | '/inventory/'
   fileRoutesById: FileRoutesById
 }
@@ -201,10 +225,19 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SellRoute: typeof SellRoute
   ServicesRoute: typeof ServicesRoute
+  TermsRoute: typeof TermsRoute
+  AuctionIndexRoute: typeof AuctionIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/services': {
       id: '/services'
       path: '/services'
@@ -275,6 +308,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryIndexRouteImport
       parentRoute: typeof InventoryRoute
     }
+    '/auction/': {
+      id: '/auction/'
+      path: '/auction'
+      fullPath: '/auction/'
+      preLoaderRoute: typeof AuctionIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -344,6 +384,8 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SellRoute: SellRoute,
   ServicesRoute: ServicesRoute,
+  TermsRoute: TermsRoute,
+  AuctionIndexRoute: AuctionIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
