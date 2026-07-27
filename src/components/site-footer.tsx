@@ -6,7 +6,6 @@ import {
   PHONE_PRIMARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
-import logoAsset from "@/assets/spice-got-cars-logo.png.asset.json";
 
 export function SiteFooter() {
   return (
