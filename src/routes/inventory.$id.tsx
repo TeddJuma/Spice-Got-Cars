@@ -23,13 +23,20 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/inventory/$id")({
   loader: async ({ params }) => {
-    const car = await fetchListingById(params.id);
-    if (!car) {
+    try {
+      const car = await fetchListingById(params.id);
+      if (!car) {
+        const localCar = getCarById(params.id);
+        if (!localCar) throw notFound();
+        return { car: localCar };
+      }
+      return { car };
+    } catch (err) {
+      console.error("Failed to load listing:", err);
       const localCar = getCarById(params.id);
       if (!localCar) throw notFound();
       return { car: localCar };
     }
-    return { car };
   },
   head: ({ loaderData }) => {
     const car = loaderData?.car;
