@@ -129,9 +129,18 @@ function Index() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((car) => (
-            <ListingCard key={car.id} car={car} />
-          ))}
+          {featured.length > 0 ? (
+            featured.map((car) => (
+              <ListingCard key={car.id} car={car} />
+            ))
+          ) : (
+            <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
+              <p className="text-lg font-semibold text-brand-navy">No listings yet</p>
+              <p className="mt-1 text-sm text-brand-muted">
+                Check back soon for new arrivals, or contact us directly.
+              </p>
+            </div>
+          )}
         </div>
       </section>
 

@@ -1,10 +1,13 @@
 import { createServerClient } from "../lib/supabase-server";
-import { listings as fallbackListings, type Car } from "./listings";
+import { type Car } from "./listings";
 
 export async function fetchListings(): Promise<Car[]> {
   try {
     const supabase = createServerClient();
-    if (!supabase) return fallbackListings;
+    if (!supabase) {
+      console.warn("Supabase is not configured");
+      return [];
+    }
 
     const { data, error } = await supabase
       .from("listings")
@@ -13,7 +16,7 @@ export async function fetchListings(): Promise<Car[]> {
 
     if (error || !data) {
       console.error("Supabase fetch error:", error);
-      return fallbackListings;
+      return [];
     }
 
     const cars: Car[] = await Promise.all(
@@ -54,10 +57,10 @@ export async function fetchListings(): Promise<Car[]> {
       })
     );
 
-    return cars.length > 0 ? cars : fallbackListings;
+    return cars;
   } catch (err) {
     console.error("Failed to fetch listings from Supabase:", err);
-    return fallbackListings;
+    return [];
   }
 }
 
