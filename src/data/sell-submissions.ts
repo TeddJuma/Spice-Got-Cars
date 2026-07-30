@@ -198,9 +198,13 @@ export async function deleteSellSubmission(
 
     if (submission?.photos && Array.isArray(submission.photos)) {
       for (const photoUrl of submission.photos) {
-        const path = photoUrl.split("/car-photos/")[1];
-        if (path) {
-          await client.storage.from("car-photos").remove([path]);
+        try {
+          const path = photoUrl.split("/car-photos/")[1];
+          if (path) {
+            await client.storage.from("car-photos").remove([path]);
+          }
+        } catch (storageErr) {
+          console.error("Failed to delete photo from storage:", storageErr);
         }
       }
     }
