@@ -21,7 +21,20 @@ const MIME_TYPES = {
   '.woff2': 'font/woff2',
 };
 
-export default async function (req, res) {
+function getStaticFile(urlPathname) {
+  return new Promise((resolve) => {
+    const filePath = join(STATIC_DIR, urlPathname);
+    readFile(filePath)
+      .then((file) => {
+        const ext = '.' + urlPathname.split('.').pop();
+        const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+        resolve({ file, contentType });
+      })
+      .catch(() => resolve(null));
+  });
+}
+
+export default async function (req, res) => {
   const protocol = req.headers['x-forwarded-proto'] ?? 'https';
   const host = req.headers['x-forwarded-host'] ?? req.headers.host ?? 'localhost';
   const url = new URL(req.url, `${protocol}://${host}`);
@@ -54,25 +67,19 @@ export default async function (req, res) {
     duplex: hasBody ? 'half' : undefined,
   });
 
-  const response = await server.fetch(request);
-
-  if (response.status === 404 && req.method === 'GET') {
-    const filePath = join(STATIC_DIR, url.pathname);
-    try {
-      const file = await readFile(filePath);
-      const ext = '.' + url.pathname.split('.').pop();
-      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
+  if (req.method === 'GET') {
+    const staticFile = await getStaticFile(url.pathname);
+    if (staticFile) {
       res.statusCode = 200;
-      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Type', staticFile.contentType);
       res.setHeader('Cache-Control', 'public, max-age=31536000');
-      res.write(file);
+      res.write(staticFile.file);
       res.end();
       return;
-    } catch {
-      // Not a static file, fall through to original 404
     }
   }
+
+  const response = await server.fetch(request);
 
   res.statusCode = response.status;
   response.headers.forEach((value, key) => {
