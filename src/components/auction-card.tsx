@@ -119,10 +119,10 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
                 <span className="font-semibold text-brand-navy">
                   {item.highestBidder ?? "Anonymous"}
                 </span>{" "}
-                ({item.bidCount} {item.bidCount === 1 ? "bid" : "bidders"})
+                ({item.bidCount} {item.bidCount === 1 ? "bid" : "bids"})
               </>
             ) : (
-              <span>No bidders yet</span>
+              <span>0 bids</span>
             )}
           </div>
           <div className="mt-2 text-lg font-black text-brand-navy">

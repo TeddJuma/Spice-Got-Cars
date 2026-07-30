@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/admin/$id")({
   loader: async ({ params }) => {
@@ -99,6 +99,7 @@ function EditListingPage() {
   const [existingPhotos, setExistingPhotos] = useState(listing.photos);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -427,37 +428,56 @@ function EditListingPage() {
           <Label>Photos</Label>
           {existingPhotos.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-3">
-              {existingPhotos.map((photo) => (
-                <div key={photo.id} className="relative">
-                  <img
-                    src={photo.storage_path}
-                    alt=""
-                    className="h-24 w-32 rounded-lg object-cover"
-                  />
+              {existingPhotos.map((photo, idx) => {
+                const globalIndex = existingPhotos.slice(0, idx).length + photoUrls.length;
+                return (
                   <button
+                    key={photo.id}
                     type="button"
-                    onClick={() => removeExistingPhoto(photo)}
-                    className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
+                    onClick={() => setViewerIndex(globalIndex)}
+                    className="relative overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
-                    <X className="size-3" />
+                    <img
+                      src={photo.storage_path}
+                      alt=""
+                      className="h-24 w-32 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeExistingPhoto(photo);
+                      }}
+                      className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
+                    >
+                      <X className="size-3" />
+                    </button>
                   </button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
           {photoUrls.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-3">
               {photoUrls.map((url, i) => (
-                <div key={i} className="relative">
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setViewerIndex(existingPhotos.length + i)}
+                  className="relative overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
+                >
                   <img src={url} alt="" className="h-24 w-32 rounded-lg object-cover" />
                   <button
                     type="button"
-                    onClick={() => removeNewPhoto(i)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeNewPhoto(i);
+                    }}
                     className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
                   >
                     <X className="size-3" />
                   </button>
-                </div>
+                </button>
               ))}
             </div>
           )}
@@ -472,6 +492,77 @@ function EditListingPage() {
           {submitting ? "Saving..." : "Save changes"}
         </Button>
       </form>
+
+      {viewerIndex !== null && (existingPhotos[viewerIndex] || photoUrls[viewerIndex - existingPhotos.length]) && (
+        <Lightbox
+          photos={[...existingPhotos.map((p) => p.storage_path), ...photoUrls]}
+          index={viewerIndex}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+function Lightbox({
+  photos,
+  index,
+  onClose,
+}: {
+  photos: string[];
+  index: number;
+  onClose: () => void;
+}) {
+  const [viewerIndex, setViewerIndex] = useState(index);
+  const photoCount = photos.length;
+  const step = (dir: number) =>
+    setViewerIndex((i) => (i + dir + photoCount) % photoCount);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close"
+        className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition hover:bg-white/20"
+      >
+        <X className="size-6" />
+      </button>
+      {photoCount > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              step(-1);
+            }}
+            aria-label="Previous photo"
+            className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition hover:bg-white/20"
+          >
+            <ChevronLeft className="size-6" />
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              step(1);
+            }}
+            aria-label="Next photo"
+            className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition hover:bg-white/20"
+          >
+            <ChevronRight className="size-6" />
+          </button>
+        </>
+      )}
+      <img
+        src={photos[viewerIndex]}
+        alt={`Photo ${viewerIndex + 1}`}
+        className="max-h-[85vh] max-w-full rounded-lg object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
     </div>
   );
 }

@@ -634,6 +634,7 @@ function AdminListingCard({
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [bids, setBids] = useState<any[]>([]);
   const [loadingBids, setLoadingBids] = useState(false);
+  const [expandedBid, setExpandedBid] = useState<any | null>(null);
   const photos: string[] = listing.photos ?? [];
   const price =
     listing.price_kes != null
@@ -789,24 +790,77 @@ function AdminListingCard({
               ) : bids.length === 0 ? (
                 <p className="text-sm text-brand-muted">No bids yet.</p>
               ) : (
-                <div className="space-y-2">
-                  {bids.map((bid) => (
-                    <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
-                        <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
-                      </div>
-                      <div className="mt-1 text-brand-muted">
-                        {bid.bidder_name} · {bid.bidder_phone} · ID: {bid.national_id}
+            <div className="space-y-2">
+              {bids.map((bid) => (
+                <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
+                    <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedBid(expandedBid?.id === bid.id ? null : bid)}
+                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-brand-navy transition hover:bg-slate-50"
+                  >
+                    {expandedBid?.id === bid.id ? "Hide bidder details" : "View bidder details"}
+                  </button>
+                  {expandedBid?.id === bid.id && (
+                    <div className="mt-3 space-y-2">
+                      <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">First name</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_first_name || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Last name</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_last_name || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Phone</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_phone || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">National ID</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.national_id || "—"}</p>
+                        </div>
                       </div>
                       {bid.payment_reference && (
-                        <div className="mt-1 text-xs text-brand-muted">
-                          Ref: {bid.payment_reference}
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Payment reference</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.payment_reference}</p>
                         </div>
                       )}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="flex-1"
+                        >
+                          <a href={`tel:${bid.bidder_phone}`}>
+                            <Phone className="mr-1 size-4" /> Call
+                          </a>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="flex-1"
+                        >
+                          <a
+                            href={`https://wa.me/${bid.bidder_phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <MessageCircle className="mr-1 size-4" /> WhatsApp
+                          </a>
+                        </Button>
+                      </div>
                     </div>
-                  ))}
+                  )}
                 </div>
+              ))}
+            </div>
               )}
             </div>
           )}

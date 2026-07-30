@@ -429,7 +429,8 @@ function TrustLine({ ok, label }: { ok: boolean; label: string }) {
 
 function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentBid: number }) {
   const [amount, setAmount] = useState("");
-  const [name, setName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [nationalId, setNationalId] = useState("");
   const [paymentRef, setPaymentRef] = useState("");
@@ -452,7 +453,9 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
     const { error } = await supabase.from("auction_bids").insert({
       listing_id: listingId,
       bid_amount: bidAmount,
-      bidder_name: name,
+      bidder_first_name: firstName,
+      bidder_last_name: lastName,
+      bidder_name: `${firstName} ${lastName}`,
       bidder_phone: phone,
       national_id: nationalId,
       payment_reference: paymentRef,
@@ -464,7 +467,8 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
     } else {
       toast.success("Bid placed successfully!");
       setAmount("");
-      setName("");
+      setFirstName("");
+      setLastName("");
       setPhone("");
       setNationalId("");
       setPaymentRef("");
@@ -493,8 +497,18 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
         <input
           type="text"
           required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={firstName}
+          onChange={(e) => setFirstName(e.target.value)}
+          className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-brand-navy">Last name</label>
+        <input
+          type="text"
+          required
+          value={lastName}
+          onChange={(e) => setLastName(e.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
         />
       </div>
