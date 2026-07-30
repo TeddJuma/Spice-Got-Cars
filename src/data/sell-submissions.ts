@@ -30,7 +30,11 @@ export interface Notification {
 }
 
 function getClient(supabase?: SupabaseClient) {
-  return supabase || createServerClient();
+  const client = supabase || createServerClient();
+  if (!client) {
+    throw new Error("Supabase is not configured");
+  }
+  return client;
 }
 
 export async function createSellSubmission(
