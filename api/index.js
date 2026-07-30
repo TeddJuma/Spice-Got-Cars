@@ -23,10 +23,11 @@ const MIME_TYPES = {
 
 function getStaticFile(urlPathname) {
   return new Promise((resolve) => {
-    const filePath = join(STATIC_DIR, urlPathname);
+    const cleanPath = urlPathname.startsWith('/') ? urlPathname.slice(1) : urlPathname;
+    const filePath = join(STATIC_DIR, cleanPath);
     readFile(filePath)
       .then((file) => {
-        const ext = '.' + urlPathname.split('.').pop();
+        const ext = '.' + cleanPath.split('.').pop();
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
         resolve({ file, contentType });
       })
