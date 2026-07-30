@@ -5,7 +5,7 @@ import { z } from "zod";
 import { Search, SlidersHorizontal, X, Timer, ShieldCheck } from "lucide-react";
 import { AuctionCard } from "@/components/auction-card";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase";
+import { createServerClient } from "@/lib/supabase-server";
 
 const sortOptions = [
   "ending-soon",
@@ -33,13 +33,37 @@ const PAGE_SIZE = 6;
 export const Route = createFileRoute("/auction/")({
   validateSearch: zodValidator(searchSchema),
   loader: async () => {
-    const supabase = createClient();
+    const supabase = createServerClient();
+    if (!supabase) {
+      return { auctions: [] };
+    }
+
     const { data } = await supabase
       .from("listings")
       .select("*")
       .eq("is_auction", true)
       .order("auction_ends_at", { ascending: true });
-    return { auctions: data ?? [] };
+
+    if (!data) {
+      return { auctions: [] };
+    }
+
+    const withPhotos = await Promise.all(
+      data.map(async (listing: any) => {
+        const { data: photos } = await supabase
+          .from("listing_photos")
+          .select("storage_path")
+          .eq("listing_id", listing.id)
+          .order("sort_order", { ascending: true });
+
+        return {
+          ...listing,
+          photos: photos?.map((p: any) => p.storage_path) || [],
+        };
+      }),
+    );
+
+    return { auctions: withPhotos };
   },
   head: () => ({
     meta: [

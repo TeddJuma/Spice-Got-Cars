@@ -103,7 +103,9 @@ function SellPage() {
       }
 
       const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
-      uploadedUrls.push(publicUrlData.publicUrl);
+      if (publicUrlData?.publicUrl) {
+        uploadedUrls.push(publicUrlData.publicUrl);
+      }
     }
 
     return uploadedUrls;
@@ -135,8 +137,13 @@ function SellPage() {
       console.log("[sell] submission created", submission.id);
 
       let photoUrls: string[] = [];
+      let uploadError = false;
       if (selectedFiles.length > 0) {
         photoUrls = await uploadPhotos(submission.id, selectedFiles);
+
+        if (photoUrls.length < selectedFiles.length) {
+          uploadError = true;
+        }
 
         const { error: updateError } = await supabase
           .from("sell_submissions")
@@ -145,6 +152,7 @@ function SellPage() {
 
         if (updateError) {
           console.error("Failed to update submission photos:", updateError);
+          uploadError = true;
         }
       }
 
@@ -166,7 +174,12 @@ function SellPage() {
       setSubmitted(true);
       reset();
       setSelectedFiles([]);
-      toast.success("Submission received - we'll be in touch shortly.");
+
+      if (uploadError) {
+        toast.success("Submission received, but some photos failed to upload. Our team will contact you.");
+      } else {
+        toast.success("Submission received - we'll be in touch shortly.");
+      }
     } catch (err: any) {
       console.error("[sell] submit error:", err);
       const message =

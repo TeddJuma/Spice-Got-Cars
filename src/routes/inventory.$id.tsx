@@ -176,7 +176,7 @@ function CarDetailPage() {
             )}
           >
             <img
-              src={car.photos[activePhoto] || car.photos?.[0] || ""}
+              src={car.photos[activePhoto] || car.photos?.[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E"}
               alt={`${car.year} ${car.make} ${car.model}`}
               width={1280}
               height={960}

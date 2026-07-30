@@ -171,6 +171,7 @@ function EditListingPage() {
       if (updateError) throw updateError;
 
       if (newPhotos.length > 0) {
+        let uploadFailed = false;
         for (let i = 0; i < newPhotos.length; i++) {
           const file = newPhotos[i];
           const ext = file.name.split(".").pop() || "jpg";
@@ -180,15 +181,25 @@ function EditListingPage() {
             .from("car-photos")
             .upload(path, file, { contentType: file.type, upsert: false });
 
-          if (uploadError) continue;
+          if (uploadError) {
+            console.error("Upload error:", uploadError);
+            uploadFailed = true;
+            continue;
+          }
 
           const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
 
-          await supabase.from("listing_photos").insert({
-            listing_id: listing.id,
-            storage_path: publicUrlData.publicUrl,
-            sort_order: existingPhotos.length + i,
-          });
+          if (publicUrlData?.publicUrl) {
+            await supabase.from("listing_photos").insert({
+              listing_id: listing.id,
+              storage_path: publicUrlData.publicUrl,
+              sort_order: existingPhotos.length + i,
+            });
+          }
+        }
+
+        if (uploadFailed) {
+          setError("Some photos failed to upload. Please try again or contact support.");
         }
       }
 

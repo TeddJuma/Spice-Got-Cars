@@ -93,13 +93,15 @@ function CreateListingPage() {
 
       const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
 
-      uploadedPaths.push(publicUrlData.publicUrl);
+      if (publicUrlData?.publicUrl) {
+        uploadedPaths.push(publicUrlData.publicUrl);
 
-      await supabase.from("listing_photos").insert({
-        listing_id: listingId,
-        storage_path: publicUrlData.publicUrl,
-        sort_order: i,
-      });
+        await supabase.from("listing_photos").insert({
+          listing_id: listingId,
+          storage_path: publicUrlData.publicUrl,
+          sort_order: i,
+        });
+      }
     }
     return uploadedPaths;
   };
@@ -139,7 +141,10 @@ function CreateListingPage() {
       if (insertError) throw insertError;
 
       if (photos.length > 0 && listing) {
-        await uploadPhotos(listing.id);
+        const uploadedPaths = await uploadPhotos(listing.id);
+        if (uploadedPaths.length === 0 && photos.length > 0) {
+          setError("Listing created, but photo uploads failed. You can add photos later by editing the listing.");
+        }
       }
 
       window.location.href = "/admin";
