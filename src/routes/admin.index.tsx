@@ -206,6 +206,8 @@ function AdminIndexPage() {
     if (success) {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       toast.success("Notification deleted.");
+    } else {
+      toast.error("Failed to delete notification. Please try again.");
     }
   };
 
