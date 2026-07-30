@@ -13,6 +13,7 @@ import {
   markNotificationAsRead,
   deleteNotification,
   updateSellSubmissionStatus,
+  deleteSellSubmission,
 } from "@/data/sell-submissions";
 import type { SellSubmission, Notification } from "@/data/sell-submissions";
 import { formatKes } from "@/data/listings";
@@ -173,9 +174,13 @@ function AdminIndexPage() {
   };
 
   const handleReject = async (id: string) => {
-    if (!confirm("Reject this submission?")) return;
-    await updateSellSubmissionStatus(id, "rejected", supabase);
-    toast.success("Submission rejected.");
+    if (!confirm("Reject and permanently delete this submission and its photos?")) return;
+    const deleted = await deleteSellSubmission(id, supabase);
+    if (deleted) {
+      toast.success("Submission rejected and deleted.");
+    } else {
+      toast.error("Failed to delete submission. Please try again.");
+    }
     loadData();
   };
 

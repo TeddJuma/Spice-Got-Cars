@@ -183,6 +183,45 @@ export async function fetchUnreadNotificationCount(
   }
 }
 
+export async function deleteSellSubmission(
+  id: string,
+  supabase?: SupabaseClient
+): Promise<boolean> {
+  try {
+    const client = getClient(supabase);
+
+    const { data: submission } = await client
+      .from("sell_submissions")
+      .select("photos")
+      .eq("id", id)
+      .single();
+
+    if (submission?.photos && Array.isArray(submission.photos)) {
+      for (const photoUrl of submission.photos) {
+        const path = photoUrl.split("/car-photos/")[1];
+        if (path) {
+          await client.storage.from("car-photos").remove([path]);
+        }
+      }
+    }
+
+    const { error } = await client
+      .from("sell_submissions")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      console.error("Failed to delete sell submission:", error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Failed to delete sell submission:", err);
+    return false;
+  }
+}
+
 export async function markNotificationAsRead(
   id: string,
   supabase?: SupabaseClient
