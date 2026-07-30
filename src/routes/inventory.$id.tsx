@@ -14,7 +14,7 @@ import {
   Timer,
   CheckCircle2,
 } from "lucide-react";
-import { getCarById, formatKes, formatMileage } from "@/data/listings";
+import { formatKes, formatMileage } from "@/data/listings";
 import { fetchListingById } from "@/data/listings-supabase";
 import { buildCarInquiryLink, PHONE_TEL, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
@@ -26,16 +26,12 @@ export const Route = createFileRoute("/inventory/$id")({
     try {
       const car = await fetchListingById(params.id);
       if (!car) {
-        const localCar = getCarById(params.id);
-        if (!localCar) throw notFound();
-        return { car: localCar };
+        throw notFound();
       }
       return { car };
     } catch (err) {
       console.error("Failed to load listing:", err);
-      const localCar = getCarById(params.id);
-      if (!localCar) throw notFound();
-      return { car: localCar };
+      throw notFound();
     }
   },
   head: ({ loaderData }) => {
