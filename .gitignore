@@ -36,5 +36,6 @@ dist-ssr
 *.sln
 *.sw?
 
-# Lockfiles
+# npm
+.npmrc
 package-lock.json
