@@ -20,6 +20,10 @@ import { ArrowLeft, X, ChevronLeft, ChevronRight } from "lucide-react";
 export const Route = createFileRoute("/admin/$id")({
   loader: async ({ params }) => {
     const supabase = createServerClient();
+    if (!supabase) {
+      throw notFound();
+    }
+
     const { data, error } = await supabase
       .from("listings")
       .select("*")
