@@ -3,7 +3,7 @@
   "outputDirectory": "dist/client",
   "functions": {
     "api/index.js": {
-      "runtime": "nodejs20.x",
+      "runtime": "nodejs20",
       "maxDuration": 30
     }
   },
