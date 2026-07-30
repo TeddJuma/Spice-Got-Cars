@@ -80,7 +80,16 @@ export default async function (req, res) => {
     }
   }
 
-  const response = await server.fetch(request);
+  let response;
+  try {
+    response = await server.fetch(request);
+  } catch (err) {
+    console.error('Server fetch failed:', err);
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end('Internal Server Error');
+    return;
+  }
 
   res.statusCode = response.status;
   response.headers.forEach((value, key) => {
