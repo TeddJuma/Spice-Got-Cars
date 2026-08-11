@@ -42,9 +42,9 @@ function CreateListingPage() {
     ntsaInspected: false,
     logbookVerified: false,
     isAuction: false,
-    auctionEndsAt: "",
     location: "",
     locationPin: "",
+    auctionWindows: [] as Array<{ startsAt: string; endsAt: string }>,
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
@@ -149,6 +149,23 @@ function CreateListingPage() {
         const uploadedPaths = await uploadPhotos(listing.id);
         if (uploadedPaths.length === 0 && photos.length > 0) {
           setError("Listing created, but photo uploads failed. You can add photos later by editing the listing.");
+        }
+      }
+
+      if (form.isAuction && listing && form.auctionWindows.length > 0) {
+        const windowsToInsert = form.auctionWindows
+          .filter((w) => w.startsAt && w.endsAt)
+          .map((w) => ({
+            listing_id: listing.id,
+            starts_at: new Date(w.startsAt).toISOString(),
+            ends_at: new Date(w.endsAt).toISOString(),
+          }));
+
+        if (windowsToInsert.length > 0) {
+          const { error: windowsError } = await supabase.from("auction_windows").insert(windowsToInsert);
+          if (windowsError) {
+            console.error("Failed to create auction windows:", windowsError);
+          }
         }
       }
 
@@ -360,14 +377,53 @@ function CreateListingPage() {
         </div>
 
         {form.isAuction && (
-          <div>
-            <Label>Bid Ends By</Label>
-            <Input
-              type="datetime-local"
-              required={form.isAuction}
-              value={form.auctionEndsAt}
-              onChange={(e) => updateField("auctionEndsAt", e.target.value)}
-            />
+          <div className="space-y-3">
+            <Label>Auction Windows</Label>
+            <p className="text-xs text-brand-muted">Add one or more time windows when bidding is open. Bidding is only available during these windows.</p>
+            {form.auctionWindows.map((window, index) => (
+              <div key={index} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3">
+                <div className="flex-1 min-w-[200px]">
+                  <label className="mb-1 block text-xs font-medium text-brand-muted">Starts</label>
+                  <Input
+                    type="datetime-local"
+                    value={window.startsAt}
+                    onChange={(e) => {
+                      const newWindows = [...form.auctionWindows];
+                      newWindows[index] = { ...newWindows[index], startsAt: e.target.value };
+                      updateField("auctionWindows", newWindows);
+                    }}
+                  />
+                </div>
+                <div className="flex-1 min-w-[200px]">
+                  <label className="mb-1 block text-xs font-medium text-brand-muted">Ends</label>
+                  <Input
+                    type="datetime-local"
+                    value={window.endsAt}
+                    onChange={(e) => {
+                      const newWindows = [...form.auctionWindows];
+                      newWindows[index] = { ...newWindows[index], endsAt: e.target.value };
+                      updateField("auctionWindows", newWindows);
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    updateField("auctionWindows", form.auctionWindows.filter((_, i) => i !== index));
+                  }}
+                  className="mt-5 rounded-lg p-2 text-red-600 hover:bg-red-50"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => updateField("auctionWindows", [...form.auctionWindows, { startsAt: "", endsAt: "" }])}
+              className="text-sm font-semibold text-brand-accent hover:underline"
+            >
+              + Add auction window
+            </button>
           </div>
         )}
 

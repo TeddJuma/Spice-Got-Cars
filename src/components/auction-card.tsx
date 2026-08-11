@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Gauge, Calendar, Fuel, Cog, MessageCircle, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatKes, formatMileage } from "@/data/listings";
+import { formatKes, formatMileage, getAuctionStatus, type Car } from "@/data/listings";
 import { buildCarInquiryLink } from "@/lib/whatsapp";
 
 export interface AuctionItem {
@@ -28,18 +28,52 @@ export interface AuctionItem {
   endsAt: string;
   bidCount: number;
   highestBidder?: string;
+  location?: string;
+  locationPin?: string;
+  auctionWindows?: Array<{ id: string; startsAt: string; endsAt: string }>;
 }
 
 export function AuctionCard({ item }: { item: AuctionItem }) {
   const [timeLeft, setTimeLeft] = useState("");
+  const [currentStatus, setCurrentStatus] = useState(getAuctionStatus({
+    ...item,
+    isAuction: true,
+    auctionWindows: item.auctionWindows,
+  }));
 
   useEffect(() => {
     const tick = () => {
+      setCurrentStatus(getAuctionStatus({
+        ...item,
+        isAuction: true,
+        auctionWindows: item.auctionWindows,
+      }));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [item]);
+
+  useEffect(() => {
+    if (currentStatus.label !== "Live now") {
+      setTimeLeft("");
+      return;
+    }
+    const tick = () => {
       const now = new Date();
-      const end = new Date(item.endsAt);
+      const activeWindow = item.auctionWindows?.find(w => {
+        const start = new Date(w.startsAt);
+        const end = new Date(w.endsAt);
+        return now >= start && now < end;
+      });
+      if (!activeWindow) {
+        setTimeLeft("");
+        return;
+      }
+      const end = new Date(activeWindow.endsAt);
       const diff = end.getTime() - now.getTime();
       if (diff <= 0) {
-        setTimeLeft("Ended");
+        setTimeLeft("Ending...");
         return;
       }
       const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -52,9 +86,11 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [item.endsAt]);
+  }, [currentStatus.label, item.auctionWindows]);
 
-  const isEnded = item.status === "ended" || item.status === "sold";
+  const isEnded = currentStatus.label === "Ended" || item.status === "sold";
+  const statusColor = currentStatus.color.replace("bg-", "text-").replace("bg-", "bg-");
+  const statusBg = currentStatus.color;
 
   const photo = item.photos[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
 
@@ -99,19 +135,26 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
               {item.make} {item.model}
             </h3>
           </Link>
-          <span className="shrink-0 rounded bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase text-brand-accent">
-            {item.status === "sold" ? "Sold" : "Active"}
+          <span className={`shrink-0 rounded px-2 py-1 text-[10px] font-bold uppercase ${statusBg} text-white`}>
+            {currentStatus.label}
           </span>
         </div>
 
         <div className="mb-3 rounded-lg bg-slate-50 p-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-brand-muted">
             <Timer className="size-4 text-brand-accent" />
-            <span>Time left</span>
+            <span>{currentStatus.label === "Live now" ? "Time left" : currentStatus.label === "Paused" ? "Status" : "Status"}</span>
           </div>
-          <div className="mt-1 text-xl font-black text-brand-navy">
-            {timeLeft || "Loading..."}
-          </div>
+          {currentStatus.label === "Live now" && timeLeft && (
+            <div className="mt-1 text-xl font-black text-brand-navy">
+              {timeLeft}
+            </div>
+          )}
+          {currentStatus.label !== "Live now" && (
+            <div className={`mt-1 text-lg font-black ${currentStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}>
+              {currentStatus.label === "Paused" ? "Paused" : "Ended"}
+            </div>
+          )}
           <div className="mt-1 text-xs text-brand-muted">
             {item.bidCount > 0 ? (
               <>

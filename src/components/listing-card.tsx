@@ -1,12 +1,14 @@
 import { Link } from "@tanstack/react-router";
 import { Gauge, Calendar, Fuel, Cog, MessageCircle, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { formatKes, formatMileage, type Car } from "@/data/listings";
+import { formatKes, formatMileage, type Car, getAuctionStatus } from "@/data/listings";
 import { buildCarInquiryLink } from "@/lib/whatsapp";
 
 export function ListingCard({ car }: { car: Car }) {
   const isSold = car.status === "sold";
   const isReserved = car.status === "reserved";
+  const isAuction = car.isAuction && !isSold;
+  const auctionStatus = isAuction ? getAuctionStatus(car) : null;
 
   const photo = car.photos[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
 
@@ -35,6 +37,11 @@ export function ListingCard({ car }: { car: Car }) {
           <div className="absolute top-3 left-3 rounded bg-brand-navy/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
             {car.condition}
           </div>
+          {isAuction && auctionStatus && (
+            <div className={`absolute top-3 right-3 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white ${auctionStatus.color}`}>
+              {auctionStatus.label}
+            </div>
+          )}
           {isSold && (
             <div className="absolute inset-0 flex items-center justify-center bg-brand-navy/40">
               <span className="rotate-[-12deg] rounded-lg border-2 border-brand-navy bg-white px-6 py-2 text-2xl font-black text-brand-navy shadow-2xl">
@@ -42,7 +49,7 @@ export function ListingCard({ car }: { car: Car }) {
               </span>
             </div>
           )}
-          {isReserved && (
+          {isReserved && !isAuction && (
             <div className="absolute top-3 right-3 rounded bg-amber-500 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
               Reserved
             </div>
@@ -112,6 +119,14 @@ export function ListingCard({ car }: { car: Car }) {
           >
             Sold - Out of Stock
           </button>
+        ) : isAuction && auctionStatus ? (
+          <Link
+            to="/inventory/$id"
+            params={{ id: car.id }}
+            className="flex w-full items-center justify-center rounded-lg bg-brand-navy py-3 text-center text-sm font-bold text-white transition-colors hover:bg-slate-800"
+          >
+            {auctionStatus.label === "Live now" ? "Place bid" : "View auction"}
+          </Link>
         ) : (
           <div className="flex gap-2">
             <Link

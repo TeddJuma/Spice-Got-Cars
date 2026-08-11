@@ -64,9 +64,20 @@ export const Route = createFileRoute("/auction/")({
           .eq("listing_id", listing.id)
           .order("sort_order", { ascending: true });
 
+        const { data: windows } = await supabase
+          .from("auction_windows")
+          .select("id, starts_at, ends_at")
+          .eq("listing_id", listing.id)
+          .order("starts_at", { ascending: true });
+
         return {
           ...listing,
           photos: photos?.map((p: any) => p.storage_path) || [],
+          auctionWindows: windows?.map((w: any) => ({
+            id: w.id,
+            startsAt: w.starts_at,
+            endsAt: w.ends_at,
+          })) || [],
         };
       }),
     );
@@ -130,6 +141,7 @@ function AuctionPage() {
       highestBidder: a.highest_bidder,
       location: a.location,
       locationPin: a.location_pin,
+      auctionWindows: a.auctionWindows ?? [],
     }));
   }, [auctions]);
 

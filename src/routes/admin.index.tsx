@@ -71,7 +71,22 @@ function AdminIndexPage() {
               .select("storage_path")
               .eq("listing_id", listing.id)
               .order("sort_order", { ascending: true });
-            return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
+
+            const { data: windows } = await supabase
+              .from("auction_windows")
+              .select("id, starts_at, ends_at")
+              .eq("listing_id", listing.id)
+              .order("starts_at", { ascending: true });
+
+            return {
+              ...listing,
+              photos: photos?.map((p: any) => p.storage_path) || [],
+              auctionWindows: windows?.map((w: any) => ({
+                id: w.id,
+                startsAt: w.starts_at,
+                endsAt: w.ends_at,
+              })) || [],
+            };
           }),
         );
         const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
@@ -97,7 +112,22 @@ function AdminIndexPage() {
               .select("storage_path")
               .eq("listing_id", listing.id)
               .order("sort_order", { ascending: true });
-            return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
+
+            const { data: windows } = await supabase
+              .from("auction_windows")
+              .select("id, starts_at, ends_at")
+              .eq("listing_id", listing.id)
+              .order("starts_at", { ascending: true });
+
+            return {
+              ...listing,
+              photos: photos?.map((p: any) => p.storage_path) || [],
+              auctionWindows: windows?.map((w: any) => ({
+                id: w.id,
+                startsAt: w.starts_at,
+                endsAt: w.ends_at,
+              })) || [],
+            };
           }),
         );
         const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
@@ -769,14 +799,20 @@ function AdminListingCard({
             <Detail label="Condition" value={listing.condition} />
             <Detail label="Listed" value={String(listing.listed_at)} />
             {listing.is_auction && (
-              <Detail
-                label="Bid Ends By"
-                value={
-                  listing.auction_ends_at
-                    ? new Date(listing.auction_ends_at).toLocaleString()
-                    : "—"
-                }
-              />
+              <div className="sm:col-span-2 lg:col-span-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">Auction Windows</p>
+                {listing.auctionWindows && listing.auctionWindows.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {listing.auctionWindows.map((window: any) => (
+                      <span key={window.id} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs">
+                        {new Date(window.startsAt).toLocaleString()} → {new Date(window.endsAt).toLocaleString()}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-brand-muted">No auction windows set.</p>
+                )}
+              </div>
             )}
           </dl>
 

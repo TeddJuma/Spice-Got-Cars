@@ -15,7 +15,7 @@ import {
   CheckCircle2,
   MapPin,
 } from "lucide-react";
-import { formatKes, formatMileage } from "@/data/listings";
+import { formatKes, formatMileage, getAuctionStatus } from "@/data/listings";
 import { fetchListingById } from "@/data/listings-supabase";
 import { buildCarInquiryLink, PHONE_TEL, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
@@ -108,16 +108,29 @@ function CarDetailPage() {
   const isSold = car.status === "sold";
   const isReserved = car.status === "reserved";
   const isAuction = car.isAuction && !isSold;
+  const auctionStatus = getAuctionStatus(car);
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isAuction || !car.auctionEndsAt) return;
+    if (!isAuction || !car.auctionWindows || car.auctionWindows.length === 0) {
+      setTimeLeft("");
+      return;
+    }
     const tick = () => {
       const now = new Date();
-      const end = new Date(car.auctionEndsAt!);
+      const activeWindow = car.auctionWindows?.find(w => {
+        const start = new Date(w.startsAt);
+        const end = new Date(w.endsAt);
+        return now >= start && now < end;
+      });
+      if (!activeWindow) {
+        setTimeLeft("");
+        return;
+      }
+      const end = new Date(activeWindow.endsAt);
       const diff = end.getTime() - now.getTime();
       if (diff <= 0) {
-        setTimeLeft("Ended");
+        setTimeLeft("Ending...");
         return;
       }
       const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -130,7 +143,7 @@ function CarDetailPage() {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [isAuction, car.auctionEndsAt]);
+  }, [isAuction, car.auctionWindows]);
 
   const displayPrice = isAuction
     ? car.currentBidKes ?? car.startingBidKes ?? car.priceKes
@@ -284,11 +297,22 @@ function CarDetailPage() {
 
             {isAuction ? (
               <div className="mt-4 mb-6 space-y-3">
-                <div className="flex items-center gap-2 text-amber-700">
+                <div className={`flex items-center gap-2 ${auctionStatus.label === "Live now" ? "text-emerald-700" : auctionStatus.label === "Paused" ? "text-amber-700" : "text-slate-500"}`}>
                   <Timer className="size-5" />
-                  <span className="text-sm font-semibold">Time left:</span>
-                  <span className="text-lg font-black">{timeLeft || "Loading..."}</span>
+                  <span className="text-sm font-semibold">{auctionStatus.label === "Live now" ? "Time left" : auctionStatus.label === "Paused" ? "Status" : "Status"}</span>
+                  {auctionStatus.label !== "Live now" && (
+                    <span className="text-sm">{auctionStatus.description}</span>
+                  )}
                 </div>
+                {auctionStatus.label === "Live now" ? (
+                  <div className="text-xl font-black text-brand-navy">
+                    {timeLeft || "Loading..."}
+                  </div>
+                ) : (
+                  <div className={`text-xl font-black ${auctionStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}>
+                    {auctionStatus.label === "Paused" ? "Paused" : "Ended"}
+                  </div>
+                )}
                 <div className="text-3xl font-black text-brand-navy">
                   {formatKes(displayPrice)}
                 </div>

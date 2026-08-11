@@ -38,7 +38,23 @@ export const Route = createFileRoute("/admin/$id")({
       .eq("listing_id", params.id)
       .order("sort_order", { ascending: true });
 
-    return { listing: { ...data, photos: photos || [] } };
+    const { data: windows } = await supabase
+      .from("auction_windows")
+      .select("id, starts_at, ends_at")
+      .eq("listing_id", params.id)
+      .order("starts_at", { ascending: true });
+
+    return {
+      listing: {
+        ...data,
+        photos: photos || [],
+        auctionWindows: windows?.map((w: any) => ({
+          id: w.id,
+          startsAt: w.starts_at,
+          endsAt: w.ends_at,
+        })) || [],
+      },
+    };
   },
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-4 py-24 text-center">
@@ -93,11 +109,14 @@ function EditListingPage() {
     ntsaInspected: listing.ntsa_inspected,
     logbookVerified: listing.logbook_verified,
     isAuction: listing.is_auction,
-    auctionEndsAt: listing.auction_ends_at ? new Date(listing.auction_ends_at).toISOString().slice(0, 16) : "",
     startingBidKes: listing.starting_bid_kes ?? listing.price_kes,
     currentBidKes: listing.current_bid_kes ?? listing.price_kes,
     location: listing.location || "",
     locationPin: listing.location_pin || "",
+    auctionWindows: (listing.auctionWindows || []).map((w) => ({
+      startsAt: w.startsAt ? new Date(w.startsAt).toISOString().slice(0, 16) : "",
+      endsAt: w.endsAt ? new Date(w.endsAt).toISOString().slice(0, 16) : "",
+    })),
   });
 
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
@@ -169,13 +188,36 @@ function EditListingPage() {
           ntsa_inspected: form.ntsaInspected,
           logbook_verified: form.logbookVerified,
           is_auction: form.isAuction,
-          auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
+          auction_ends_at: null,
           starting_bid_kes: form.isAuction ? form.startingBidKes : null,
           current_bid_kes: form.isAuction ? form.currentBidKes : null,
           location: form.location || null,
           location_pin: form.locationPin || null,
         })
         .eq("id", listing.id);
+
+      if (updateError) throw updateError;
+
+      if (form.isAuction) {
+        await supabase.from("auction_windows").delete().eq("listing_id", listing.id);
+
+        const windowsToUpsert = form.auctionWindows
+          .filter((w) => w.startsAt && w.endsAt)
+          .map((w) => ({
+            listing_id: listing.id,
+            starts_at: new Date(w.startsAt).toISOString(),
+            ends_at: new Date(w.endsAt).toISOString(),
+          }));
+
+        if (windowsToUpsert.length > 0) {
+          const { error: windowsError } = await supabase.from("auction_windows").insert(windowsToUpsert);
+          if (windowsError) {
+            console.error("Failed to update auction windows:", windowsError);
+          }
+        }
+      } else {
+        await supabase.from("auction_windows").delete().eq("listing_id", listing.id);
+      }
 
       if (updateError) throw updateError;
 
@@ -420,33 +462,75 @@ function EditListingPage() {
         </div>
 
         {form.isAuction && (
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <Label>Bid Ends By</Label>
-              <Input
-                type="datetime-local"
-                required={form.isAuction}
-                value={form.auctionEndsAt}
-                onChange={(e) => updateField("auctionEndsAt", e.target.value)}
-              />
+          <div className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <Label>Starting bid (KES)</Label>
+                <Input
+                  type="number"
+                  required={form.isAuction}
+                  value={form.startingBidKes}
+                  onChange={(e) => updateField("startingBidKes", parseInt(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label>Current bid (KES)</Label>
+                <Input
+                  type="number"
+                  required={form.isAuction}
+                  value={form.currentBidKes}
+                  onChange={(e) => updateField("currentBidKes", parseInt(e.target.value))}
+                />
+              </div>
             </div>
-            <div>
-              <Label>Starting bid (KES)</Label>
-              <Input
-                type="number"
-                required={form.isAuction}
-                value={form.startingBidKes}
-                onChange={(e) => updateField("startingBidKes", parseInt(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label>Current bid (KES)</Label>
-              <Input
-                type="number"
-                required={form.isAuction}
-                value={form.currentBidKes}
-                onChange={(e) => updateField("currentBidKes", parseInt(e.target.value))}
-              />
+
+            <div className="space-y-3">
+              <Label>Auction Windows</Label>
+              <p className="text-xs text-brand-muted">Add one or more time windows when bidding is open. Bidding is only available during these windows.</p>
+              {form.auctionWindows.map((window, index) => (
+                <div key={index} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="mb-1 block text-xs font-medium text-brand-muted">Starts</label>
+                    <Input
+                      type="datetime-local"
+                      value={window.startsAt}
+                      onChange={(e) => {
+                        const newWindows = [...form.auctionWindows];
+                        newWindows[index] = { ...newWindows[index], startsAt: e.target.value };
+                        updateField("auctionWindows", newWindows);
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="mb-1 block text-xs font-medium text-brand-muted">Ends</label>
+                    <Input
+                      type="datetime-local"
+                      value={window.endsAt}
+                      onChange={(e) => {
+                        const newWindows = [...form.auctionWindows];
+                        newWindows[index] = { ...newWindows[index], endsAt: e.target.value };
+                        updateField("auctionWindows", newWindows);
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      updateField("auctionWindows", form.auctionWindows.filter((_, i) => i !== index));
+                    }}
+                    className="mt-5 rounded-lg p-2 text-red-600 hover:bg-red-50"
+                  >
+                    <X className="size-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => updateField("auctionWindows", [...form.auctionWindows, { startsAt: "", endsAt: "" }])}
+                className="text-sm font-semibold text-brand-accent hover:underline"
+              >
+                + Add auction window
+              </button>
             </div>
           </div>
         )}

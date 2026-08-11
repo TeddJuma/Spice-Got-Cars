@@ -59,6 +59,12 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
           .eq("listing_id", row.id)
           .order("sort_order", { ascending: true });
 
+        const { data: windows } = await supabase
+          .from("auction_windows")
+          .select("id, starts_at, ends_at")
+          .eq("listing_id", row.id)
+          .order("starts_at", { ascending: true });
+
         return {
           id: row.id,
           make: row.make,
@@ -87,8 +93,13 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
           currentBidKes: row.current_bid_kes,
           bidCount: row.bid_count,
           highestBidder: row.highest_bidder,
+          auctionWindows: windows?.map((w) => ({
+            id: w.id,
+            startsAt: w.starts_at,
+            endsAt: w.ends_at,
+          })) || [],
         };
-      })
+      }),
     );
 
     return cars;
@@ -116,6 +127,12 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       .select("storage_path")
       .eq("listing_id", id)
       .order("sort_order", { ascending: true });
+
+    const { data: windows } = await supabase
+      .from("auction_windows")
+      .select("id, starts_at, ends_at")
+      .eq("listing_id", id)
+      .order("starts_at", { ascending: true });
 
     return {
       id: data.id,
@@ -145,6 +162,11 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       currentBidKes: data.current_bid_kes,
       bidCount: data.bid_count,
       highestBidder: data.highest_bidder,
+      auctionWindows: windows?.map((w) => ({
+        id: w.id,
+        startsAt: w.starts_at,
+        endsAt: w.ends_at,
+      })) || [],
     };
   } catch (err) {
     console.error("Failed to fetch listing from Supabase:", err);
