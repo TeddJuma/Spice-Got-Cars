@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { FloatingWhatsApp } from "@/components/floating-whatsapp";
+import { FloatingChat } from "@/components/floating-chat";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -147,7 +147,7 @@ function RootComponent() {
             <Outlet />
           </main>
           <SiteFooter />
-          <FloatingWhatsApp />
+          <FloatingChat />
           <Toaster />
         </div>
       </AuthProvider>

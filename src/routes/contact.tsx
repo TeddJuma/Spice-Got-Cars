@@ -29,7 +29,7 @@ export const Route = createFileRoute("/contact")({
 
 function ContactPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
+    <div className="mx-auto max-w-6xl px-4 py-8 md:py-16">
       <div className="mb-10">
         <h1 className="text-3xl font-bold md:text-4xl">Get in touch</h1>
         <p className="mt-2 text-brand-muted">
@@ -100,7 +100,7 @@ function ContactPage() {
           <iframe
             title="Spice Got Cars Kahawa west location"
             src={`https://www.google.com/maps?q=Kahawa+west+Kamiti+Road,+Nairobi,+Kenya&z=16&output=embed`}
-            className="h-[400px] w-full"
+            className="h-[300px] w-full md:h-[400px]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />
@@ -120,7 +120,7 @@ function ContactItem({
   body: React.ReactNode;
 }) {
   return (
-    <div className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-5">
+    <div className="flex gap-4 rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
       <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-emerald-50">
         {icon}
       </div>

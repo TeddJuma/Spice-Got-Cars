@@ -96,6 +96,8 @@ function EditListingPage() {
     auctionEndsAt: listing.auction_ends_at ? new Date(listing.auction_ends_at).toISOString().slice(0, 16) : "",
     startingBidKes: listing.starting_bid_kes ?? listing.price_kes,
     currentBidKes: listing.current_bid_kes ?? listing.price_kes,
+    location: listing.location || "",
+    locationPin: listing.location_pin || "",
   });
 
   const [newPhotos, setNewPhotos] = useState<File[]>([]);
@@ -170,6 +172,8 @@ function EditListingPage() {
           auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
           starting_bid_kes: form.isAuction ? form.startingBidKes : null,
           current_bid_kes: form.isAuction ? form.currentBidKes : null,
+          location: form.location || null,
+          location_pin: form.locationPin || null,
         })
         .eq("id", listing.id);
 
@@ -365,7 +369,26 @@ function EditListingPage() {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label>General Location</Label>
+            <Input
+              value={form.location}
+              onChange={(e) => updateField("location", e.target.value)}
+              placeholder="e.g. Kahawa West, Nairobi"
+            />
+          </div>
+          <div>
+            <Label>Location Pin (optional)</Label>
+            <Input
+              value={form.locationPin}
+              onChange={(e) => updateField("locationPin", e.target.value)}
+              placeholder="e.g. -1.2345, 36.7890"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Switch
               checked={form.negotiable}

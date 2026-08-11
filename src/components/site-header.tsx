@@ -20,9 +20,9 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2 sm:py-3">
         <Link to="/" className="flex items-center gap-2"           aria-label="Spice Got Cars - home">
-           <img src={logoUrl} alt="Spice Got Cars" className="h-[52px] w-auto sm:h-[62px]" />
+           <img src={logoUrl} alt="Spice Got Cars" className="h-10 w-auto sm:h-[52px]" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">

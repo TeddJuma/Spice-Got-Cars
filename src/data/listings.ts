@@ -30,6 +30,8 @@ export interface Car {
   ntsaInspected: boolean;
   logbookVerified: boolean;
   listedAt: string; // ISO date
+  location?: string;
+  locationPin?: string;
   isAuction?: boolean;
   auctionEndsAt?: string;
   startingBidKes?: number;

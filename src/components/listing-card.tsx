@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Gauge, Calendar, Fuel, Cog, MessageCircle } from "lucide-react";
+import { Gauge, Calendar, Fuel, Cog, MessageCircle, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatKes, formatMileage, type Car } from "@/data/listings";
 import { buildCarInquiryLink } from "@/lib/whatsapp";
@@ -97,6 +97,12 @@ export function ListingCard({ car }: { car: Car }) {
             <Fuel className="size-4 shrink-0" />
             <span>{car.fuelType}</span>
           </div>
+          {car.location && (
+            <div className="col-span-2 flex items-center gap-2">
+              <MapPin className="size-4 shrink-0" />
+              <span>{car.location}</span>
+            </div>
+          )}
         </div>
 
         {isSold ? (

@@ -9,9 +9,9 @@ import {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-slate-200 bg-white px-4 pt-16 pb-8">
+    <footer className="border-t border-slate-200 bg-white px-4 pt-10 pb-6 md:pt-16 md:pb-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-12 grid grid-cols-1 gap-12 md:grid-cols-4">
+        <div className="mb-10 grid grid-cols-1 gap-8 md:mb-12 md:grid-cols-4 md:gap-12">
           <div className="md:col-span-2">
             <h2>Spice Got Cars</h2>
             <p className="mb-6 max-w-sm text-brand-muted">
@@ -24,7 +24,7 @@ export function SiteFooter() {
               <iframe
                 title="Spice Got Cars Kahawa west location"
                 src={`https://www.google.com/maps?q=Kahawa+west+Kamiti+Road,+Nairobi,+Kenya&z=16&output=embed`}
-                className="h-40 w-full md:w-80"
+                className="h-32 w-full md:h-40"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
               />

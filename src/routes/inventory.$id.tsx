@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   Timer,
   CheckCircle2,
+  MapPin,
 } from "lucide-react";
 import { formatKes, formatMileage } from "@/data/listings";
 import { fetchListingById } from "@/data/listings-supabase";
@@ -153,7 +154,7 @@ function CarDetailPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 md:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-4 md:py-10">
       <Link
         to="/inventory"
         className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-muted hover:text-brand-navy"
@@ -220,7 +221,7 @@ function CarDetailPage() {
           {/* Description & specs */}
           <div className="mt-8 space-y-8">
             <section>
-              <h2 className="mb-3 text-xl font-bold">Description</h2>
+              <h2 className="mb-3 text-xl font-bold">About the Car</h2>
               <p className="leading-relaxed text-slate-700">
                 {car.description}
               </p>
@@ -319,6 +320,18 @@ function CarDetailPage() {
               <QuickSpec icon={<CarIcon className="size-4" />} label={car.bodyType} />
               <QuickSpec icon={<ShieldCheck className="size-4" />} label="NTSA OK" />
             </div>
+
+            {(car.location || car.locationPin) && (
+              <div className="mb-6">
+                <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-muted">
+                  Location
+                </h3>
+                {car.location && (
+                  <p className="mb-2 text-sm text-brand-navy">{car.location}</p>
+                )}
+                <LocationMap locationPin={car.locationPin} location={car.location} />
+              </div>
+            )}
 
             {isSold ? (
               <div className="rounded-lg bg-slate-100 p-4 text-center text-sm font-semibold text-brand-muted">
@@ -558,5 +571,42 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
         {submitting ? "Submitting..." : "Place bid"}
       </button>
     </form>
+  );
+}
+
+function LocationMap({ locationPin, location }: { locationPin?: string; location?: string }) {
+  let embedSrc = "";
+
+  if (locationPin && locationPin.includes(",")) {
+    const parts = locationPin.split(",");
+    const lat = parseFloat(parts[0].trim());
+    const lng = parseFloat(parts[1].trim());
+    if (!isNaN(lat) && !isNaN(lng)) {
+      const delta = 0.01;
+      const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+      embedSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
+    }
+  }
+
+  if (!embedSrc && location) {
+    const query = encodeURIComponent(location);
+    embedSrc = `https://www.google.com/maps?q=${query}&output=embed`;
+  }
+
+  if (!embedSrc) return null;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <iframe
+        src={embedSrc}
+        width="100%"
+        height="200"
+        style={{ border: 0 }}
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+        title="Location map"
+      />
+    </div>
   );
 }

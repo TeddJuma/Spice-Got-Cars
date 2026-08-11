@@ -70,7 +70,7 @@ const services = [
 function ServicesPage() {
   return (
     <>
-      <section className="bg-brand-navy px-4 py-16 text-white md:py-20">
+      <section className="bg-brand-navy px-4 py-10 text-white md:py-20">
         <div className="mx-auto max-w-7xl">
           <span className="mb-4 inline-block rounded-full bg-brand-accent/15 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-accent">
             Dealer in
@@ -89,7 +89,7 @@ function ServicesPage() {
           {services.map((s) => (
             <article
               key={s.title}
-              className="rounded-2xl border border-slate-200 bg-white p-8 transition-shadow hover:shadow-lg"
+              className="rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-lg md:p-8"
             >
               <div className="mb-5 grid size-12 place-items-center rounded-xl bg-red-50 text-brand-accent">
                 <s.icon className="size-6" />
@@ -109,7 +109,7 @@ function ServicesPage() {
         </div>
       </section>
 
-      <section className="bg-slate-50 px-4 py-16">
+      <section className="bg-slate-50 px-4 py-10 md:py-16">
         <div className="mx-auto max-w-4xl rounded-2xl bg-brand-navy p-10 text-center text-white md:p-14">
           <h2 className="text-3xl font-bold md:text-4xl">Talk to a Spice Got Cars representative</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-300">

@@ -49,7 +49,7 @@ function LoginPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-20">
+    <div className="mx-auto max-w-md px-4 py-12 md:py-20">
       <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
         <h1 className="text-2xl font-bold text-brand-navy">
           {isSignUp ? "Owner sign up" : "Owner login"}
@@ -68,7 +68,7 @@ function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
               placeholder="you@dealership.co.ke"
             />
           </div>
@@ -81,7 +81,7 @@ function LoginPage() {
                 minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
                 placeholder="••••••••"
               />
               <button

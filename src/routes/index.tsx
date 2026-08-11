@@ -18,7 +18,7 @@ function Index() {
   return (
     <>
       {/* Hero */}
-      <section className="relative flex min-h-[90vh] items-center justify-center px-4 py-24">
+      <section className="relative flex min-h-[85vh] items-center justify-center px-4 py-16 md:min-h-[90vh] md:py-24">
         <div className="absolute inset-0">
           <img
             src="/Hero Image.jpg"
@@ -44,7 +44,7 @@ function Index() {
           <form
             action="/inventory"
             method="get"
-            className="mx-auto mt-10 flex max-w-3xl rounded-2xl bg-white/95 p-2 text-brand-navy shadow-2xl backdrop-blur-sm"
+            className="mx-auto mt-10 flex max-w-3xl flex-wrap rounded-2xl bg-white/95 p-2 text-brand-navy shadow-2xl backdrop-blur-sm md:flex-nowrap"
           >
             <div className="flex flex-1 items-center gap-2 px-3">
               <Search className="size-5 text-brand-muted" />
@@ -59,7 +59,7 @@ function Index() {
             <select
               name="body"
               defaultValue=""
-              className="bg-transparent px-3 py-3 text-sm focus:outline-none"
+              className="hidden bg-transparent px-3 py-3 text-sm focus:outline-none md:block"
             >
               <option value="">All body types</option>
               <option value="SUV">SUV</option>
@@ -71,7 +71,7 @@ function Index() {
             <div className="hidden h-8 w-px self-center bg-slate-200 md:block" />
             <button
               type="submit"
-              className="rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover"
+              className="w-full rounded-lg bg-brand-accent px-8 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-accent-hover md:w-auto"
             >
               Search cars
             </button>
@@ -101,7 +101,7 @@ function Index() {
       </section>
 
       {/* Trust bar */}
-      <section className="border-b border-slate-100 bg-white py-8">
+      <section className="border-b border-slate-100 bg-white py-6 md:py-8">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 md:grid-cols-4">
           <TrustItem stat="500+" label="Cars delivered" icon={<Award className="size-5 text-brand-accent" />} />
           {/* <TrustItem stat="12 yrs" label="Serving Kenya" icon={<Sparkles className="size-5 text-brand-accent" />} /> */}
@@ -112,7 +112,7 @@ function Index() {
       </section>
 
       {/* Featured listings */}
-      <section className="mx-auto max-w-7xl px-4 py-16">
+      <section className="mx-auto max-w-7xl px-4 py-10 md:py-16">
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Latest arrivals</h2>
@@ -145,7 +145,7 @@ function Index() {
       </section>
 
       {/* Sell CTA */}
-      <section className="bg-slate-900 px-4 py-20 text-white">
+      <section className="bg-slate-900 px-4 py-12 text-white md:py-20">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="mb-6 text-3xl font-bold md:text-5xl">
             Want to sell your car?

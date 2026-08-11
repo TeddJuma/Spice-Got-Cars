@@ -40,17 +40,17 @@ function AdminPage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-brand-navy">Inventory Admin</h1>
+          <h1 className="text-2xl font-bold text-brand-navy md:text-3xl">Inventory Admin</h1>
           <p className="mt-1 text-sm text-brand-muted">
             Manage your dealership listings.
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link to="/admin/create">
-            <Button>
+            <Button className="md:size-auto">
               <Plus className="mr-2 size-4" /> Add Listing
             </Button>
           </Link>
@@ -62,7 +62,7 @@ function AdminPage() {
               </span>
             )}
           </Button>
-          <Button variant="outline" onClick={() => signOut()}>
+          <Button variant="outline" size="sm" onClick={() => signOut()}>
             <LogOut className="mr-2 size-4" /> Logout
           </Button>
         </div>

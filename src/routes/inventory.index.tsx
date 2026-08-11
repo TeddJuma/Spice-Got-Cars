@@ -1,18 +1,17 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Search, SlidersHorizontal, X } from "lucide-react";
 import {
   type Car,
-  type BodyType,
   type Condition,
   type FuelType,
   type Transmission,
 } from "@/data/listings";
 import { ListingCard } from "@/components/listing-card";
 import { cn } from "@/lib/utils";
-import { fetchListings } from "@/data/listings-supabase";
+import { fetchListings, fetchFilterOptions } from "@/data/listings-supabase";
 
 const sortOptions = [
   "newest",
@@ -25,7 +24,9 @@ type SortKey = (typeof sortOptions)[number];
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
-  body: fallback(z.string(), "").default(""),
+  make: fallback(z.string(), "").default(""),
+  model: fallback(z.string(), "").default(""),
+  location: fallback(z.string(), "").default(""),
   transmission: fallback(z.string(), "").default(""),
   fuel: fallback(z.string(), "").default(""),
   condition: fallback(z.string(), "").default(""),
@@ -39,9 +40,24 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/inventory/")({
   validateSearch: zodValidator(searchSchema),
   loader: async () => {
-    const data = await fetchListings();
-    return { listings: data };
+    const [listings, filterOptions] = await Promise.all([
+      fetchListings(false),
+      fetchFilterOptions(),
+    ]);
+    return { listings, filterOptions };
   },
+  errorComponent: ({ error }) => (
+    <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+      <h1 className="text-3xl font-bold">Something went wrong</h1>
+      <p className="mt-2 text-brand-muted">{error.message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-4 rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+      >
+        Retry
+      </button>
+    </div>
+  ),
   head: () => ({
     meta: [
       { title: "Inventory - Spice Got Cars Nairobi" },
@@ -62,7 +78,7 @@ export const Route = createFileRoute("/inventory/")({
 });
 
 function InventoryPage() {
-  const { listings } = Route.useLoaderData();
+  const { listings, filterOptions } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -74,7 +90,9 @@ function InventoryPage() {
         const hay = `${car.make} ${car.model} ${car.trim ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (search.body && car.bodyType !== search.body) return false;
+      if (search.make && car.make !== search.make) return false;
+      if (search.model && car.model !== search.model) return false;
+      if (search.location && car.location !== search.location) return false;
       if (search.transmission && car.transmission !== search.transmission)
         return false;
       if (search.fuel && car.fuelType !== search.fuel) return false;
@@ -120,7 +138,9 @@ function InventoryPage() {
     navigate({
       search: {
         q: "",
-        body: "",
+        make: "",
+        model: "",
+        location: "",
         transmission: "",
         fuel: "",
         condition: "",
@@ -134,7 +154,9 @@ function InventoryPage() {
 
   const hasActiveFilters =
     !!search.q ||
-    !!search.body ||
+    !!search.make ||
+    !!search.model ||
+    !!search.location ||
     !!search.transmission ||
     !!search.fuel ||
     !!search.condition ||
@@ -144,7 +166,7 @@ function InventoryPage() {
     search.maxYear != null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <div className="mx-auto max-w-7xl px-4 py-6 md:py-12">
       <div className="mb-6">
         <h1 className="text-3xl font-bold md:text-4xl">Inventory</h1>
         <p className="text-brand-muted">
@@ -204,22 +226,35 @@ function InventoryPage() {
             )}
           </div>
 
-          <FilterGroup label="Body type">
+          <FilterGroup label="Make">
             <FilterSelect
-              value={search.body}
-              onChange={(v) => update({ body: v })}
+              value={search.make}
+              onChange={(v) => update({ make: v })}
               options={[
                 ["", "All"],
-                ...(
-                  [
-                    "SUV",
-                    "Saloon",
-                    "Hatchback",
-                    "Pickup",
-                    "Wagon",
-                    "Coupe",
-                  ] as BodyType[]
-                ).map((v) => [v, v] as [string, string]),
+                ...filterOptions.makes.map((m) => [m, m] as [string, string]),
+              ]}
+            />
+          </FilterGroup>
+
+          <FilterGroup label="Model">
+            <FilterSelect
+              value={search.model}
+              onChange={(v) => update({ model: v })}
+              options={[
+                ["", "All"],
+                ...filterOptions.models.map((m) => [m, m] as [string, string]),
+              ]}
+            />
+          </FilterGroup>
+
+          <FilterGroup label="Location">
+            <FilterSelect
+              value={search.location}
+              onChange={(v) => update({ location: v })}
+              options={[
+                ["", "All"],
+                ...filterOptions.locations.map((l) => [l, l] as [string, string]),
               ]}
             />
           </FilterGroup>
@@ -265,12 +300,12 @@ function InventoryPage() {
 
           <FilterGroup label="Price (KES)">
             <div className="flex gap-2">
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="Min"
                 value={search.minPrice}
                 onChange={(v) => update({ minPrice: v })}
               />
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="Max"
                 value={search.maxPrice}
                 onChange={(v) => update({ maxPrice: v })}
@@ -280,12 +315,12 @@ function InventoryPage() {
 
           <FilterGroup label="Year">
             <div className="flex gap-2">
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="From"
                 value={search.minYear}
                 onChange={(v) => update({ minYear: v })}
               />
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="To"
                 value={search.maxYear}
                 onChange={(v) => update({ maxYear: v })}
@@ -364,7 +399,7 @@ function FilterSelect({
   );
 }
 
-function NumberInput({
+function DebouncedNumberInput({
   value,
   onChange,
   placeholder,
@@ -373,16 +408,27 @@ function NumberInput({
   onChange: (v: number | undefined) => void;
   placeholder: string;
 }) {
+  const [local, setLocal] = useState(String(value ?? ""));
+
+  useEffect(() => {
+    setLocal(String(value ?? ""));
+  }, [value]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const num = local === "" ? undefined : Number(local);
+      onChange(num);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [local, onChange]);
+
   return (
     <input
       type="number"
       inputMode="numeric"
-      value={value ?? ""}
+      value={local}
       placeholder={placeholder}
-      onChange={(e) => {
-        const raw = e.target.value;
-        onChange(raw === "" ? undefined : Number(raw));
-      }}
+      onChange={(e) => setLocal(e.target.value)}
       className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
     />
   );

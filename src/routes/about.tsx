@@ -23,7 +23,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
+    <div className="mx-auto max-w-5xl px-4 py-8 md:py-16">
       <div className="mb-12">
         <span className="text-xs font-bold uppercase tracking-widest text-brand-accent">
           Our story
@@ -71,7 +71,7 @@ function AboutPage() {
         />
       </div>
 
-      <div className="mt-12 rounded-2xl bg-brand-navy p-8 text-center text-white md:p-12">
+      <div className="mt-8 rounded-2xl bg-brand-navy p-6 text-center text-white md:mt-12 md:p-12">
         <h2 className="text-2xl font-bold md:text-3xl">
           Ready to find your next car?
         </h2>
@@ -107,7 +107,7 @@ function Feature({
   body: string;
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6">
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
       <div className="mb-3 grid size-10 place-items-center rounded-lg bg-emerald-50">
         {icon}
       </div>

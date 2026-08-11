@@ -43,6 +43,8 @@ function CreateListingPage() {
     logbookVerified: false,
     isAuction: false,
     auctionEndsAt: "",
+    location: "",
+    locationPin: "",
   });
 
   const [photos, setPhotos] = useState<File[]>([]);
@@ -135,6 +137,8 @@ function CreateListingPage() {
           listed_at: new Date().toISOString().split("T")[0],
           is_auction: form.isAuction,
           auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
+          location: form.location || null,
+          location_pin: form.locationPin || null,
         })
         .select()
         .single();
@@ -305,7 +309,26 @@ function CreateListingPage() {
           />
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <div>
+            <Label>General Location</Label>
+            <Input
+              value={form.location}
+              onChange={(e) => updateField("location", e.target.value)}
+              placeholder="e.g. Kahawa West, Nairobi"
+            />
+          </div>
+          <div>
+            <Label>Location Pin (optional)</Label>
+            <Input
+              value={form.locationPin}
+              onChange={(e) => updateField("locationPin", e.target.value)}
+              placeholder="e.g. -1.2345, 36.7890"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-2">
             <Switch
               checked={form.negotiable}

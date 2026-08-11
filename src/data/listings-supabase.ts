@@ -1,7 +1,33 @@
 import { createServerClient } from "../lib/supabase-server";
 import { type Car } from "./listings";
 
-export async function fetchListings(): Promise<Car[]> {
+export async function fetchFilterOptions() {
+  try {
+    const supabase = createServerClient();
+    if (!supabase) {
+      return { makes: [], models: [], locations: [] };
+    }
+
+    const { data, error } = await supabase
+      .from("listings")
+      .select("make, model, location");
+
+    if (error || !data) {
+      return { makes: [], models: [], locations: [] };
+    }
+
+    const makes = [...new Set(data.map((l: any) => l.make).filter(Boolean))].sort();
+    const models = [...new Set(data.map((l: any) => l.model).filter(Boolean))].sort();
+    const locations = [...new Set(data.map((l: any) => l.location).filter(Boolean))].sort();
+
+    return { makes, models, locations };
+  } catch (err) {
+    console.error("Failed to fetch filter options:", err);
+    return { makes: [], models: [], locations: [] };
+  }
+}
+
+export async function fetchListings(includeAuctions = true): Promise<Car[]> {
   try {
     const supabase = createServerClient();
     if (!supabase) {
@@ -9,10 +35,16 @@ export async function fetchListings(): Promise<Car[]> {
       return [];
     }
 
-    const { data, error } = await supabase
+    const query = supabase
       .from("listings")
       .select("*")
       .order("listed_at", { ascending: false });
+
+    if (!includeAuctions) {
+      query.eq("is_auction", false);
+    }
+
+    const { data, error } = await query;
 
     if (error || !data) {
       console.error("Supabase fetch error:", error);
@@ -47,6 +79,8 @@ export async function fetchListings(): Promise<Car[]> {
           ntsaInspected: row.ntsa_inspected,
           logbookVerified: row.logbook_verified,
           listedAt: row.listed_at,
+          location: row.location || undefined,
+          locationPin: row.location_pin || undefined,
           isAuction: row.is_auction,
           auctionEndsAt: row.auction_ends_at,
           startingBidKes: row.starting_bid_kes,
@@ -103,6 +137,8 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       ntsaInspected: data.ntsa_inspected,
       logbookVerified: data.logbook_verified,
       listedAt: data.listed_at,
+      location: data.location || undefined,
+      locationPin: data.location_pin || undefined,
       isAuction: data.is_auction,
       auctionEndsAt: data.auction_ends_at,
       startingBidKes: data.starting_bid_kes,

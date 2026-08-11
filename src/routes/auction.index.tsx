@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
@@ -6,6 +6,7 @@ import { Search, SlidersHorizontal, X, Timer, ShieldCheck } from "lucide-react";
 import { AuctionCard } from "@/components/auction-card";
 import { cn } from "@/lib/utils";
 import { createServerClient } from "@/lib/supabase-server";
+import { fetchFilterOptions } from "@/data/listings-supabase";
 
 const sortOptions = [
   "ending-soon",
@@ -17,7 +18,9 @@ type SortKey = (typeof sortOptions)[number];
 
 const searchSchema = z.object({
   q: fallback(z.string(), "").default(""),
-  body: fallback(z.string(), "").default(""),
+  make: fallback(z.string(), "").default(""),
+  model: fallback(z.string(), "").default(""),
+  location: fallback(z.string(), "").default(""),
   transmission: fallback(z.string(), "").default(""),
   fuel: fallback(z.string(), "").default(""),
   minPrice: fallback(z.number().optional(), undefined),
@@ -35,17 +38,22 @@ export const Route = createFileRoute("/auction/")({
   loader: async () => {
     const supabase = createServerClient();
     if (!supabase) {
-      return { auctions: [] };
+      return { auctions: [], filterOptions: { makes: [], models: [], locations: [] } };
     }
 
-    const { data } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("is_auction", true)
-      .order("auction_ends_at", { ascending: true });
+    const [listingsResult, filterOptions] = await Promise.all([
+      supabase
+        .from("listings")
+        .select("*")
+        .eq("is_auction", true)
+        .order("auction_ends_at", { ascending: true }),
+      fetchFilterOptions(),
+    ]);
+
+    const data = listingsResult.data;
 
     if (!data) {
-      return { auctions: [] };
+      return { auctions: [], filterOptions };
     }
 
     const withPhotos = await Promise.all(
@@ -63,8 +71,20 @@ export const Route = createFileRoute("/auction/")({
       }),
     );
 
-    return { auctions: withPhotos };
+    return { auctions: withPhotos, filterOptions };
   },
+  errorComponent: ({ error }) => (
+    <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+      <h1 className="text-3xl font-bold">Something went wrong</h1>
+      <p className="mt-2 text-brand-muted">{error.message}</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="mt-4 rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+      >
+        Retry
+      </button>
+    </div>
+  ),
   head: () => ({
     meta: [
       { title: "Auction - Spice Got Cars" },
@@ -79,7 +99,7 @@ export const Route = createFileRoute("/auction/")({
 });
 
 function AuctionPage() {
-  const { auctions } = Route.useLoaderData();
+  const { auctions, filterOptions } = Route.useLoaderData();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -108,6 +128,8 @@ function AuctionPage() {
       endsAt: a.auction_ends_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       bidCount: a.bid_count ?? 0,
       highestBidder: a.highest_bidder,
+      location: a.location,
+      locationPin: a.location_pin,
     }));
   }, [auctions]);
 
@@ -118,7 +140,9 @@ function AuctionPage() {
         const hay = `${item.make} ${item.model} ${item.trim ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (search.body && item.bodyType !== search.body) return false;
+      if (search.make && item.make !== search.make) return false;
+      if (search.model && item.model !== search.model) return false;
+      if (search.location && item.location !== search.location) return false;
       if (search.transmission && item.transmission !== search.transmission)
         return false;
       if (search.fuel && item.fuelType !== search.fuel) return false;
@@ -169,7 +193,9 @@ function AuctionPage() {
     navigate({
       search: {
         q: "",
-        body: "",
+        make: "",
+        model: "",
+        location: "",
         transmission: "",
         fuel: "",
         minPrice: undefined,
@@ -183,7 +209,9 @@ function AuctionPage() {
 
   const hasActiveFilters =
     !!search.q ||
-    !!search.body ||
+    !!search.make ||
+    !!search.model ||
+    !!search.location ||
     !!search.transmission ||
     !!search.fuel ||
     search.minPrice != null ||
@@ -192,7 +220,7 @@ function AuctionPage() {
     search.maxYear != null;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+    <div className="mx-auto max-w-7xl px-4 py-6 md:py-12">
       {/* Page header */}
       <div className="mb-8 rounded-2xl bg-brand-navy p-8 text-white md:p-12">
         <h1 className="text-3xl font-bold md:text-5xl">
@@ -267,18 +295,35 @@ function AuctionPage() {
             )}
           </div>
 
-          <FilterGroup label="Body type">
+          <FilterGroup label="Make">
             <FilterSelect
-              value={search.body}
-              onChange={(v) => update({ body: v, page: 1 })}
+              value={search.make}
+              onChange={(v) => update({ make: v, page: 1 })}
               options={[
                 ["", "All"],
-                ["SUV", "SUV"],
-                ["Saloon", "Saloon"],
-                ["Hatchback", "Hatchback"],
-                ["Pickup", "Pickup"],
-                ["Wagon", "Wagon"],
-                ["Coupe", "Coupe"],
+                ...filterOptions.makes.map((m) => [m, m] as [string, string]),
+              ]}
+            />
+          </FilterGroup>
+
+          <FilterGroup label="Model">
+            <FilterSelect
+              value={search.model}
+              onChange={(v) => update({ model: v, page: 1 })}
+              options={[
+                ["", "All"],
+                ...filterOptions.models.map((m) => [m, m] as [string, string]),
+              ]}
+            />
+          </FilterGroup>
+
+          <FilterGroup label="Location">
+            <FilterSelect
+              value={search.location}
+              onChange={(v) => update({ location: v, page: 1 })}
+              options={[
+                ["", "All"],
+                ...filterOptions.locations.map((l) => [l, l] as [string, string]),
               ]}
             />
           </FilterGroup>
@@ -311,12 +356,12 @@ function AuctionPage() {
 
           <FilterGroup label="Current bid (KES)">
             <div className="flex gap-2">
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="Min"
                 value={search.minPrice}
                 onChange={(v) => update({ minPrice: v, page: 1 })}
               />
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="Max"
                 value={search.maxPrice}
                 onChange={(v) => update({ maxPrice: v, page: 1 })}
@@ -326,12 +371,12 @@ function AuctionPage() {
 
           <FilterGroup label="Year">
             <div className="flex gap-2">
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="From"
                 value={search.minYear}
                 onChange={(v) => update({ minYear: v, page: 1 })}
               />
-              <NumberInput
+              <DebouncedNumberInput
                 placeholder="To"
                 value={search.maxYear}
                 onChange={(v) => update({ maxYear: v, page: 1 })}
@@ -411,7 +456,7 @@ function AuctionPage() {
       </div>
 
       {/* Terms section */}
-      <section className="mt-16 rounded-2xl border border-slate-200 bg-white p-8 md:p-12">
+      <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 md:p-8 md:py-12">
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <div>
             <h2 className="text-2xl font-bold md:text-3xl">
@@ -504,7 +549,7 @@ function FilterSelect({
   );
 }
 
-function NumberInput({
+function DebouncedNumberInput({
   value,
   onChange,
   placeholder,
@@ -513,16 +558,27 @@ function NumberInput({
   onChange: (v: number | undefined) => void;
   placeholder: string;
 }) {
+  const [local, setLocal] = useState(String(value ?? ""));
+
+  useEffect(() => {
+    setLocal(String(value ?? ""));
+  }, [value]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const num = local === "" ? undefined : Number(local);
+      onChange(num);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [local, onChange]);
+
   return (
     <input
       type="number"
       inputMode="numeric"
-      value={value ?? ""}
+      value={local}
       placeholder={placeholder}
-      onChange={(e) => {
-        const raw = e.target.value;
-        onChange(raw === "" ? undefined : Number(raw));
-      }}
+      onChange={(e) => setLocal(e.target.value)}
       className="w-full min-w-0 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
     />
   );

@@ -211,7 +211,7 @@ function SellPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
+    <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
       <div className="mb-10">
         <h1 className="text-3xl font-bold md:text-4xl">Sell your car</h1>
         <p className="mt-2 max-w-2xl text-brand-muted">
@@ -221,7 +221,7 @@ function SellPage() {
         </p>
       </div>
 
-      <div className="mb-10 grid gap-4 md:grid-cols-3">
+      <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <HowStep n={1} title="Submit details" body="Fill in your car's basics and upload photos." />
         <HowStep n={2} title="Spice Got Cars review" body="Our team validates the condition and paperwork." />
         <HowStep n={3} title="Offer or list" body="Cash offer or we list it for you within 24 hours." />
@@ -381,7 +381,7 @@ function SellPage() {
           border: 1px solid rgb(226 232 240);
           background: #fff;
           padding: 0.625rem 0.75rem;
-          font-size: 0.875rem;
+          font-size: 1rem;
           outline: none;
         }
         .input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgb(5 150 105 / 0.15); }

@@ -34,63 +34,81 @@ function AdminIndexPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClient();
 
   const loadData = async () => {
     setLoading(true);
-    const [submissionsData, notificationsData, unread] = await Promise.all([
-      fetchSellSubmissions(supabase),
-      fetchNotifications(supabase),
-      fetchUnreadNotificationCount(supabase),
-    ]);
+    setError(null);
 
-    setSubmissions(submissionsData);
-    setNotifications(notificationsData);
-    setUnreadCount(unread);
+    try {
+      const [submissionsData, notificationsData, unread] = await Promise.all([
+        fetchSellSubmissions(supabase),
+        fetchNotifications(supabase),
+        fetchUnreadNotificationCount(supabase),
+      ]);
 
-    const { data: listingsData } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("is_auction", false)
-      .order("listed_at", { ascending: false });
+      setSubmissions(submissionsData);
+      setNotifications(notificationsData);
+      setUnreadCount(unread);
 
-    if (listingsData) {
-      const withPhotos = await Promise.all(
-        listingsData.map(async (listing: any) => {
-          const { data: photos } = await supabase
-            .from("listing_photos")
-            .select("storage_path")
-            .eq("listing_id", listing.id)
-            .order("sort_order", { ascending: true });
-          return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
-        }),
-      );
-      const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
-      setListings(unique);
+      const { data: listingsData, error: listingsError } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("is_auction", false)
+        .order("listed_at", { ascending: false });
+
+      if (listingsError) {
+        console.error("Failed to fetch listings:", listingsError);
+        setError(`Failed to fetch listings: ${listingsError.message}`);
+      }
+
+      if (listingsData) {
+        const withPhotos = await Promise.all(
+          listingsData.map(async (listing: any) => {
+            const { data: photos } = await supabase
+              .from("listing_photos")
+              .select("storage_path")
+              .eq("listing_id", listing.id)
+              .order("sort_order", { ascending: true });
+            return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
+          }),
+        );
+        const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
+        setListings(unique);
+      }
+
+      const { data: auctionsData, error: auctionsError } = await supabase
+        .from("listings")
+        .select("*")
+        .eq("is_auction", true)
+        .order("auction_ends_at", { ascending: true });
+
+      if (auctionsError) {
+        console.error("Failed to fetch auctions:", auctionsError);
+        setError((prev) => prev || `Failed to fetch auctions: ${auctionsError.message}`);
+      }
+
+      if (auctionsData) {
+        const withPhotos = await Promise.all(
+          auctionsData.map(async (listing: any) => {
+            const { data: photos } = await supabase
+              .from("listing_photos")
+              .select("storage_path")
+              .eq("listing_id", listing.id)
+              .order("sort_order", { ascending: true });
+            return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
+          }),
+        );
+        const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
+        setAuctions(unique);
+      }
+    } catch (err: any) {
+      console.error("Failed to load admin data:", err);
+      setError(err.message || "Failed to load data");
+    } finally {
+      setLoading(false);
     }
-
-    const { data: auctionsData } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("is_auction", true)
-      .order("auction_ends_at", { ascending: true });
-
-    if (auctionsData) {
-      const withPhotos = await Promise.all(
-        auctionsData.map(async (listing: any) => {
-          const { data: photos } = await supabase
-            .from("listing_photos")
-            .select("storage_path")
-            .eq("listing_id", listing.id)
-            .order("sort_order", { ascending: true });
-          return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
-        }),
-      );
-      const unique = Array.from(new Map(withPhotos.map((l) => [l.id, l])).values());
-      setAuctions(unique);
-    }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -232,13 +250,28 @@ function AdminIndexPage() {
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
 
   if (loading) {
-    return <p className="mt-8 text-brand-muted">Loading...</p>;
+    return <p className="mt-8 px-4 text-brand-muted">Loading...</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+        <p className="font-semibold">Error loading admin data</p>
+        <p className="mt-1 text-sm">{error}</p>
+        <button
+          onClick={loadData}
+          className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="mt-8 space-y-4">
+    <div className="mt-8 space-y-4 px-4">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant={activeTab === "listings" ? "default" : "outline"}
             size="sm"
@@ -261,7 +294,7 @@ function AdminIndexPage() {
           >
             Pending Submissions
             {pendingCount > 0 && (
-              <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+              <span className="ml-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                 {pendingCount}
               </span>
             )}
@@ -275,26 +308,26 @@ function AdminIndexPage() {
             <Bell className="mr-1 size-4" />
             Notifications
             {unreadCount > 0 && (
-              <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
+              <span className="ml-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                 {unreadCount}
               </span>
             )}
           </Button>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative">
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="relative w-full sm:w-auto">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-brand-muted" />
             <input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm focus:border-brand-accent focus:outline-none sm:w-64"
             />
           </div>
           {activeTab === "notifications" && unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={handleMarkAllRead}>
+            <Button variant="ghost" size="sm" onClick={handleMarkAllRead} className="w-full sm:w-auto">
               Mark all read
             </Button>
           )}
