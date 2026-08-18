@@ -90,7 +90,9 @@ Formatting guidelines:
 - Use bullet points (- item) for lists of options, features, or multiple items
 - Keep paragraphs short and scannable
 - Use [text](url) for links to pages on this site like /inventory, /services, /sell, /contact, /about, /auction
-- Never say you cannot access real-time inventory — you have the latest list above.`;
+- Never say you cannot access real-time inventory — you have the latest list above.
+
+CRITICAL: Do not output any internal reasoning, thinking process, <think> tags, <environment_details> blocks, or meta-commentary. Answer directly and concisely.`;
 }
 
 const chatSchema = z.object({
@@ -131,7 +133,7 @@ export const sendChatMessage = createServerFn({ method: "POST" })
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "llama-3.1-8b-instant",
+          model: "groq/compound-mini",
           messages: [
             { role: "system", content: systemPrompt },
             ...history,
@@ -154,9 +156,14 @@ export const sendChatMessage = createServerFn({ method: "POST" })
 
       const result = await response.json();
       console.log("[chat-server] Groq response parsed:", JSON.stringify(result).substring(0, 300));
-      const reply =
+      const rawReply =
         result.choices?.[0]?.message?.content ??
         "Sorry, I didn't get a proper response. Please try again.";
+
+      const reply = rawReply
+        .replace(/<think>[\s\S]*?<\/think>/g, "")
+        .replace(/<environment_details>[\s\S]*?<\/environment_details>/g, "")
+        .trim();
 
       return { reply };
     } catch (err) {

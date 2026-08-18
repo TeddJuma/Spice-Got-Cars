@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Bot, Loader2 } from "lucide-react";
 import { sendChatMessage } from "@/lib/chat-server";
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 function isInternalUrl(url: string): boolean {
   if (url.startsWith("/")) return true;
@@ -89,21 +89,10 @@ function renderInline(text: string): React.ReactNode[] {
 }
 
 function InternalLink({ href, children }: { href: string; children: React.ReactNode }) {
-  const navigate = useNavigate();
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    navigate({ to: href });
-  };
-
   return (
-    <a
-      href={href}
-      onClick={handleClick}
-      className="text-brand-accent underline"
-    >
+    <Link to={href} className="text-brand-accent underline">
       {children}
-    </a>
+    </Link>
   );
 }
 
