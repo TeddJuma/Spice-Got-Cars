@@ -86,6 +86,10 @@ export const Route = createFileRoute("/admin/$id")({
   component: EditListingPage,
 });
 
+type PhotoItem =
+  | { kind: "existing"; id: string; storagePath: string }
+  | { kind: "new"; file: File; url: string };
+
 function EditListingPage() {
   const { user, loading } = useAuth();
   const { listing } = Route.useLoaderData();
@@ -119,9 +123,15 @@ function EditListingPage() {
     })),
   });
 
-  const [newPhotos, setNewPhotos] = useState<File[]>([]);
-  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
-  const [existingPhotos, setExistingPhotos] = useState(listing.photos);
+  const [photos, setPhotos] = useState<PhotoItem[]>(
+    (listing.photos || []).map((p: any) => ({
+      kind: "existing" as const,
+      id: p.id,
+      storagePath: p.storage_path,
+    }))
+  );
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
@@ -138,28 +148,40 @@ function EditListingPage() {
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    setNewPhotos((prev) => [...prev, ...files]);
-    const urls = files.map((f) => URL.createObjectURL(f));
-    setPhotoUrls((prev) => [...prev, ...urls]);
+    const items: PhotoItem[] = files.map((f) => ({
+      kind: "new" as const,
+      file: f,
+      url: URL.createObjectURL(f),
+    }));
+    setPhotos((prev) => [...prev, ...items]);
   };
 
-  const removeNewPhoto = (index: number) => {
-    setNewPhotos((prev) => prev.filter((_, i) => i !== index));
-    setPhotoUrls((prev) => {
-      URL.revokeObjectURL(prev[index]);
-      return prev.filter((_, i) => i !== index);
-    });
-  };
-
-  const removeExistingPhoto = async (photo: any) => {
-    if (!supabase) return;
-    if (!confirm("Remove this photo?")) return;
-    await supabase.from("listing_photos").delete().eq("id", photo.id);
-    const path = photo.storage_path.split("/car-photos/")[1];
-    if (path) {
-      await supabase.storage.from("car-photos").remove([path]);
+  const removePhoto = async (index: number) => {
+    const item = photos[index];
+    if (!item) return;
+    if (item.kind === "existing") {
+      if (!supabase) return;
+      if (!confirm("Remove this photo?")) return;
+      await supabase.from("listing_photos").delete().eq("id", item.id);
+      const path = item.storagePath.split("/car-photos/")[1];
+      if (path) {
+        await supabase.storage.from("car-photos").remove([path]);
+      }
+    } else {
+      URL.revokeObjectURL(item.url);
     }
-    setExistingPhotos((prev) => prev.filter((p) => p.id !== photo.id));
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
+    if (viewerIndex === index) setViewerIndex(null);
+  };
+
+  const reorderPhotos = (from: number, to: number) => {
+    if (from === to || from < 0 || to < 0) return;
+    setPhotos((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -221,10 +243,32 @@ function EditListingPage() {
 
       if (updateError) throw updateError;
 
-      if (newPhotos.length > 0) {
+      // Persist the new image order for existing photos.
+      const orderUpdates = photos
+        .map((p, i) => ({ p, i }))
+        .filter(({ p }) => p.kind === "existing")
+        .map(({ p, i }) =>
+          supabase
+            .from("listing_photos")
+            .update({ sort_order: i })
+            .eq("id", (p as Extract<PhotoItem, { kind: "existing" }>).id)
+        );
+      if (orderUpdates.length > 0) {
+        const results = await Promise.all(orderUpdates);
+        for (const r of results) {
+          if (r.error) console.error("Failed to reorder photo:", r.error);
+        }
+      }
+
+      // Upload any newly added photos in their current order.
+      const newItems = photos.filter(
+        (p): p is Extract<PhotoItem, { kind: "new" }> => p.kind === "new"
+      );
+      if (newItems.length > 0) {
         let uploadFailed = false;
-        for (let i = 0; i < newPhotos.length; i++) {
-          const file = newPhotos[i];
+        for (let i = 0; i < newItems.length; i++) {
+          const item = newItems[i];
+          const file = item.file;
           const ext = file.name.split(".").pop() || "jpg";
           const path = `${user!.id}/${listing.id}/${Date.now()}-${i}.${ext}`;
 
@@ -239,12 +283,13 @@ function EditListingPage() {
           }
 
           const { data: publicUrlData } = supabase.storage.from("car-photos").getPublicUrl(path);
+          const sortOrder = photos.indexOf(item);
 
           if (publicUrlData?.publicUrl) {
             await supabase.from("listing_photos").insert({
               listing_id: listing.id,
               storage_path: publicUrlData.publicUrl,
-              sort_order: existingPhotos.length + i,
+              sort_order: sortOrder,
             });
           }
         }
@@ -537,58 +582,60 @@ function EditListingPage() {
 
         <div>
           <Label>Photos</Label>
-          {existingPhotos.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-3">
-              {existingPhotos.map((photo, idx) => {
-                const globalIndex = existingPhotos.slice(0, idx).length + photoUrls.length;
-                return (
+          <p className="mb-2 text-xs text-brand-muted">
+            Drag photos to reorder. Click a photo to view it; the ✕ removes it.
+          </p>
+          {photos.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-3">
+              {photos.map((photo, i) => (
+                <div
+                  key={photo.kind === "existing" ? photo.id : photo.url}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragIndex(i);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragEnter={() => setDragOverIndex(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (dragIndex !== null) reorderPhotos(dragIndex, i);
+                    setDragIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  onDragEnd={() => {
+                    setDragIndex(null);
+                    setDragOverIndex(null);
+                  }}
+                  className={`relative cursor-move rounded-lg ${
+                    dragIndex === i ? "opacity-40" : ""
+                  } ${
+                    dragOverIndex === i && dragIndex !== i
+                      ? "ring-2 ring-brand-accent"
+                      : ""
+                  }`}
+                >
                   <button
-                    key={photo.id}
                     type="button"
-                    onClick={() => setViewerIndex(globalIndex)}
-                    className="relative overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
+                    onClick={() => setViewerIndex(i)}
+                    draggable={false}
+                    className="block overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
                     <img
-                      src={photo.storage_path}
+                      src={photo.kind === "existing" ? photo.storagePath : photo.url}
                       alt=""
                       className="h-24 w-32 object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeExistingPhoto(photo);
-                      }}
-                      className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
-                    >
-                      <X className="size-3" />
-                    </button>
                   </button>
-                );
-              })}
-            </div>
-          )}
-          {photoUrls.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-3">
-              {photoUrls.map((url, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => setViewerIndex(existingPhotos.length + i)}
-                  className="relative overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
-                >
-                  <img src={url} alt="" className="h-24 w-32 rounded-lg object-cover" />
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeNewPhoto(i);
-                    }}
-                    className="absolute -right-2 -top-2 rounded-full bg-red-600 p-1 text-white"
+                    onClick={() => removePhoto(i)}
+                    aria-label="Remove photo"
+                    className="absolute -right-2 -top-2 z-10 flex size-7 items-center justify-center rounded-full bg-red-600 text-white shadow-lg ring-2 ring-white transition hover:scale-110 hover:bg-red-700"
                   >
-                    <X className="size-3" />
+                    <X className="size-4" />
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           )}
@@ -604,9 +651,9 @@ function EditListingPage() {
         </Button>
       </form>
 
-      {viewerIndex !== null && (existingPhotos[viewerIndex] || photoUrls[viewerIndex - existingPhotos.length]) && (
+      {viewerIndex !== null && photos[viewerIndex] && (
         <Lightbox
-          photos={[...existingPhotos.map((p) => p.storage_path), ...photoUrls]}
+          photos={photos.map((p) => (p.kind === "existing" ? p.storagePath : p.url))}
           index={viewerIndex}
           onClose={() => setViewerIndex(null)}
         />
