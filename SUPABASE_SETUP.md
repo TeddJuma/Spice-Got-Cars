@@ -10,20 +10,19 @@
    - **Region**: pick the closest (e.g. `af-south-1` for Nairobi)
 4. Wait for provisioning (~2 minutes)
 
-## 2. Run the Database Migration
+## 2. Run the Database Migrations
+
+Run **every** SQL file in `supabase/migrations/` (in filename order, oldest first). Skipping any file leaves tables or RLS policies missing, which causes errors like `new row violates row-level security policy`.
 
 1. In the Supabase dashboard, go to **SQL Editor**
 2. Click **New query**
-3. Open `supabase/migrations/20250705_create_listings.sql` from this project
-4. Paste the entire SQL into the editor
-5. Click **Run** (or press Ctrl+Enter)
+3. Open the first migration file (`supabase/migrations/20250705_create_listings.sql`) and paste its contents into the editor, then **Run**
+4. Repeat for each remaining migration file in order (e.g. `20250707_create_sell_submissions.sql`, `20250715_...`, `20250727_...`, `20250730_...`, `20250810_...`, `20250829_...`)
 
-This will create:
-- `profiles` table
-- `listings` table
-- `listing_photos` table
-- `storage` bucket named `car-photos`
-- All Row Level Security (RLS) policies
+These create:
+- `profiles`, `listings`, `listing_photos`, `sell_submissions`, `notifications`, `auction_windows`, `auction_bids` tables
+- a `car-photos` storage bucket
+- All Row Level Security (RLS) policies (including public insert on `sell_submissions` used by the /sell page)
 
 ## 3. Enable Email Auth
 
