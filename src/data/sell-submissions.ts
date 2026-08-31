@@ -55,7 +55,9 @@ export async function createSellSubmission(
   supabase?: SupabaseClient
 ): Promise<SellSubmission> {
   const client = getClient(supabase);
+  const id = crypto.randomUUID();
   const insertPayload = {
+    id,
     name: data.name,
     phone: data.phone,
     make: data.make,
@@ -70,13 +72,9 @@ export async function createSellSubmission(
     photos: data.photos,
   };
 
-  const { data: submission, error } = await client
-    .from("sell_submissions")
-    .insert(insertPayload)
-    .select("*")
-    .single();
+  const { error } = await client.from("sell_submissions").insert(insertPayload);
 
-  if (error || !submission) {
+  if (error) {
     console.error("Failed to create sell submission:", error);
     throw new Error(error?.message || "Failed to create submission");
   }
@@ -93,7 +91,24 @@ export async function createSellSubmission(
     console.error("Failed to create notification:", notifError);
   }
 
-  return submission as SellSubmission;
+  return {
+    id,
+    name: data.name,
+    phone: data.phone,
+    make: data.make,
+    model: data.model,
+    year: data.year,
+    mileage_km: data.mileageKm,
+    engine_capacity: data.engineCapacityCc,
+    condition: data.condition,
+    asking_price: data.askingPrice,
+    location: data.location,
+    notes: data.notes,
+    photos: data.photos,
+    status: "pending",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  } as SellSubmission;
 }
 
 export async function fetchSellSubmissions(
