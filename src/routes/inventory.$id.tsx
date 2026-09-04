@@ -31,7 +31,7 @@ export const Route = createFileRoute("/inventory/$id")({
       }
       return { car };
     } catch (err) {
-      console.error("Failed to load listing:", err);
+      console.error("Server loader failed:", err);
       throw notFound();
     }
   },
@@ -111,6 +111,9 @@ function CarDetailPage() {
   const auctionStatus = getAuctionStatus(car);
   const supabase = createClient();
 
+  const backTo = isAuction ? "/auction/" : "/inventory";
+  const backLabel = isAuction ? "Back to auction" : "Back to inventory";
+
   useEffect(() => {
     if (!isAuction || !car.auctionWindows || car.auctionWindows.length === 0) {
       setTimeLeft("");
@@ -169,11 +172,11 @@ function CarDetailPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 md:py-10">
       <Link
-        to="/inventory"
+        to={backTo}
         className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-brand-muted hover:text-brand-navy"
       >
         <ArrowLeft className="size-4" />
-        Back to inventory
+        {backLabel}
       </Link>
 
       <div className="grid gap-8 lg:grid-cols-[1fr_380px]">

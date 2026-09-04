@@ -1,6 +1,18 @@
 import { createServerClient } from "../lib/supabase-server";
 import { type Car } from "./listings";
 
+async function withTimeout<T>(promise: Promise<T>, ms = 12000): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error("Request timed out")), ms);
+  });
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+}
+
 export async function fetchFilterOptions() {
   try {
     const supabase = createServerClient();
@@ -114,25 +126,29 @@ export async function fetchListingById(id: string): Promise<Car | null> {
     const supabase = createServerClient();
     if (!supabase) return null;
 
-    const { data, error } = await supabase
-      .from("listings")
-      .select("*")
-      .eq("id", id)
-      .single();
+    const { data, error } = await withTimeout(
+      supabase.from("listings").select("*").eq("id", id).single()
+    );
 
     if (error || !data) return null;
 
-    const { data: photos } = await supabase
-      .from("listing_photos")
-      .select("storage_path")
-      .eq("listing_id", id)
-      .order("sort_order", { ascending: true });
+    const [photosRes, windowsRes] = await withTimeout(
+      Promise.all([
+        supabase
+          .from("listing_photos")
+          .select("storage_path")
+          .eq("listing_id", id)
+          .order("sort_order", { ascending: true }),
+        supabase
+          .from("auction_windows")
+          .select("id, starts_at, ends_at")
+          .eq("listing_id", id)
+          .order("starts_at", { ascending: true }),
+      ])
+    );
 
-    const { data: windows } = await supabase
-      .from("auction_windows")
-      .select("id, starts_at, ends_at")
-      .eq("listing_id", id)
-      .order("starts_at", { ascending: true });
+    const photos = photosRes.data;
+    const windows = windowsRes.data;
 
     return {
       id: data.id,
@@ -173,3 +189,4 @@ export async function fetchListingById(id: string): Promise<Car | null> {
     return null;
   }
 }
+
