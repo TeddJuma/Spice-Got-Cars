@@ -27,8 +27,6 @@ export interface Car {
   photos: string[];
   description: string;
   status: Status;
-  ntsaInspected: boolean;
-  logbookVerified: boolean;
   listedAt: string; // ISO date
   location?: string;
   locationPin?: string;

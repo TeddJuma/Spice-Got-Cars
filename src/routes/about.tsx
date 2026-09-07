@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ShieldCheck, MapPin, HandshakeIcon, Users } from "lucide-react";
+import { MapPin, HandshakeIcon, Users } from "lucide-react";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "Spice Got Cars is a Nairobi-based car sales and reselling company serving buyers across Kenya. Verified logbooks, NTSA inspection, and honest service.",
+          "Spice Got Cars is a Nairobi-based car sales and reselling company serving buyers across Kenya. Verified logbooks and honest service.",
       },
       { property: "og:title", content: "About Spice Got Cars" },
       {
@@ -49,11 +49,6 @@ function AboutPage() {
       </div>
 
       <div className="mt-12 grid gap-4 md:grid-cols-2">
-        <Feature
-          icon={<ShieldCheck className="size-5 text-brand-accent" />}
-          title="Verified paperwork"
-          body="We confirm logbook ownership before a car is listed. No surprises after purchase."
-        />
         <Feature
           icon={<HandshakeIcon className="size-5 text-brand-accent" />}
           title="Fair, transparent pricing"

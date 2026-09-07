@@ -22,9 +22,14 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminIdRouteImport } from './routes/admin.$id'
 import { Route as AdminCreateRouteImport } from './routes/admin.create'
+import { Route as AgentsDashboardRouteImport } from './routes/agents/dashboard'
+import { Route as AgentsLoginRouteImport } from './routes/agents/login'
+import { Route as AgentsSignupRouteImport } from './routes/agents/signup'
 import { Route as AuctionIndexRouteImport } from './routes/auction.index'
 import { Route as InventoryIndexRouteImport } from './routes/inventory.index'
 import { Route as InventoryIdRouteImport } from './routes/inventory.$id'
+import { Route as AgentsListingsIdRouteImport } from './routes/agents/listings/$id'
+import { Route as AgentsListingsCreateRouteImport } from './routes/agents/listings/create'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -91,6 +96,21 @@ const AdminCreateRoute = AdminCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => AdminRoute,
 } as any)
+const AgentsDashboardRoute = AgentsDashboardRouteImport.update({
+  id: '/agents/dashboard',
+  path: '/agents/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsLoginRoute = AgentsLoginRouteImport.update({
+  id: '/agents/login',
+  path: '/agents/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsSignupRoute = AgentsSignupRouteImport.update({
+  id: '/agents/signup',
+  path: '/agents/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuctionIndexRoute = AuctionIndexRouteImport.update({
   id: '/auction/',
   path: '/auction/',
@@ -106,6 +126,16 @@ const InventoryIdRoute = InventoryIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => InventoryRoute,
 } as any)
+const AgentsListingsIdRoute = AgentsListingsIdRouteImport.update({
+  id: '/agents/listings/$id',
+  path: '/agents/listings/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsListingsCreateRoute = AgentsListingsCreateRouteImport.update({
+  id: '/agents/listings/create',
+  path: '/agents/listings/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -120,10 +150,15 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
+  '/agents/dashboard': typeof AgentsDashboardRoute
+  '/agents/login': typeof AgentsLoginRoute
+  '/agents/signup': typeof AgentsSignupRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin/': typeof AdminIndexRoute
   '/auction/': typeof AuctionIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/agents/listings/$id': typeof AgentsListingsIdRoute
+  '/agents/listings/create': typeof AgentsListingsCreateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -136,10 +171,15 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
+  '/agents/dashboard': typeof AgentsDashboardRoute
+  '/agents/login': typeof AgentsLoginRoute
+  '/agents/signup': typeof AgentsSignupRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin': typeof AdminIndexRoute
   '/auction': typeof AuctionIndexRoute
   '/inventory': typeof InventoryIndexRoute
+  '/agents/listings/$id': typeof AgentsListingsIdRoute
+  '/agents/listings/create': typeof AgentsListingsCreateRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -155,10 +195,15 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/admin/$id': typeof AdminIdRoute
   '/admin/create': typeof AdminCreateRoute
+  '/agents/dashboard': typeof AgentsDashboardRoute
+  '/agents/login': typeof AgentsLoginRoute
+  '/agents/signup': typeof AgentsSignupRoute
   '/inventory/$id': typeof InventoryIdRoute
   '/admin/': typeof AdminIndexRoute
   '/auction/': typeof AuctionIndexRoute
   '/inventory/': typeof InventoryIndexRoute
+  '/agents/listings/$id': typeof AgentsListingsIdRoute
+  '/agents/listings/create': typeof AgentsListingsCreateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,10 +220,15 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/$id'
     | '/admin/create'
+    | '/agents/dashboard'
+    | '/agents/login'
+    | '/agents/signup'
     | '/inventory/$id'
     | '/admin/'
     | '/auction/'
     | '/inventory/'
+    | '/agents/listings/$id'
+    | '/agents/listings/create'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -191,10 +241,15 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/$id'
     | '/admin/create'
+    | '/agents/dashboard'
+    | '/agents/login'
+    | '/agents/signup'
     | '/inventory/$id'
     | '/admin'
     | '/auction'
     | '/inventory'
+    | '/agents/listings/$id'
+    | '/agents/listings/create'
   id:
     | '__root__'
     | '/'
@@ -209,10 +264,15 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/$id'
     | '/admin/create'
+    | '/agents/dashboard'
+    | '/agents/login'
+    | '/agents/signup'
     | '/inventory/$id'
     | '/admin/'
     | '/auction/'
     | '/inventory/'
+    | '/agents/listings/$id'
+    | '/agents/listings/create'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,7 +286,12 @@ export interface RootRouteChildren {
   SellRoute: typeof SellRoute
   ServicesRoute: typeof ServicesRoute
   TermsRoute: typeof TermsRoute
+  AgentsDashboardRoute: typeof AgentsDashboardRoute
+  AgentsLoginRoute: typeof AgentsLoginRoute
+  AgentsSignupRoute: typeof AgentsSignupRoute
   AuctionIndexRoute: typeof AuctionIndexRoute
+  AgentsListingsIdRoute: typeof AgentsListingsIdRoute
+  AgentsListingsCreateRoute: typeof AgentsListingsCreateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -322,6 +387,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCreateRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/agents/dashboard': {
+      id: '/agents/dashboard'
+      path: '/agents/dashboard'
+      fullPath: '/agents/dashboard'
+      preLoaderRoute: typeof AgentsDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/login': {
+      id: '/agents/login'
+      path: '/agents/login'
+      fullPath: '/agents/login'
+      preLoaderRoute: typeof AgentsLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/signup': {
+      id: '/agents/signup'
+      path: '/agents/signup'
+      fullPath: '/agents/signup'
+      preLoaderRoute: typeof AgentsSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auction/': {
       id: '/auction/'
       path: '/auction'
@@ -342,6 +428,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/inventory/$id'
       preLoaderRoute: typeof InventoryIdRouteImport
       parentRoute: typeof InventoryRoute
+    }
+    '/agents/listings/$id': {
+      id: '/agents/listings/$id'
+      path: '/agents/listings/$id'
+      fullPath: '/agents/listings/$id'
+      preLoaderRoute: typeof AgentsListingsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents/listings/create': {
+      id: '/agents/listings/create'
+      path: '/agents/listings/create'
+      fullPath: '/agents/listings/create'
+      preLoaderRoute: typeof AgentsListingsCreateRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -385,7 +485,12 @@ const rootRouteChildren: RootRouteChildren = {
   SellRoute: SellRoute,
   ServicesRoute: ServicesRoute,
   TermsRoute: TermsRoute,
+  AgentsDashboardRoute: AgentsDashboardRoute,
+  AgentsLoginRoute: AgentsLoginRoute,
+  AgentsSignupRoute: AgentsSignupRoute,
   AuctionIndexRoute: AuctionIndexRoute,
+  AgentsListingsIdRoute: AgentsListingsIdRoute,
+  AgentsListingsCreateRoute: AgentsListingsCreateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

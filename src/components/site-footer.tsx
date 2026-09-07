@@ -6,6 +6,7 @@ import {
   PHONE_PRIMARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
+import { Facebook, Instagram } from "lucide-react";
 
 export function SiteFooter() {
   return (
@@ -61,6 +62,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link to="/agents/signup" className="hover:text-brand-accent">
+                  Become an Agent
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className="hover:text-brand-accent">
                   About Us
                 </Link>
@@ -96,6 +102,35 @@ export function SiteFooter() {
                 className="block text-brand-muted"
               >
                 {CONTACT_EMAIL}
+              </a>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <a
+                href="https://www.facebook.com/people/Spice-Got-Cars/61555662586922/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                className="text-brand-muted transition-colors hover:text-brand-accent"
+              >
+                <Facebook className="size-5" />
+              </a>
+              <a
+                href="https://www.instagram.com/spicegotcars/"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="text-brand-muted transition-colors hover:text-brand-accent"
+              >
+                <Instagram className="size-5" />
+              </a>
+              <a
+                href="https://www.tiktok.com/@spice.gotcars"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="TikTok"
+                className="text-brand-muted transition-colors hover:text-brand-accent"
+              >
+                <span className="flex size-5 items-center justify-center text-xs font-black">TT</span>
               </a>
             </div>
           </div>

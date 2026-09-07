@@ -58,8 +58,7 @@ function TermsPage() {
         <section>
           <h2 className="text-xl font-bold">4. Vehicle Condition</h2>
           <p className="mt-2 text-slate-700">
-            All auction vehicles are sold as-is. While we perform NTSA inspection
-            and logbook verification, bidders are encouraged to inspect vehicles
+            All auction vehicles are sold as-is. While we perform logbook verification, bidders are encouraged to inspect vehicles
             personally or via a trusted mechanic before bidding. Spice Got Cars
             is not liable for undisclosed mechanical issues discovered after
             purchase.

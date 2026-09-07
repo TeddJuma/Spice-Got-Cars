@@ -70,7 +70,7 @@ export const Route = createFileRoute("/inventory/")({
       {
         property: "og:description",
         content:
-          "Verified used and new cars across Kenya. Foreign used and locally used vehicles, all NTSA-inspected.",
+          "Verified used and new cars across Kenya. Foreign used and locally used vehicles, logbook-verified.",
       },
     ],
   }),

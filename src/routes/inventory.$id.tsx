@@ -6,7 +6,6 @@ import {
   Fuel,
   Cog,
   Car as CarIcon,
-  ShieldCheck,
   FileCheck,
   Phone,
   MessageCircle,
@@ -89,6 +88,11 @@ function CarDetailPage() {
   const { car } = Route.useLoaderData();
   const [activePhoto, setActivePhoto] = useState(0);
   const [timeLeft, setTimeLeft] = useState("");
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
+  const [inquiryName, setInquiryName] = useState("");
+  const [inquiryPhone, setInquiryPhone] = useState("");
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
+  const [inquirySuccess, setInquirySuccess] = useState(false);
 
   if (!car) {
     return (
@@ -113,6 +117,26 @@ function CarDetailPage() {
 
   const backTo = isAuction ? "/auction/" : "/inventory";
   const backLabel = isAuction ? "Back to auction" : "Back to inventory";
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inquiryName.trim() || !inquiryPhone.trim()) return;
+    setInquirySubmitting(true);
+    try {
+      const { error } = await supabase.from("inquiries").insert({
+        listing_id: car.id,
+        name: inquiryName.trim(),
+        phone: inquiryPhone.trim(),
+      });
+      if (error) throw error;
+      setInquirySuccess(true);
+    } catch (err) {
+      console.error("Inquiry failed:", err);
+      alert("Failed to submit inquiry. Please try again.");
+    } finally {
+      setInquirySubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAuction || !car.auctionWindows || car.auctionWindows.length === 0) {
@@ -151,23 +175,6 @@ function CarDetailPage() {
   const displayPrice = isAuction
     ? car.currentBidKes ?? car.startingBidKes ?? car.priceKes
     : car.priceKes;
-
-  const specs: [string, string][] = [
-    ["Year", String(car.year)],
-    ["Mileage", formatMileage(car.mileageKm)],
-    ["Transmission", car.transmission],
-    ["Fuel", car.fuelType],
-    ["Engine", car.engineSize],
-    ["Body type", car.bodyType],
-    ["Condition", car.condition],
-    ...(isAuction
-      ? [
-          ["Starting bid", formatKes(car.startingBidKes ?? car.priceKes)],
-          ["Current bid", formatKes(car.currentBidKes ?? car.priceKes)],
-          ["Bids", String(car.bidCount ?? 0)],
-        ]
-      : []),
-  ];
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-4 md:py-10">
@@ -234,33 +241,13 @@ function CarDetailPage() {
             ))}
           </div>
 
-          {/* Description & specs */}
+          {/* Description */}
           <div className="mt-8 space-y-8">
             <section>
               <h2 className="mb-3 text-xl font-bold">About the Car</h2>
               <p className="leading-relaxed text-slate-700">
                 {car.description}
               </p>
-            </section>
-
-            <section>
-              <h2 className="mb-3 text-xl font-bold">Specifications</h2>
-              <dl className="grid grid-cols-1 overflow-hidden rounded-2xl border border-slate-200 bg-white sm:grid-cols-2">
-                {specs.map(([k, v], i) => (
-                  <div
-                    key={k}
-                    className={cn(
-                      "flex justify-between gap-4 border-slate-100 px-5 py-3 text-sm",
-                      i < specs.length - (specs.length % 2 === 0 ? 2 : 1)
-                        ? "border-b"
-                        : "sm:border-b-0",
-                    )}
-                  >
-                    <dt className="text-brand-muted">{k}</dt>
-                    <dd className="font-semibold">{v}</dd>
-                  </div>
-                ))}
-              </dl>
             </section>
 
             <section>
@@ -273,12 +260,8 @@ function CarDetailPage() {
                   label="Logbook and ownership verified in-house"
                 />
                 <TrustLine
-                  ok={car.ntsaInspected}
-                  label="NTSA inspection completed"
-                />
-                <TrustLine
                   ok
-                  label="Logbook transfer supported by Spice Got Cars team"
+                  label="Logbook transfer supported by Spice Got Cars team (buyer covers transfer costs)"
                 />
               </ul>
             </section>
@@ -339,13 +322,31 @@ function CarDetailPage() {
               </div>
             )}
 
-            <div className="mb-6 grid grid-cols-2 gap-y-3 text-sm text-brand-muted">
-              <QuickSpec icon={<Calendar className="size-4" />} label={String(car.year)} />
-              <QuickSpec icon={<Gauge className="size-4" />} label={formatMileage(car.mileageKm)} />
-              <QuickSpec icon={<Cog className="size-4" />} label={car.transmission} />
-              <QuickSpec icon={<Fuel className="size-4" />} label={car.fuelType} />
-              <QuickSpec icon={<CarIcon className="size-4" />} label={car.bodyType} />
-              <QuickSpec icon={<ShieldCheck className="size-4" />} label="NTSA OK" />
+            <div className="mb-6 flex flex-wrap gap-x-4 gap-y-1 text-xs font-medium text-brand-muted">
+              <span className="flex items-center gap-1.5">
+                <Calendar className="size-3.5" />
+                {car.year}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Gauge className="size-3.5" />
+                {formatMileage(car.mileageKm)}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Cog className="size-3.5" />
+                {car.transmission}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Fuel className="size-3.5" />
+                {car.fuelType}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CarIcon className="size-3.5" />
+                {car.bodyType}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <FileCheck className="size-3.5" />
+                {car.condition}
+              </span>
             </div>
 
             {(car.location || car.locationPin) && (
@@ -371,23 +372,32 @@ function CarDetailPage() {
             ) : isAuction ? (
               <AuctionBidForm listingId={car.id} currentBid={car.currentBidKes ?? car.startingBidKes ?? car.priceKes} />
             ) : (
-              <div className="space-y-2">
-                <a
-                  href={buildCarInquiryLink(car)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-lg bg-[#25D366] py-3 font-bold text-white transition-transform hover:scale-[1.02] active:scale-95"
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => setShowInquiryModal(true)}
+                  className="w-full rounded-lg bg-brand-navy py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-slate-800"
                 >
-                  <MessageCircle className="size-5" />
-                  WhatsApp about this car
-                </a>
-                <a
-                  href={`tel:${PHONE_TEL}`}
-                  className="flex items-center justify-center gap-2 rounded-lg bg-brand-navy py-3 font-bold text-white transition-colors hover:bg-slate-800"
-                >
-                  <Phone className="size-5" />
-                  Call {WHATSAPP_DISPLAY}
-                </a>
+                  Inquire about this car
+                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href={buildCarInquiryLink(car)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-[#25D366] py-2 text-xs font-bold text-white transition-transform hover:scale-[1.02] active:scale-95"
+                  >
+                    <MessageCircle className="size-3.5" />
+                    WhatsApp
+                  </a>
+                  <a
+                    href={`tel:${PHONE_TEL}`}
+                    className="flex items-center justify-center gap-1.5 rounded-lg bg-brand-navy py-2 text-xs font-bold text-white transition-colors hover:bg-slate-800"
+                  >
+                    <Phone className="size-3.5" />
+                    Call
+                  </a>
+                </div>
               </div>
             )}
           </div>
@@ -430,21 +440,72 @@ function CarDetailPage() {
           </div>
         </section>
       )}
-    </div>
-  );
-}
 
-function QuickSpec({
-  icon,
-  label,
-}: {
-  icon: React.ReactNode;
-  label: string;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      {icon}
-      <span>{label}</span>
+      {showInquiryModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-brand-navy">Inquire about this car</h3>
+            {inquirySuccess ? (
+              <div className="mt-4 text-center">
+                <p className="text-sm text-brand-muted">Our team will get back to you soon.</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowInquiryModal(false);
+                    setInquirySuccess(false);
+                    setInquiryName("");
+                    setInquiryPhone("");
+                  }}
+                  className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white"
+                >
+                  Close
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleInquirySubmit} className="mt-4 space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={inquiryName}
+                    onChange={(e) => setInquiryName(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Phone number</label>
+                  <input
+                    type="tel"
+                    required
+                    value={inquiryPhone}
+                    onChange={(e) => setInquiryPhone(e.target.value)}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+                    placeholder="+254 7XX XXX XXX"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowInquiryModal(false)}
+                    className="flex-1 rounded-lg border border-slate-300 py-2 text-sm font-semibold text-brand-navy"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={inquirySubmitting}
+                    className="flex-1 rounded-lg bg-brand-navy py-2 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    {inquirySubmitting ? "Submitting..." : "Submit inquiry"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -577,6 +638,11 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
           onChange={(e) => setPaymentRef(e.target.value)}
           className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
         />
+        <div className="mt-2 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
+          <p className="font-semibold text-brand-navy">Mobile Money Paybill: 714888</p>
+          <p className="font-semibold text-brand-navy">Account Number: 134394</p>
+          <p className="font-semibold text-brand-navy">Business Name: Spice Got Cars</p>
+        </div>
       </div>
       <label className="flex items-start gap-2 text-sm text-slate-700">
         <input

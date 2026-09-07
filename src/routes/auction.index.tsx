@@ -2,7 +2,7 @@ import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { Search, SlidersHorizontal, X, Timer, ShieldCheck } from "lucide-react";
+import { Search, SlidersHorizontal, X, Timer } from "lucide-react";
 import { AuctionCard } from "@/components/auction-card";
 import { cn } from "@/lib/utils";
 import { createServerClient } from "@/lib/supabase-server";
@@ -134,7 +134,6 @@ function AuctionPage() {
       photos: a.photos ?? [],
       description: a.description,
       status: a.status === "sold" ? "sold" : a.status === "reserved" ? "ended" : a.auction_ends_at && new Date(a.auction_ends_at) < new Date() ? "ended" : "active",
-      ntsaInspected: a.ntsa_inspected,
       logbookVerified: a.logbook_verified,
       endsAt: a.auction_ends_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       bidCount: a.bid_count ?? 0,
@@ -252,8 +251,7 @@ function AuctionPage() {
           {results.length} {results.length === 1 ? "auction" : "auctions"} live
         </h2>
         <p className="text-brand-muted">
-          Place your bid before time runs out. All vehicles are logbook-verified
-          and NTSA-inspected.
+          Place your bid before time runs out. All vehicles are logbook-verified.
         </p>
       </div>
 

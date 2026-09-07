@@ -39,7 +39,6 @@ function CreateListingPage() {
     condition: "Foreign Used" as "New" | "Foreign Used" | "Locally Used",
     description: "",
     status: "available" as "available" | "reserved" | "sold",
-    ntsaInspected: false,
     logbookVerified: false,
     isAuction: false,
     location: "",
@@ -132,7 +131,6 @@ function CreateListingPage() {
           condition: form.condition,
           description: form.description,
           status: form.status,
-          ntsa_inspected: form.ntsaInspected,
           logbook_verified: form.logbookVerified,
           listed_at: new Date().toISOString().split("T")[0],
           is_auction: form.isAuction,
@@ -352,13 +350,6 @@ function CreateListingPage() {
               onCheckedChange={(v) => updateField("negotiable", v)}
             />
             <Label className="!mt-0">Negotiable price</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={form.ntsaInspected}
-              onCheckedChange={(v) => updateField("ntsaInspected", v)}
-            />
-            <Label className="!mt-0">NTSA inspected</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch

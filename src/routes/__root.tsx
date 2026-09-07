@@ -83,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         name: "description",
         content:
-          "Buy quality foreign-used and locally used cars in Nairobi, Kenya. Verified logbooks, NTSA inspection, and a WhatsApp-first buying experience.",
+          "Buy quality foreign-used and locally used cars in Nairobi, Kenya. Verified logbooks and a WhatsApp-first buying experience.",
       },
       { name: "author", content: "Spice Got Cars" },
       { property: "og:title", content: "Spice Got Cars - Nairobi, Kenya" },
@@ -134,6 +134,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 import { AuthProvider } from "@/lib/auth-context";
+import { AgentAuthProvider } from "@/lib/agent-auth-context";
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -141,15 +142,17 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-brand-navy">
-          <SiteHeader />
-          <main className="flex-1">
-            <Outlet />
-          </main>
-          <SiteFooter />
-          <FloatingChat />
-          <Toaster />
-        </div>
+        <AgentAuthProvider>
+          <div className="flex min-h-screen flex-col bg-slate-50 font-sans text-brand-navy">
+            <SiteHeader />
+            <main className="flex-1">
+              <Outlet />
+            </main>
+            <SiteFooter />
+            <FloatingChat />
+            <Toaster />
+          </div>
+        </AgentAuthProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

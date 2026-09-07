@@ -40,18 +40,22 @@ const sellSchema = z.object({
     .trim()
     .min(7, "Please enter a valid phone number")
     .max(20, "Phone number is too long"),
-  make: z.string().trim().min(1, "Required").max(40),
-  model: z.string().trim().min(1, "Required").max(60),
+  make: z.string().trim().max(40).optional().or(z.literal("")),
+  model: z.string().trim().max(60).optional().or(z.literal("")),
   year: z
     .number({ invalid_type_error: "Enter a year" })
     .int()
     .min(1980, "Too old")
-    .max(new Date().getFullYear() + 1, "Year is in the future"),
+    .max(new Date().getFullYear() + 1, "Year is in the future")
+    .optional()
+    .or(z.literal("")),
   mileage: z
     .number({ invalid_type_error: "Enter mileage" })
     .int()
     .min(0)
-    .max(1_000_000),
+    .max(1_000_000)
+    .optional()
+    .or(z.literal("")),
   engineCapacity: z
     .number({ invalid_type_error: "Enter engine capacity" })
     .int()
@@ -59,12 +63,14 @@ const sellSchema = z.object({
     .max(10_000)
     .optional()
     .or(z.literal("")),
-  condition: z.enum(["New", "Foreign Used", "Locally Used"]),
+  condition: z.enum(["New", "Foreign Used", "Locally Used"]).optional().or(z.literal("")),
   askingPrice: z
     .number({ invalid_type_error: "Enter asking price" })
     .int()
-    .min(1),
-  location: z.string().trim().min(2, "Required").max(80),
+    .min(1)
+    .optional()
+    .or(z.literal("")),
+  location: z.string().trim().max(80).optional().or(z.literal("")),
   notes: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
@@ -117,6 +123,11 @@ function SellPage() {
       const supabase = createClient();
       if (!supabase) {
         toast.error("Supabase is not configured.");
+        return;
+      }
+
+      if (selectedFiles.length === 0) {
+        toast.error("Please add at least one photo of the car.");
         return;
       }
 
@@ -326,7 +337,7 @@ function SellPage() {
 
         <div>
           <label className="mb-1.5 block text-sm font-semibold text-brand-navy">
-            Photos (optional)
+            Photos
           </label>
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-brand-muted transition-colors hover:border-brand-accent hover:text-brand-accent">
             <Upload className="size-4" />
@@ -386,6 +397,19 @@ function SellPage() {
         }
         .input:focus { border-color: #059669; box-shadow: 0 0 0 3px rgb(5 150 105 / 0.15); }
       `}</style>
+
+      <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 text-center md:p-8">
+        <h2 className="text-xl font-bold text-brand-navy">Want to sell more cars?</h2>
+        <p className="mt-2 text-sm text-brand-muted">
+          Become an SGC agent and list your cars directly on the platform. Manage your own listings, track inquiries, and reach more buyers.
+        </p>
+        <a
+          href="/agents/signup"
+          className="mt-4 inline-block rounded-lg bg-brand-navy px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800"
+        >
+          Become an agent
+        </a>
+      </div>
     </div>
   );
 }

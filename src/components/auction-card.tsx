@@ -23,7 +23,6 @@ export interface AuctionItem {
   photos: string[];
   description: string;
   status: "active" | "ended" | "sold";
-  ntsaInspected: boolean;
   logbookVerified: boolean;
   endsAt: string;
   bidCount: number;

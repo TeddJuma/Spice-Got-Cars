@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { Search, ShieldCheck, FileCheck, Award, Sparkles, Banknote } from "lucide-react";
+import { Search, FileCheck, Award, Sparkles, Banknote } from "lucide-react";
 import { ListingCard } from "@/components/listing-card";
 import { fetchListings } from "@/data/listings-supabase";
 
@@ -106,7 +106,6 @@ function Index() {
           <TrustItem stat="500+" label="Cars delivered" icon={<Award className="size-5 text-brand-accent" />} />
           {/* <TrustItem stat="12 yrs" label="Serving Kenya" icon={<Sparkles className="size-5 text-brand-accent" />} /> */}
           <TrustItem stat="100%" label="Logbook verified" icon={<FileCheck className="size-5 text-brand-accent" />} />
-          <TrustItem stat="NTSA" label="Certified inspection" icon={<ShieldCheck className="size-5 text-brand-accent" />} />
           <TrustItem stat="Finance" label="Flexible options" icon={<Banknote className="size-5 text-brand-accent" />} />
         </div>
       </section>

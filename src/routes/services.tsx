@@ -32,13 +32,13 @@ const services = [
   {
     icon: Ship,
     title: "Import Cars",
-    body: "Order your next car directly from Japan, UK, or Dubai. We handle sourcing, shipping, clearing, and NTSA registration end-to-end - you receive a road-ready vehicle at our Kahawa west yard.",
+    body: "Order your next car directly from Japan, UK, or Dubai. We handle sourcing, shipping, clearing, and registration end-to-end - you receive a road-ready vehicle at our Kahawa west yard.",
     points: ["Verified auction sourcing", "Transparent landed pricing", "Duty & clearing handled"],
   },
   {
     icon: Handshake,
     title: "Buy & Sell Used Cars",
-    body: "Browse a curated stock of foreign-used and clean locally used vehicles - every unit logbook-verified and NTSA-inspected. Selling? We list your car to our nationwide buyer network.",
+    body: "Browse a curated stock of foreign-used and clean locally used vehicles - every unit logbook-verified. Selling? We list your car to our nationwide buyer network.",
     points: ["Inspected inventory", "Nationwide buyer reach", "Fast, fair valuations"],
   },
   {

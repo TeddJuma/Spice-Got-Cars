@@ -23,7 +23,7 @@ export const Route = createFileRoute("/admin/")({
   component: AdminIndexPage,
 });
 
-type Tab = "listings" | "auctions" | "submissions" | "notifications";
+type Tab = "listings" | "auctions" | "submissions" | "notifications" | "inquiries" | "agents";
 
 function AdminIndexPage() {
   const [activeTab, setActiveTab] = useState<Tab>("listings");
@@ -31,6 +31,12 @@ function AdminIndexPage() {
   const [auctions, setAuctions] = useState<any[]>([]);
   const [submissions, setSubmissions] = useState<SellSubmission[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [inquiries, setInquiries] = useState<any[]>([]);
+  const [agents, setAgents] = useState<any[]>([]);
+  const [paymentsAgentId, setPaymentsAgentId] = useState<string | null>(null);
+  const [payments, setPayments] = useState<any[]>([]);
+  const [paymentsOpen, setPaymentsOpen] = useState(false);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -42,15 +48,19 @@ function AdminIndexPage() {
     setError(null);
 
     try {
-      const [submissionsData, notificationsData, unread] = await Promise.all([
+      const [submissionsData, notificationsData, unread, inquiriesData, agentsData] = await Promise.all([
         fetchSellSubmissions(supabase),
         fetchNotifications(supabase),
         fetchUnreadNotificationCount(supabase),
+        supabase.from("inquiries").select("*").order("created_at", { ascending: false }),
+        supabase.from("agents").select("*").order("created_at", { ascending: false }),
       ]);
 
       setSubmissions(submissionsData);
       setNotifications(notificationsData);
       setUnreadCount(unread);
+      setInquiries(inquiriesData.data || []);
+      setAgents(agentsData.data || []);
 
       const { data: listingsData, error: listingsError } = await supabase
         .from("listings")
@@ -178,7 +188,6 @@ function AdminIndexPage() {
       condition: submission.condition,
       description: submission.notes || `Customer submission: ${submission.make} ${submission.model}`,
       status: "available",
-      ntsa_inspected: false,
       logbook_verified: false,
       listed_at: new Date().toISOString().split("T")[0],
       is_auction: asAuction,
@@ -257,6 +266,47 @@ function AdminIndexPage() {
     } else {
       toast.error("Failed to delete notification. Please try again.");
     }
+  };
+
+  const handleDeleteAgent = async (id: string) => {
+    if (!confirm("Delete this agent? This will permanently remove their account and all associated data.")) return;
+    const { error } = await supabase.from("agents").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete agent.");
+      return;
+    }
+    setAgents((prev) => prev.filter((a) => a.id !== id));
+    toast.success("Agent deleted.");
+  };
+
+  const handleOpenPayments = async (agentId: string) => {
+    setPaymentsAgentId(agentId);
+    setPaymentsOpen(true);
+    setPaymentsLoading(true);
+    const { data, error } = await supabase
+      .from("agent_payments")
+      .select("*")
+      .eq("agent_id", agentId)
+      .order("created_at", { ascending: false });
+    setPayments(data || []);
+    setPaymentsLoading(false);
+  };
+
+  const handleClosePayments = () => {
+    setPaymentsOpen(false);
+    setPaymentsAgentId(null);
+    setPayments([]);
+  };
+
+  const handleDeleteInquiry = async (id: string) => {
+    if (!confirm("Delete this inquiry? This cannot be undone.")) return;
+    const { error } = await supabase.from("inquiries").delete().eq("id", id);
+    if (error) {
+      toast.error("Failed to delete inquiry.");
+      return;
+    }
+    setInquiries((prev) => prev.filter((i) => i.id !== id));
+    toast.success("Inquiry deleted.");
   };
 
   const query = searchQuery.toLowerCase().trim();
@@ -342,6 +392,20 @@ function AdminIndexPage() {
                 {unreadCount}
               </span>
             )}
+          </Button>
+          <Button
+            variant={activeTab === "inquiries" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveTab("inquiries")}
+          >
+            Inquiries ({inquiries.length})
+          </Button>
+          <Button
+            variant={activeTab === "agents" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setActiveTab("agents")}
+          >
+            Sellers/Agents ({agents.length})
           </Button>
         </div>
 
@@ -435,6 +499,208 @@ function AdminIndexPage() {
               />
             ))
           )}
+        </div>
+      )}
+
+      {activeTab === "inquiries" && (
+        <div className="space-y-4">
+          {inquiries.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
+              <p className="text-brand-muted">No inquiries yet.</p>
+            </div>
+          ) : (
+            (() => {
+              const grouped = inquiries.reduce<Record<string, any[]>>((acc, inquiry) => {
+                const key = inquiry.listing_id || "Unknown";
+                acc[key] = acc[key] || [];
+                acc[key].push(inquiry);
+                return acc;
+              }, {});
+
+              return Object.entries(grouped).map(([listingId, items]) => {
+                const listing = listings.find((l) => l.id === listingId) || auctions.find((a) => a.id === listingId);
+                const title = listing ? `${listing.year} ${listing.make} ${listing.model}` : `Listing ${listingId.slice(0, 8)}...`;
+                const sorted = [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+                return (
+                  <div key={listingId} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    <div className="border-b border-slate-100 px-4 py-3">
+                      <p className="font-semibold text-brand-navy">{title}</p>
+                      <p className="text-xs text-brand-muted">{items.length} inquiry{items.length > 1 ? "s" : ""}</p>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {sorted.map((inq) => (
+                        <div key={inq.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold text-brand-navy">{inq.name}</p>
+                            <p className="text-sm text-brand-muted">{inq.phone}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`tel:${inq.phone}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
+                            >
+                              <Phone className="size-3.5" />
+                              Call
+                            </a>
+                            <a
+                              href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1.5 text-xs font-bold text-white"
+                            >
+                              <MessageCircle className="size-3.5" />
+                              WhatsApp
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteInquiry(inq.id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                            >
+                              <Trash className="size-3.5" />
+                              Delete
+                            </button>
+                            <span className="text-xs text-brand-muted">
+                              {new Date(inq.created_at).toLocaleString("en-KE", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              });
+            })()
+          )}
+        </div>
+      )}
+
+      {activeTab === "agents" && (
+        <div className="space-y-3">
+          {agents.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
+              <p className="text-brand-muted">No agents yet.</p>
+            </div>
+          ) : (
+            agents.map((ag) => {
+              const daysLeft = ag.approved_until
+                ? Math.max(0, Math.ceil((new Date(ag.approved_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                : 0;
+              return (
+                <div key={ag.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="font-semibold text-brand-navy">{ag.name}</p>
+                    <p className="text-sm text-brand-muted">{ag.email} · {ag.phone}</p>
+                    <p className="text-xs text-brand-muted">ID: {ag.id_number}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant={ag.approved ? "default" : "secondary"}>
+                      {ag.approved ? "Approved" : "Not approved"}
+                    </Badge>
+                    {ag.approved && (
+                      <span className="text-xs text-brand-muted">
+                        {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
+                      </span>
+                    )}
+                    <a
+                      href={`tel:${ag.phone}`}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
+                    >
+                      <Phone className="size-3.5" />
+                      Call
+                    </a>
+                    <a
+                      href={`https://wa.me/${ag.phone.replace(/[^0-9]/g, "")}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1.5 text-xs font-bold text-white"
+                    >
+                      <MessageCircle className="size-3.5" />
+                      WhatsApp
+                    </a>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenPayments(ag.id)}
+                    >
+                      Payments
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        const newStatus = !ag.approved;
+                        const approvedUntil = newStatus ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
+                        await supabase.from("agents").update({ approved: newStatus, approved_until: approvedUntil }).eq("id", ag.id);
+                        setAgents((prev) => prev.map((a) => a.id === ag.id ? { ...a, approved: newStatus, approved_until: approvedUntil } : a));
+                        toast.success(newStatus ? "Agent approved for 30 days." : "Agent approval revoked.");
+                      }}
+                    >
+                      {ag.approved ? "Revoke" : "Approve"}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleDeleteAgent(ag.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {paymentsOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl max-h-[80vh] overflow-hidden rounded-2xl bg-white shadow-xl flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <h3 className="text-lg font-bold text-brand-navy">Payment History</h3>
+              <button
+                type="button"
+                onClick={handleClosePayments}
+                className="text-brand-muted hover:text-brand-navy"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="overflow-y-auto p-6">
+              {paymentsLoading ? (
+                <p className="text-brand-muted">Loading...</p>
+              ) : payments.length === 0 ? (
+                <p className="text-brand-muted">No payment records found.</p>
+              ) : (
+                <div className="space-y-3">
+                  {payments.map((p) => (
+                    <div key={p.id} className="flex flex-col gap-1 rounded-lg border border-slate-200 p-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-brand-navy">KES {p.amount.toLocaleString()}</span>
+                        <span className="text-xs text-brand-muted">
+                          {new Date(p.created_at).toLocaleString("en-KE", {
+                            dateStyle: "medium",
+                            timeStyle: "short",
+                          })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-brand-muted">Reference: {p.mpesa_ref}</p>
+                      <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-bold ${
+                        p.status === "approved" ? "bg-emerald-50 text-emerald-700" :
+                        p.status === "rejected" ? "bg-red-50 text-red-700" :
+                        "bg-amber-50 text-amber-700"
+                      }`}>
+                        {p.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

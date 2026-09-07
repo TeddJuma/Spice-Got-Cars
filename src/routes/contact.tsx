@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MapPin, Phone, Clock, Mail, MessageCircle } from "lucide-react";
+import { MapPin, Phone, Clock, Mail, MessageCircle, Facebook, Instagram } from "lucide-react";
 import {
   CONTACT_EMAIL,
   PHONE_TEL,
@@ -94,6 +94,40 @@ function ContactPage() {
               </div>
             }
           />
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 md:p-5">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-brand-muted">
+              Follow us
+            </h3>
+            <div className="mt-3 space-y-2 text-sm">
+              <a
+                href="https://www.facebook.com/people/Spice-Got-Cars/61555662586922/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 font-semibold text-brand-navy hover:text-brand-accent"
+              >
+                <Facebook className="size-4" />
+                Facebook
+              </a>
+              <a
+                href="https://www.instagram.com/spicegotcars/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 font-semibold text-brand-navy hover:text-brand-accent"
+              >
+                <Instagram className="size-4" />
+                Instagram
+              </a>
+              <a
+                href="https://www.tiktok.com/@spice.gotcars"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 font-semibold text-brand-navy hover:text-brand-accent"
+              >
+                <span className="flex size-4 items-center justify-center text-[10px] font-black">TT</span>
+                TikTok
+              </a>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">

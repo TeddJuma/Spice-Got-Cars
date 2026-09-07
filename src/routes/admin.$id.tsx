@@ -110,7 +110,6 @@ function EditListingPage() {
     condition: listing.condition as "New" | "Foreign Used" | "Locally Used",
     description: listing.description,
     status: listing.status as "available" | "reserved" | "sold",
-    ntsaInspected: listing.ntsa_inspected,
     logbookVerified: listing.logbook_verified,
     isAuction: listing.is_auction,
     startingBidKes: listing.starting_bid_kes ?? listing.price_kes,
@@ -207,7 +206,6 @@ function EditListingPage() {
           condition: form.condition,
           description: form.description,
           status: form.status,
-          ntsa_inspected: form.ntsaInspected,
           logbook_verified: form.logbookVerified,
           is_auction: form.isAuction,
           auction_ends_at: null,
@@ -482,13 +480,6 @@ function EditListingPage() {
               onCheckedChange={(v) => updateField("negotiable", v)}
             />
             <Label className="!mt-0">Negotiable price</Label>
-          </div>
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={form.ntsaInspected}
-              onCheckedChange={(v) => updateField("ntsaInspected", v)}
-            />
-            <Label className="!mt-0">NTSA inspected</Label>
           </div>
           <div className="flex items-center gap-2">
             <Switch

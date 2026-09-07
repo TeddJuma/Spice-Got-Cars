@@ -44,7 +44,6 @@ async function fetchRecentListings(): Promise<Car[]> {
           photos: photos?.map((p) => p.storage_path) || [],
           description: row.description,
           status: row.status as Car["status"],
-          ntsaInspected: row.ntsa_inspected,
           logbookVerified: row.logbook_verified,
           listedAt: row.listed_at,
           isAuction: row.is_auction,
