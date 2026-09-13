@@ -1,9 +1,9 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAgentAuth } from "@/lib/agent-auth-context";
 import { Button } from "@/components/ui/button";
 import { Plus, LogOut, Image as ImageIcon } from "lucide-react";
-import { createClient } from "@/lib/supabase";
+import { getAgentListings, submitAgentPayment } from "@/lib/agent-actions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agents/dashboard")({
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/agents/dashboard")({
 });
 
 function AgentDashboard() {
+  const navigate = useNavigate();
   const { agent, loading, signOut } = useAgentAuth();
   const [listings, setListings] = useState<any[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -18,40 +19,27 @@ function AgentDashboard() {
   const [mpesaRef, setMpesaRef] = useState("");
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
-  const supabase = createClient();
 
   useEffect(() => {
     if (!loading && !agent) {
-      redirect({ to: "/agents/login" });
+      navigate({ to: "/agents/login" });
     }
-  }, [agent, loading]);
+  }, [agent, loading, navigate]);
 
   useEffect(() => {
     if (!agent) return;
     const load = async () => {
       setLoadError(null);
-      const { data, error } = await supabase
-        .from("listings")
-        .select("*")
-        .eq("agent_id", agent.id)
-        .order("listed_at", { ascending: false });
-
-      if (error) {
-        setLoadError(error.message);
-        return;
+      try {
+        const res = await getAgentListings({ data: { agentId: agent.id } });
+        if (res.error) {
+          setLoadError(res.error.message);
+        } else {
+          setListings(res.listings || []);
+        }
+      } catch (err: any) {
+        setLoadError(err?.message || "Failed to load listings");
       }
-
-      const withPhotos = await Promise.all(
-        (data || []).map(async (listing: any) => {
-          const { data: photos } = await supabase
-            .from("listing_photos")
-            .select("storage_path")
-            .eq("listing_id", listing.id)
-            .order("sort_order", { ascending: true });
-          return { ...listing, photos: photos?.map((p: any) => p.storage_path) || [] };
-        }),
-      );
-      setListings(withPhotos);
     };
     load();
   }, [agent]);
@@ -104,8 +92,8 @@ function AgentDashboard() {
       </div>
 
       {loadError && (
-        <div className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-          <p className="font-semibold">Error loading listings</p>
+        <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+          <p className="font-semibold">Notice</p>
           <p className="mt-1 text-sm">{loadError}</p>
         </div>
       )}
@@ -135,7 +123,7 @@ function AgentDashboard() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Link to={`/agents/listings/${listing.id}`}>
+                  <Link to="/agents/listings/$id" params={{ id: listing.id }}>
                     <Button variant="outline" size="sm">Edit</Button>
                   </Link>
                 </div>
@@ -174,20 +162,26 @@ function AgentDashboard() {
                 </div>
                 <form onSubmit={async (e) => {
                   e.preventDefault();
-                  if (!mpesaRef.trim()) return;
+                  if (!mpesaRef.trim() || !agent) return;
                   setSubmittingPayment(true);
-                  const { error } = await supabase.from("agent_payments").insert({
-                    agent_id: agent!.id,
-                    mpesa_ref: mpesaRef.trim(),
-                    amount: 2000,
-                    status: "pending",
-                  });
-                  if (error) {
-                    toast.error("Failed to submit payment reference.");
-                  } else {
-                    setPaymentSuccess(true);
+                  try {
+                    const res = await submitAgentPayment({
+                      data: {
+                        agentId: agent.id,
+                        mpesaRef: mpesaRef.trim(),
+                      },
+                    });
+                    if (res.error) {
+                      toast.error(res.error.message || "Failed to submit payment reference.");
+                    } else {
+                      toast.success("Payment reference submitted successfully!");
+                      setPaymentSuccess(true);
+                    }
+                  } catch (err: any) {
+                    toast.error(err?.message || "Failed to submit payment reference.");
+                  } finally {
+                    setSubmittingPayment(false);
                   }
-                  setSubmittingPayment(false);
                 }} className="mt-4 space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-brand-navy">M-PESA Reference Code</label>

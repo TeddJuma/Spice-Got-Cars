@@ -1,13 +1,13 @@
-import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useAgentAuth } from "@/lib/agent-auth-context";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/agents/login")({
   component: AgentLoginPage,
 });
 
 function AgentLoginPage() {
+  const navigate = useNavigate();
   const { signIn, agent, loading } = useAgentAuth();
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -15,23 +15,30 @@ function AgentLoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && agent) {
-    redirect({ to: "/agents/dashboard" });
-  }
+  useEffect(() => {
+    if (!loading && agent) {
+      navigate({ to: "/agents/dashboard" });
+    }
+  }, [agent, loading, navigate]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError("");
     setSubmitting(true);
 
-    const result = await signIn(identifier, password);
-    if (result.error) {
-      setError(result.error.message);
-    } else {
-      toast.success("Welcome back!");
-      redirect({ to: "/agents/dashboard" });
+    try {
+      const result = await signIn(identifier, password);
+      if (result.error) {
+        setError(result.error.message);
+      } else {
+        navigate({ to: "/agents/dashboard" });
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -60,7 +67,6 @@ function AgentLoginPage() {
               <input
                 type={showPassword ? "text" : "password"}
                 required
-                minLength={6}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-base focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
@@ -68,8 +74,8 @@ function AgentLoginPage() {
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-sm text-brand-muted hover:text-brand-navy"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 z-10 flex items-center px-3 text-sm text-brand-muted hover:text-brand-navy"
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
@@ -89,9 +95,9 @@ function AgentLoginPage() {
 
         <p className="mt-4 text-center text-sm text-brand-muted">
           Don't have an account?{" "}
-          <a href="/agents/signup" className="font-semibold text-brand-accent hover:underline">
+          <Link to="/agents/signup" className="font-semibold text-brand-accent hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

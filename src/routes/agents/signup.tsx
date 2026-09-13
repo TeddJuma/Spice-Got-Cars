@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useAgentAuth } from "@/lib/agent-auth-context";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ export const Route = createFileRoute("/agents/signup")({
 });
 
 function AgentSignupPage() {
+  const navigate = useNavigate();
   const { signUp, agent, loading } = useAgentAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,23 +19,31 @@ function AgentSignupPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && agent) {
-    redirect({ to: "/agents/dashboard" });
-  }
+  useEffect(() => {
+    if (!loading && agent) {
+      navigate({ to: "/agents/dashboard" });
+    }
+  }, [agent, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSubmitting(true);
 
-    const result = await signUp({ name, email, phone, idNumber, password });
-    if (result.error) {
-      setError(result.error.message);
-    } else {
-      toast.success("Account created! You can now sign in.");
-      redirect({ to: "/agents/login" });
+    try {
+      const result = await signUp({ name, email, phone, idNumber, password });
+      if (result.error) {
+        setError(result.error.message);
+      } else {
+        toast.success("Account created! You can now sign in.");
+        navigate({ to: "/agents/login" });
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   return (
@@ -125,9 +134,9 @@ function AgentSignupPage() {
 
         <p className="mt-4 text-center text-sm text-brand-muted">
           Already have an account?{" "}
-          <a href="/agents/login" className="font-semibold text-brand-accent hover:underline">
+          <Link to="/agents/login" className="font-semibold text-brand-accent hover:underline">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

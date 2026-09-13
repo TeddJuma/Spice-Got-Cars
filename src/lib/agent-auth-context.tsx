@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { agentLogin } from "@/lib/agent-actions";
+import { agentLogin, agentSignUp } from "@/lib/agent-actions";
 
 type Agent = {
   id: string;
@@ -53,53 +53,10 @@ export function AgentAuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signUp = async (data: { name: string; email: string; phone: string; idNumber: string; password: string }) => {
-    const supabase = (await import("@/lib/supabase-server")).createServerClient();
-    if (!supabase) return { error: { message: "Supabase is not configured" } };
-
-    const existingEmail = await supabase
-      .from("agents")
-      .select("id")
-      .eq("email", data.email.toLowerCase().trim())
-      .single();
-
-    if (existingEmail.data) {
-      return { error: { message: "An account with this email already exists" } };
+    const result = await agentSignUp(data);
+    if (result.error) {
+      return result;
     }
-
-    const existingPhone = await supabase
-      .from("agents")
-      .select("id")
-      .eq("phone", data.phone.trim())
-      .single();
-
-    if (existingPhone.data) {
-      return { error: { message: "An account with this phone number already exists" } };
-    }
-
-    const existingId = await supabase
-      .from("agents")
-      .select("id")
-      .eq("id_number", data.idNumber.trim())
-      .single();
-
-    if (existingId.data) {
-      return { error: { message: "An account with this ID number already exists" } };
-    }
-
-    const passwordHash = await hashPassword(data.password);
-
-    const { error } = await supabase.from("agents").insert({
-      name: data.name.trim(),
-      email: data.email.toLowerCase().trim(),
-      phone: data.phone.trim(),
-      id_number: data.idNumber.trim(),
-      password_hash: passwordHash,
-    });
-
-    if (error) {
-      return { error: { message: error.message || "Failed to create account" } };
-    }
-
     return { error: null };
   };
 
@@ -121,12 +78,4 @@ export function useAgentAuth() {
     throw new Error("useAgentAuth must be used within an AgentAuthProvider");
   }
   return context;
-}
-
-async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "sgc_agent_salt_2024");
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hash));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 }
