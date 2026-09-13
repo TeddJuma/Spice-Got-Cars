@@ -104,6 +104,12 @@ export function ListingCard({ car }: { car: Car }) {
             <Fuel className="size-4 shrink-0" />
             <span>{car.fuelType}</span>
           </div>
+          {car.agentName && (
+            <div className="flex items-center gap-2">
+              <CarIcon className="size-4 shrink-0" />
+              <span>{car.agentName}</span>
+            </div>
+          )}
           {car.location && (
             <div className="col-span-2 flex items-center gap-2">
               <MapPin className="size-4 shrink-0" />

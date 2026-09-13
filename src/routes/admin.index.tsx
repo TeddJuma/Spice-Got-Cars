@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon, Gavel } from "lucide-react";
+import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon, Gavel, MessageSquare } from "lucide-react";
+import { updateAgentPaymentStatus } from "@/lib/agent-actions";
+import ChatButton from "@/components/messaging/ChatButton";
 import {
   fetchSellSubmissions,
   fetchNotifications,
@@ -26,6 +28,8 @@ export const Route = createFileRoute("/admin/")({
 type Tab = "listings" | "auctions" | "submissions" | "notifications" | "inquiries" | "agents";
 
 function AdminIndexPage() {
+  const { user } = useAuth();
+  const supabaseClient = useMemo(() => createClient(), []);
   const [activeTab, setActiveTab] = useState<Tab>("listings");
   const [listings, setListings] = useState<any[]>([]);
   const [auctions, setAuctions] = useState<any[]>([]);
@@ -41,7 +45,6 @@ function AdminIndexPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const supabase = createClient();
 
   const loadData = async () => {
     setLoading(true);
@@ -49,11 +52,11 @@ function AdminIndexPage() {
 
     try {
       const [submissionsData, notificationsData, unread, inquiriesData, agentsData] = await Promise.all([
-        fetchSellSubmissions(supabase),
-        fetchNotifications(supabase),
-        fetchUnreadNotificationCount(supabase),
-        supabase.from("inquiries").select("*").order("created_at", { ascending: false }),
-        supabase.from("agents").select("*").order("created_at", { ascending: false }),
+        fetchSellSubmissions(supabaseClient),
+        fetchNotifications(supabaseClient),
+        fetchUnreadNotificationCount(supabaseClient),
+        supabaseClient.from("inquiries").select("*").order("created_at", { ascending: false }),
+        supabaseClient.from("agents").select("*").order("created_at", { ascending: false }),
       ]);
 
       setSubmissions(submissionsData);
@@ -62,9 +65,9 @@ function AdminIndexPage() {
       setInquiries(inquiriesData.data || []);
       setAgents(agentsData.data || []);
 
-      const { data: listingsData, error: listingsError } = await supabase
+      const { data: listingsData, error: listingsError } = await supabaseClient
         .from("listings")
-        .select("*")
+        .select("*, agents(name, phone)")
         .eq("is_auction", false)
         .order("listed_at", { ascending: false });
 
@@ -76,13 +79,13 @@ function AdminIndexPage() {
       if (listingsData) {
         const withPhotos = await Promise.all(
           listingsData.map(async (listing: any) => {
-            const { data: photos } = await supabase
+            const { data: photos } = await supabaseClient
               .from("listing_photos")
               .select("storage_path")
               .eq("listing_id", listing.id)
               .order("sort_order", { ascending: true });
 
-            const { data: windows } = await supabase
+            const { data: windows } = await supabaseClient
               .from("auction_windows")
               .select("id, starts_at, ends_at")
               .eq("listing_id", listing.id)
@@ -103,9 +106,9 @@ function AdminIndexPage() {
         setListings(unique);
       }
 
-      const { data: auctionsData, error: auctionsError } = await supabase
+      const { data: auctionsData, error: auctionsError } = await supabaseClient
         .from("listings")
-        .select("*")
+        .select("*, agents(name, phone)")
         .eq("is_auction", true)
         .order("auction_ends_at", { ascending: true });
 
@@ -117,13 +120,13 @@ function AdminIndexPage() {
       if (auctionsData) {
         const withPhotos = await Promise.all(
           auctionsData.map(async (listing: any) => {
-            const { data: photos } = await supabase
+            const { data: photos } = await supabaseClient
               .from("listing_photos")
               .select("storage_path")
               .eq("listing_id", listing.id)
               .order("sort_order", { ascending: true });
 
-            const { data: windows } = await supabase
+            const { data: windows } = await supabaseClient
               .from("auction_windows")
               .select("id, starts_at, ends_at")
               .eq("listing_id", listing.id)
@@ -153,20 +156,20 @@ function AdminIndexPage() {
 
   useEffect(() => {
     loadData();
-  }, [supabase]);
+  }, [supabaseClient]);
 
   useEffect(() => {
     if (activeTab === "notifications") {
-      markAllNotificationsAsRead(supabase).then(() => {
+      markAllNotificationsAsRead(supabaseClient).then(() => {
         setUnreadCount(0);
         setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
       });
     }
-  }, [activeTab, supabase]);
+  }, [activeTab, supabaseClient]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this listing? This cannot be undone.")) return;
-    const { error } = await supabase.from("listings").delete().eq("id", id);
+    const { error } = await supabaseClient.from("listings").delete().eq("id", id);
     if (!error) {
       setListings((prev) => prev.filter((l) => l.id !== id));
       setAuctions((prev) => prev.filter((l) => l.id !== id));
@@ -200,7 +203,7 @@ function AdminIndexPage() {
       insertData.bid_count = 0;
     }
 
-    const { data: listing, error } = await supabase
+    const { data: listing, error } = await supabaseClient
       .from("listings")
       .insert(insertData)
       .select("*")
@@ -217,11 +220,11 @@ function AdminIndexPage() {
         storage_path: url,
         sort_order: idx + 1,
       }));
-      await supabase.from("listing_photos").insert(photoRecords);
+      await supabaseClient.from("listing_photos").insert(photoRecords);
     }
 
-    await updateSellSubmissionStatus(submission.id, "approved", supabase);
-    await supabase.from("notifications").insert({
+    await updateSellSubmissionStatus(submission.id, "approved", supabaseClient);
+    await supabaseClient.from("notifications").insert({
       type: "submission_approved",
       message: `Approved sell submission: ${submission.year} ${submission.make} ${submission.model}${asAuction ? " (Auction)" : ""}`,
     });
@@ -232,7 +235,7 @@ function AdminIndexPage() {
 
   const handleReject = async (id: string) => {
     if (!confirm("Reject and permanently delete this submission and its photos?")) return;
-    const deleted = await deleteSellSubmission(id, supabase);
+    const deleted = await deleteSellSubmission(id, supabaseClient);
     if (deleted) {
       toast.success("Submission rejected and deleted.");
     } else {
@@ -242,24 +245,27 @@ function AdminIndexPage() {
   };
 
   const handleMarkAllRead = async () => {
-    await markAllNotificationsAsRead(supabase);
+    await markAllNotificationsAsRead(supabaseClient);
     setUnreadCount(0);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   };
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.read) {
-      await markNotificationAsRead(notification.id, supabase);
+      await markNotificationAsRead(notification.id, supabaseClient);
       setNotifications((prev) =>
         prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
+    if (notification.type === "new_message") {
+      setActiveTab("inquiries");
+    }
   };
 
   const handleDeleteNotification = async (id: string) => {
     if (!confirm("Delete this notification?")) return;
-    const success = await deleteNotification(id, supabase);
+    const success = await deleteNotification(id, supabaseClient);
     if (success) {
       setNotifications((prev) => prev.filter((n) => n.id !== id));
       toast.success("Notification deleted.");
@@ -270,7 +276,7 @@ function AdminIndexPage() {
 
   const handleDeleteAgent = async (id: string) => {
     if (!confirm("Delete this agent? This will permanently remove their account and all associated data.")) return;
-    const { error } = await supabase.from("agents").delete().eq("id", id);
+    const { error } = await supabaseClient.from("agents").delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete agent.");
       return;
@@ -283,7 +289,7 @@ function AdminIndexPage() {
     setPaymentsAgentId(agentId);
     setPaymentsOpen(true);
     setPaymentsLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("agent_payments")
       .select("*")
       .eq("agent_id", agentId)
@@ -298,9 +304,21 @@ function AdminIndexPage() {
     setPayments([]);
   };
 
+  const handleTogglePaymentStatus = async (paymentId: string, currentStatus: string) => {
+    const newStatus = currentStatus === "pending" ? "approved" : "pending";
+    const res = await updateAgentPaymentStatus({ data: { paymentId, status: newStatus } });
+    if (res.error) {
+      toast.error(res.error.message || "Failed to update payment status.");
+    } else {
+      toast.success(`Payment marked as ${newStatus}.`);
+      const updated = payments.map((p) => (p.id === paymentId ? { ...p, status: newStatus } : p));
+      setPayments(updated);
+    }
+  };
+
   const handleDeleteInquiry = async (id: string) => {
     if (!confirm("Delete this inquiry? This cannot be undone.")) return;
-    const { error } = await supabase.from("inquiries").delete().eq("id", id);
+    const { error } = await supabaseClient.from("inquiries").delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete inquiry.");
       return;
@@ -535,38 +553,41 @@ function AdminIndexPage() {
                             <p className="text-sm font-semibold text-brand-navy">{inq.name}</p>
                             <p className="text-sm text-brand-muted">{inq.phone}</p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={`tel:${inq.phone}`}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
-                            >
-                              <Phone className="size-3.5" />
-                              Call
-                            </a>
-                            <a
-                              href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1.5 text-xs font-bold text-white"
-                            >
-                              <MessageCircle className="size-3.5" />
-                              WhatsApp
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteInquiry(inq.id)}
-                              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                            >
-                              <Trash className="size-3.5" />
-                              Delete
-                            </button>
-                            <span className="text-xs text-brand-muted">
-                              {new Date(inq.created_at).toLocaleString("en-KE", {
-                                dateStyle: "medium",
-                                timeStyle: "short",
-                              })}
-                            </span>
-                          </div>
+<div className="flex items-center gap-2">
+                               {inq.listing_id && (
+                                 <ChatButton listingId={inq.listing_id} role="admin" user={user ?? { id: "admin", name: "Admin" }} />
+                               )}
+                               <a
+                                href={`tel:${inq.phone}`}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
+                              >
+                                <Phone className="size-3.5" />
+                                Call
+                              </a>
+                              <a
+                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="WhatsApp"
+                                className="inline-flex items-center justify-center rounded-lg bg-[#25D366] p-1.5 text-white transition-transform hover:scale-105 active:scale-95"
+                              >
+                                <MessageCircle className="size-3.5" />
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteInquiry(inq.id)}
+                                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                              >
+                                <Trash className="size-3.5" />
+                                Delete
+                              </button>
+                              <span className="text-xs text-brand-muted">
+                                {new Date(inq.created_at).toLocaleString("en-KE", {
+                                  dateStyle: "medium",
+                                  timeStyle: "short",
+                                })}
+                              </span>
+                            </div>
                         </div>
                       ))}
                     </div>
@@ -616,10 +637,10 @@ function AdminIndexPage() {
                       href={`https://wa.me/${ag.phone.replace(/[^0-9]/g, "")}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366] px-2.5 py-1.5 text-xs font-bold text-white"
+                      className="inline-flex items-center justify-center rounded-lg bg-[#25D366] p-1.5 text-white transition-transform hover:scale-105 active:scale-95"
+                      title="WhatsApp"
                     >
                       <MessageCircle className="size-3.5" />
-                      WhatsApp
                     </a>
                     <Button
                       variant="outline"
@@ -634,7 +655,7 @@ function AdminIndexPage() {
                       onClick={async () => {
                         const newStatus = !ag.approved;
                         const approvedUntil = newStatus ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
-                        await supabase.from("agents").update({ approved: newStatus, approved_until: approvedUntil }).eq("id", ag.id);
+                        await supabaseClient.from("agents").update({ approved: newStatus, approved_until: approvedUntil }).eq("id", ag.id);
                         setAgents((prev) => prev.map((a) => a.id === ag.id ? { ...a, approved: newStatus, approved_until: approvedUntil } : a));
                         toast.success(newStatus ? "Agent approved for 30 days." : "Agent approval revoked.");
                       }}
@@ -677,7 +698,7 @@ function AdminIndexPage() {
               ) : (
                 <div className="space-y-3">
                   {payments.map((p) => (
-                    <div key={p.id} className="flex flex-col gap-1 rounded-lg border border-slate-200 p-4">
+                    <div key={p.id} className="flex flex-col gap-2 rounded-lg border border-slate-200 p-4">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-brand-navy">KES {p.amount.toLocaleString()}</span>
                         <span className="text-xs text-brand-muted">
@@ -688,13 +709,22 @@ function AdminIndexPage() {
                         </span>
                       </div>
                       <p className="text-sm text-brand-muted">Reference: {p.mpesa_ref}</p>
-                      <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-bold ${
-                        p.status === "approved" ? "bg-emerald-50 text-emerald-700" :
-                        p.status === "rejected" ? "bg-red-50 text-red-700" :
-                        "bg-amber-50 text-amber-700"
-                      }`}>
-                        {p.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-bold ${
+                          p.status === "approved" ? "bg-emerald-50 text-emerald-700" :
+                          p.status === "rejected" ? "bg-red-50 text-red-700" :
+                          "bg-amber-50 text-amber-700"
+                        }`}>
+                          {p.status}
+                        </span>
+                        <Button
+                          size="sm"
+                          variant={p.status === "pending" ? "default" : "outline"}
+                          onClick={() => handleTogglePaymentStatus(p.id, p.status)}
+                        >
+                          {p.status === "pending" ? "Verify" : "Mark Pending"}
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1021,6 +1051,9 @@ function AdminListingCard({
             {price} · {listing.transmission} · {listing.body_type}
             {listing.is_auction && " · Auction"}
           </p>
+          {listing.agents?.name && (
+            <p className="truncate text-xs text-brand-muted">Agent: {listing.agents.name}</p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
           <Badge
@@ -1286,16 +1319,29 @@ function AdminNotificationCard({
               Type: {notification.type}
             </p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="shrink-0 text-red-600 hover:text-red-700"
-            onClick={() => onDelete(notification.id)}
-          >
-            <Trash className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {notification.type === "new_message" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-brand-accent hover:text-brand-navy"
+                onClick={() => { setActiveTab("inquiries"); handleNotificationClick(notification); }}
+              >
+                View chat
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="shrink-0 text-red-600 hover:text-red-700"
+              onClick={() => onDelete(notification.id)}
+            >
+              <Trash className="size-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+

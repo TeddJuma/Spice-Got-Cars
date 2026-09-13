@@ -27,7 +27,7 @@ export interface Car {
   photos: string[];
   description: string;
   status: Status;
-  listedAt: string; // ISO date
+  listedAt: string;
   location?: string;
   locationPin?: string;
   isAuction?: boolean;
@@ -41,6 +41,8 @@ export interface Car {
     startsAt: string;
     endsAt: string;
   }>;
+  agentName?: string;
+  agentPhone?: string;
 }
 
 export function formatKes(amount: number): string {

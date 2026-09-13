@@ -49,7 +49,7 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
 
     const query = supabase
       .from("listings")
-      .select("*")
+      .select("*, agents(name, phone)")
       .order("listed_at", { ascending: false });
 
     if (!includeAuctions) {
@@ -64,7 +64,7 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
     }
 
     const cars: Car[] = await Promise.all(
-      data.map(async (row) => {
+      data.map(async (row: any) => {
         const { data: photos } = await supabase
           .from("listing_photos")
           .select("storage_path")
@@ -109,6 +109,8 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
             startsAt: w.starts_at,
             endsAt: w.ends_at,
           })) || [],
+          agentName: row.agents?.name ?? undefined,
+          agentPhone: row.agents?.phone ?? undefined,
         };
       }),
     );
@@ -126,7 +128,7 @@ export async function fetchListingById(id: string): Promise<Car | null> {
     if (!supabase) return null;
 
     const { data, error } = await withTimeout(
-      supabase.from("listings").select("*").eq("id", id).single()
+      supabase.from("listings").select("*, agents(name, phone)").eq("id", id).single()
     );
 
     if (error || !data) return null;
@@ -164,9 +166,9 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       bodyType: data.body_type as Car["bodyType"],
       condition: data.condition as Car["condition"],
       photos: photos?.map((p) => p.storage_path) || [],
-          description: data.description,
-          status: data.status as Car["status"],
-          logbookVerified: data.logbook_verified,
+      description: data.description,
+      status: data.status as Car["status"],
+      logbookVerified: data.logbook_verified,
       listedAt: data.listed_at,
       location: data.location || undefined,
       locationPin: data.location_pin || undefined,
@@ -181,6 +183,8 @@ export async function fetchListingById(id: string): Promise<Car | null> {
         startsAt: w.starts_at,
         endsAt: w.ends_at,
       })) || [],
+      agentName: data.agents?.name ?? undefined,
+      agentPhone: data.agents?.phone ?? undefined,
     };
   } catch (err) {
     console.error("Failed to fetch listing from Supabase:", err);

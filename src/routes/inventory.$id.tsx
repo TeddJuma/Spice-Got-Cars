@@ -11,15 +11,15 @@ import {
   MessageCircle,
   ArrowLeft,
   Timer,
-  CheckCircle2,
   MapPin,
 } from "lucide-react";
 import { formatKes, formatMileage, getAuctionStatus } from "@/data/listings";
 import { fetchListingById } from "@/data/listings-supabase";
-import { buildCarInquiryLink, PHONE_TEL, WHATSAPP_DISPLAY } from "@/lib/whatsapp";
+import { buildCarInquiryLink, PHONE_TEL } from "@/lib/whatsapp";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { toast } from "sonner";
+import ChatButton from "@/components/messaging/ChatButton";
 
 export const Route = createFileRoute("/inventory/$id")({
   loader: async ({ params }) => {
@@ -93,6 +93,9 @@ function CarDetailPage() {
   const [inquiryPhone, setInquiryPhone] = useState("");
   const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const [inquirySuccess, setInquirySuccess] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
+
+  const contactPhone = car.agentPhone || PHONE_TEL;
 
   if (!car) {
     return (
@@ -380,22 +383,23 @@ function CarDetailPage() {
                 >
                   Inquire about this car
                 </button>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <ChatButton listingId={car.id} role="customer" user={undefined} />
                   <a
-                    href={buildCarInquiryLink(car)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-1.5 rounded-lg bg-[#25D366] py-2 text-xs font-bold text-white transition-transform hover:scale-[1.02] active:scale-95"
-                  >
-                    <MessageCircle className="size-3.5" />
-                    WhatsApp
-                  </a>
-                  <a
-                    href={`tel:${PHONE_TEL}`}
+                    href={`tel:${contactPhone}`}
                     className="flex items-center justify-center gap-1.5 rounded-lg bg-brand-navy py-2 text-xs font-bold text-white transition-colors hover:bg-slate-800"
                   >
                     <Phone className="size-3.5" />
                     Call
+                  </a>
+                  <a
+                    href={buildCarInquiryLink(car)}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="WhatsApp"
+                    className="flex items-center justify-center rounded-lg bg-[#25D366] py-2 text-xs font-bold text-white transition-transform hover:scale-[1.02] active:scale-95"
+                  >
+                    <MessageCircle className="size-3.5" />
                   </a>
                 </div>
               </div>

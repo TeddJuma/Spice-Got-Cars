@@ -2,8 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAgentAuth } from "@/lib/agent-auth-context";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Image as ImageIcon } from "lucide-react";
-import { getAgentListings, submitAgentPayment } from "@/lib/agent-actions";
+import { Plus, LogOut, Image as ImageIcon, User } from "lucide-react";
+import { getAgentListings, submitAgentPayment, updateAgentProfile } from "@/lib/agent-actions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agents/dashboard")({
@@ -16,15 +16,37 @@ function AgentDashboard() {
   const [listings, setListings] = useState<any[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showActivateModal, setShowActivateModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showAdminChat, setShowAdminChat] = useState(false);
   const [mpesaRef, setMpesaRef] = useState("");
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: "", email: "", phone: "", idNumber: "" });
+  const [submittingProfile, setSubmittingProfile] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !agent) {
       navigate({ to: "/agents/login" });
     }
   }, [agent, loading, navigate]);
+
+  const openProfile = async () => {
+    setProfileLoading(true);
+    setShowProfileModal(true);
+    try {
+      if (agent) {
+        setProfileForm({
+          name: agent.name,
+          email: agent.email,
+          phone: agent.phone,
+          idNumber: agent.id_number,
+        });
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!agent) return;
@@ -85,11 +107,114 @@ function AgentDashboard() {
               <Plus className="mr-2 size-4" /> Add Listing
             </Button>
           </Link>
+          <Button variant="outline" size="sm" onClick={openProfile}>
+            <User className="mr-2 size-4" /> Profile
+          </Button>
           <Button variant="outline" size="sm" onClick={() => signOut()}>
             <LogOut className="mr-2 size-4" /> Logout
           </Button>
         </div>
       </div>
+
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h3 className="text-lg font-bold text-brand-navy">Your Profile</h3>
+            {profileLoading ? (
+              <p className="mt-4 text-sm text-brand-muted">Loading...</p>
+            ) : (
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!agent) return;
+                  setSubmittingProfile(true);
+                  try {
+                    const res = await updateAgentProfile({
+                      data: {
+                        email: agent.email,
+                        name: profileForm.name,
+                        phone: profileForm.phone,
+                        idNumber: profileForm.idNumber,
+                      },
+                    });
+                    if (res.error) {
+                      toast.error(res.error.message || "Failed to update profile.");
+                    } else {
+                      toast.success("Profile updated successfully!");
+                      setShowProfileModal(false);
+                    }
+                  } catch (err) {
+                    toast.error("Failed to update profile.");
+                  } finally {
+                    setSubmittingProfile(false);
+                  }
+                }}
+                className="mt-4 space-y-3"
+              >
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.name}
+                    onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Email</label>
+                  <input
+                    type="email"
+                    required
+                    disabled
+                    value={profileForm.email}
+                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-500 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Phone number</label>
+                  <input
+                    type="tel"
+                    required
+                    value={profileForm.phone}
+                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                    placeholder="+254 7XX XXX XXX"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">ID number</label>
+                  <input
+                    type="text"
+                    required
+                    value={profileForm.idNumber}
+                    onChange={(e) => setProfileForm({ ...profileForm, idNumber: e.target.value })}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none focus:ring-1 focus:ring-brand-accent"
+                    placeholder="12345678"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowProfileModal(false)}
+                    className="flex-1 rounded-lg border border-slate-300 py-2 text-sm font-semibold text-brand-navy"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingProfile}
+                    className="flex-1 rounded-lg bg-brand-navy py-2 text-sm font-bold text-white disabled:opacity-60"
+                  >
+                    {submittingProfile ? "Saving..." : "Save changes"}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
 
       {loadError && (
         <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">

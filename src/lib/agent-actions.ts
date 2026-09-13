@@ -215,6 +215,109 @@ export const submitAgentPayment = createServerFn({ method: "POST" })
     return { success: true, payment };
   });
 
+const getAgentProfileSchema = z.object({
+  email: z.string().email(),
+});
+
+export const getAgentProfile = createServerFn({ method: "POST" })
+  .validator(getAgentProfileSchema)
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    if (!supabase) {
+      return { error: { message: "Supabase service role is not configured on the server" }, agent: null };
+    }
+
+    const { data: agentRow, error } = await supabase
+      .from("agents")
+      .select("*")
+      .eq("email", data.email.toLowerCase())
+      .maybeSingle();
+
+    if (error || !agentRow) {
+      return { error: { message: error?.message || "Agent profile not found" }, agent: null };
+    }
+
+    const approvedUntil = typeof agentRow.approved_until === "string"
+      ? agentRow.approved_until
+      : agentRow.approved_until instanceof Date
+      ? agentRow.approved_until.toISOString()
+      : null;
+
+    return {
+      success: true,
+      agent: {
+        id: agentRow.id,
+        name: agentRow.name,
+        email: agentRow.email,
+        phone: agentRow.phone,
+        id_number: agentRow.id_number,
+        approved: agentRow.approved,
+        approved_until: approvedUntil,
+        created_at: typeof agentRow.created_at === "string"
+          ? agentRow.created_at
+          : agentRow.created_at instanceof Date
+          ? agentRow.created_at.toISOString()
+          : null,
+      },
+    };
+  });
+
+const updateAgentProfileSchema = z.object({
+  email: z.string().email(),
+  name: z.string().min(1, "Name is required"),
+  phone: z.string().min(1, "Phone number is required"),
+  idNumber: z.string().min(1, "ID number is required"),
+});
+
+export const updateAgentProfile = createServerFn({ method: "POST" })
+  .validator(updateAgentProfileSchema)
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    if (!supabase) {
+      return { error: { message: "Supabase service role is not configured on the server" } };
+    }
+
+    const { error } = await supabase
+      .from("agents")
+      .update({
+        name: data.name.trim(),
+        phone: data.phone.trim(),
+        id_number: data.idNumber.trim(),
+      })
+      .eq("email", data.email.toLowerCase());
+
+    if (error) {
+      return { error: { message: error.message || "Failed to update profile" } };
+    }
+
+    return { success: true };
+  });
+
+const updateAgentPaymentStatusSchema = z.object({
+  paymentId: z.string().min(1),
+  status: z.enum(["pending", "approved"]),
+});
+
+export const updateAgentPaymentStatus = createServerFn({ method: "POST" })
+  .validator(updateAgentPaymentStatusSchema)
+  .handler(async ({ data }) => {
+    const supabase = createServiceClient();
+    if (!supabase) {
+      return { error: { message: "Supabase service role is not configured on the server" } };
+    }
+
+    const { error } = await supabase
+      .from("agent_payments")
+      .update({ status: data.status })
+      .eq("id", data.paymentId);
+
+    if (error) {
+      return { error: { message: error.message || "Failed to update payment status" } };
+    }
+
+    return { success: true };
+  });
+
 const getAgentListingsSchema = z.object({
   agentId: z.string().min(1),
 });

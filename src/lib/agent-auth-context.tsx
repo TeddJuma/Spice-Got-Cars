@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { agentLogin, agentSignUp } from "@/lib/agent-actions";
+import { agentLogin, agentSignUp, getAgentProfile } from "@/lib/agent-actions";
 
 type Agent = {
   id: string;
@@ -30,7 +30,16 @@ export function AgentAuthProvider({ children }: { children: React.ReactNode }) {
     const stored = localStorage.getItem("sgc_agent");
     if (stored) {
       try {
-        setAgent(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        setAgent(parsed);
+        if (parsed.email) {
+          getAgentProfile({ data: { email: parsed.email } }).then((result) => {
+            if (result.success && result.agent) {
+              setAgent(result.agent);
+              localStorage.setItem("sgc_agent", JSON.stringify(result.agent));
+            }
+          });
+        }
       } catch {
         localStorage.removeItem("sgc_agent");
       }
