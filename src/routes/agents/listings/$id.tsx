@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, X, ChevronLeft, ChevronRight } from "lucide-react";
+import ChatButton from "@/components/messaging/ChatButton";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agents/listings/$id")({
@@ -231,6 +232,7 @@ function AgentEditListing({ params }: { params: { id: string } }) {
       </Link>
       <h1 className="mt-4 text-2xl font-bold text-brand-navy md:text-3xl">Edit listing</h1>
 
+      <ChatButton listingId={params.id} role="agent" user={agent} />
       <form onSubmit={handleSubmit} className="mt-6 grid gap-5 rounded-2xl border border-slate-200 bg-white p-6 md:p-8">
         <div className="grid gap-5 md:grid-cols-2">
           <div>

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, X, ChevronLeft, ChevronRight } from "lucide-react";
+import ChatButton from "@/components/messaging/ChatButton";
 
 export const Route = createFileRoute("/admin/$id")({
   loader: async ({ params }) => {
@@ -324,6 +325,8 @@ function EditListingPage() {
         <ArrowLeft className="mr-1 size-4" /> Back to admin
       </Link>
       <h1 className="mt-4 text-3xl font-bold text-brand-navy">Edit listing</h1>
+
+      <ChatButton listingId={listing.id} role="admin" user={user} />
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-6">
         <div className="grid gap-4 md:grid-cols-2">

@@ -1,6 +1,6 @@
 // src/lib/messaging.ts
 
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import { Database } from "@/types/supabase";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];

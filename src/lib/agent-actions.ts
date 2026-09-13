@@ -2,12 +2,20 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { createServiceClient } from "./supabase-server";
 
+import { createHash } from "crypto";
+
 async function hashPassword(password: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(password + "sgc_agent_salt_2024");
-  const hash = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hash));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const salted = password + "sgc_agent_salt_2024";
+  // Prefer Web Crypto API if available (browser/edge runtime)
+  if (typeof crypto !== "undefined" && crypto.subtle && crypto.subtle.digest) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(salted);
+    const hash = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hash));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  }
+  // Fallback to Node's crypto module (SSR environment)
+  return createHash("sha256").update(salted).digest("hex");
 }
 
 async function verifyPassword(password: string, hash: string): Promise<boolean> {
@@ -28,8 +36,9 @@ export const agentLogin = createServerFn({ method: "POST" })
       return { error: { message: "Supabase service role is not configured on the server" } };
     }
 
-    const trimmed = data.identifier.trim();
     let agentRow: any = null;
+
+    const trimmed = data.identifier.trim();
 
     const byEmail = await supabase
       .from("agents")
@@ -68,6 +77,17 @@ export const agentLogin = createServerFn({ method: "POST" })
       return { error: { message: "Incorrect password" } };
     }
 
+    // Ensure date fields are strings for serialization
+    const createdAt = typeof agentRow.created_at === "string"
+      ? agentRow.created_at
+      : agentRow.created_at instanceof Date
+      ? agentRow.created_at.toISOString()
+      : null;
+    const approvedUntil = typeof agentRow.approved_until === "string"
+      ? agentRow.approved_until
+      : agentRow.approved_until instanceof Date
+      ? agentRow.approved_until.toISOString()
+      : null;
     return {
       success: true,
       agent: {
@@ -77,8 +97,8 @@ export const agentLogin = createServerFn({ method: "POST" })
         phone: agentRow.phone,
         id_number: agentRow.id_number,
         approved: agentRow.approved,
-        approved_until: agentRow.approved_until,
-        created_at: agentRow.created_at,
+        approved_until: approvedUntil,
+        created_at: createdAt,
       },
     };
   });

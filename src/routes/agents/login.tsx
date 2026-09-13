@@ -27,7 +27,7 @@ function AgentLoginPage() {
     setSubmitting(true);
 
     try {
-      const result = await signIn(identifier, password);
+      const result = await signIn({ identifier, password });
       if (result.error) {
         setError(result.error.message);
       } else {
@@ -35,7 +35,7 @@ function AgentLoginPage() {
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("Something went wrong. Please try again.");
+      setError(err instanceof Error ? err.message : String(err));
     } finally {
       setSubmitting(false);
     }
