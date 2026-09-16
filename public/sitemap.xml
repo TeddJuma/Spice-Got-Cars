@@ -63,11 +63,6 @@
        <priority>0.8000</priority>
   </url>
   <url>
-       <loc>https://www.spicegotcars.co.ke/login</loc>
-       <lastmod>2026-09-16T18:15:14+00:00</lastmod>
-       <priority>0.8000</priority>
-  </url>
-  <url>
        <loc>https://www.spicegotcars.co.ke/inventory?q=&amp;make=&amp;model=&amp;location=&amp;transmission=&amp;fuel=&amp;condition=&amp;sort=newest</loc>
        <lastmod>2026-09-16T18:15:14+00:00</lastmod>
        <priority>0.6400</priority>
