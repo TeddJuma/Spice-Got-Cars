@@ -5,8 +5,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY") as string);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
 serve(async (req) => {
@@ -15,7 +14,8 @@ serve(async (req) => {
   }
 
   try {
-    const { make, model, year, askingPrice, sellerName, sellerPhone, submissionId } = await req.json();
+    const { make, model, year, askingPrice, sellerName, sellerPhone, submissionId } =
+      await req.json();
 
     const data = await resend.emails.send({
       from: "Spice Got Cars <noreply@spicegotcars.co.ke>",

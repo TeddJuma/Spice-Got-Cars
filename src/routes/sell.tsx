@@ -30,11 +30,7 @@ export const Route = createFileRoute("/sell")({
 });
 
 const sellSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(2, "Please enter your name")
-    .max(80, "Name is too long"),
+  name: z.string().trim().min(2, "Please enter your name").max(80, "Name is too long"),
   phone: z
     .string()
     .trim()
@@ -131,20 +127,23 @@ function SellPage() {
         return;
       }
 
-      const submission = await createSellSubmission({
-        name: data.name,
-        phone: data.phone,
-        make: data.make,
-        model: data.model,
-        year: data.year,
-        mileageKm: data.mileage,
-        engineCapacityCc: data.engineCapacity || undefined,
-        condition: data.condition,
-        askingPrice: data.askingPrice,
-        location: data.location,
-        notes: data.notes || undefined,
-        photos: [],
-      }, supabase);
+      const submission = await createSellSubmission(
+        {
+          name: data.name,
+          phone: data.phone,
+          make: data.make,
+          model: data.model,
+          year: data.year,
+          mileageKm: data.mileage,
+          engineCapacityCc: data.engineCapacity || undefined,
+          condition: data.condition,
+          askingPrice: data.askingPrice,
+          location: data.location,
+          notes: data.notes || undefined,
+          photos: [],
+        },
+        supabase,
+      );
       console.log("[sell] submission created", submission.id);
 
       let photoUrls: string[] = [];
@@ -187,15 +186,15 @@ function SellPage() {
       setSelectedFiles([]);
 
       if (uploadError) {
-        toast.success("Submission received, but some photos failed to upload. Our team will contact you.");
+        toast.success(
+          "Submission received, but some photos failed to upload. Our team will contact you.",
+        );
       } else {
         toast.success("Submission received - we'll be in touch shortly.");
       }
     } catch (err: any) {
       console.error("[sell] submit error:", err);
-      const message =
-        err?.message ||
-        "Something went wrong. Please try again.";
+      const message = err?.message || "Something went wrong. Please try again.";
       toast.error(message);
     }
   };
@@ -208,8 +207,8 @@ function SellPage() {
         </div>
         <h1 className="text-3xl font-bold">Thanks - we've got your details.</h1>
         <p className="mx-auto mt-3 max-w-lg text-brand-muted">
-          Our team will review your car and contact you as soon as possible
-          to discuss the next steps.
+          Our team will review your car and contact you as soon as possible to discuss the next
+          steps.
         </p>
         <button
           onClick={() => setSubmitted(false)}
@@ -226,16 +225,24 @@ function SellPage() {
       <div className="mb-10">
         <h1 className="text-3xl font-bold md:text-4xl">Sell your car</h1>
         <p className="mt-2 max-w-2xl text-brand-muted">
-          Send us the details of your car. Our team reviews every submission
-          and gets back to you with an offer or lists it for our nationwide
-          buyer network. No public self-listing - we handle inquiries for you.
+          Send us the details of your car. Our team reviews every submission and gets back to you
+          with an offer or lists it for our nationwide buyer network. No public self-listing - we
+          handle inquiries for you.
         </p>
       </div>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <HowStep n={1} title="Submit details" body="Fill in your car's basics and upload photos." />
-        <HowStep n={2} title="Spice Got Cars review" body="Our team validates the condition and paperwork." />
-        <HowStep n={3} title="Offer or list" body="Cash offer or we list it for you within 24 hours." />
+        <HowStep
+          n={2}
+          title="Spice Got Cars review"
+          body="Our team validates the condition and paperwork."
+        />
+        <HowStep
+          n={3}
+          title="Offer or list"
+          body="Cash offer or we list it for you within 24 hours."
+        />
       </div>
 
       <form
@@ -245,11 +252,7 @@ function SellPage() {
       >
         <div className="grid gap-5 md:grid-cols-2">
           <Field label="Your name" error={errors.name?.message}>
-            <input
-              {...register("name")}
-              className="input"
-              placeholder="Jane Wanjiku"
-            />
+            <input {...register("name")} className="input" placeholder="Jane Wanjiku" />
           </Field>
           <Field label="Phone number" error={errors.phone?.message}>
             <input
@@ -320,11 +323,7 @@ function SellPage() {
         </div>
 
         <Field label="Your location" error={errors.location?.message}>
-          <input
-            {...register("location")}
-            className="input"
-            placeholder="Kahawa west, Nairobi"
-          />
+          <input {...register("location")} className="input" placeholder="Kahawa west, Nairobi" />
         </Field>
 
         <Field label="Extra notes (optional)" error={errors.notes?.message}>
@@ -336,9 +335,7 @@ function SellPage() {
         </Field>
 
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-brand-navy">
-            Photos
-          </label>
+          <label className="mb-1.5 block text-sm font-semibold text-brand-navy">Photos</label>
           <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-brand-muted transition-colors hover:border-brand-accent hover:text-brand-accent">
             <Upload className="size-4" />
             {selectedFiles.length > 0
@@ -380,8 +377,8 @@ function SellPage() {
         </button>
 
         <p className="text-center text-xs text-brand-muted">
-          By submitting, you agree that a Spice Got Cars representative may contact you
-          about your listing.
+          By submitting, you agree that a Spice Got Cars representative may contact you about your
+          listing.
         </p>
       </form>
 
@@ -401,7 +398,8 @@ function SellPage() {
       <div className="mt-10 rounded-2xl border border-slate-200 bg-white p-6 text-center md:p-8">
         <h2 className="text-xl font-bold text-brand-navy">Want to sell more cars?</h2>
         <p className="mt-2 text-sm text-brand-muted">
-          Become an SGC agent and list your cars directly on the platform. Manage your own listings, track inquiries, and reach more buyers.
+          Become an SGC agent and list your cars directly on the platform. Manage your own listings,
+          track inquiries, and reach more buyers.
         </p>
         <a
           href="/agents/signup"
@@ -425,9 +423,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-semibold text-brand-navy">
-        {label}
-      </label>
+      <label className="mb-1.5 block text-sm font-semibold text-brand-navy">{label}</label>
       {children}
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>

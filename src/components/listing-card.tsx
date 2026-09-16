@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Gauge, Calendar, Fuel, Cog, MessageCircle, MapPin } from "lucide-react";
+import { Gauge, Calendar, Fuel, Cog, MessageCircle, MapPin, Car as CarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatKes, formatMileage, type Car, getAuctionStatus } from "@/data/listings";
 import { buildCarInquiryLink } from "@/lib/whatsapp";
@@ -10,7 +10,9 @@ export function ListingCard({ car }: { car: Car }) {
   const isAuction = car.isAuction && !isSold;
   const auctionStatus = isAuction ? getAuctionStatus(car) : null;
 
-  const photo = car.photos[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
+  const photo =
+    car.photos[0] ||
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
 
   return (
     <div
@@ -38,7 +40,9 @@ export function ListingCard({ car }: { car: Car }) {
             {car.condition}
           </div>
           {isAuction && auctionStatus && (
-            <div className={`absolute top-3 right-3 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white ${auctionStatus.color}`}>
+            <div
+              className={`absolute top-3 right-3 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white ${auctionStatus.color}`}
+            >
               {auctionStatus.label}
             </div>
           )}
@@ -59,11 +63,7 @@ export function ListingCard({ car }: { car: Car }) {
 
       <div className="p-5">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <Link
-            to="/inventory/$id"
-            params={{ id: car.id }}
-            className="min-w-0 flex-1"
-          >
+          <Link to="/inventory/$id" params={{ id: car.id }} className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-bold text-brand-navy">
               {car.make} {car.model}
             </h3>

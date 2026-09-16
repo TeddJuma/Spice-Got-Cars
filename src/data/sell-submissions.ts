@@ -52,7 +52,7 @@ export async function createSellSubmission(
     notes?: string;
     photos: string[];
   },
-  supabase?: SupabaseClient
+  supabase?: SupabaseClient,
 ): Promise<SellSubmission> {
   const client = getClient(supabase);
   const id = crypto.randomUUID();
@@ -80,12 +80,10 @@ export async function createSellSubmission(
   }
 
   const notifClient = getClient(supabase);
-  const { error: notifError } = await notifClient
-    .from("notifications")
-    .insert({
-      type: "new_submission",
-      message: `New sell submission: ${data.year} ${data.make} ${data.model} (KES ${data.askingPrice.toLocaleString()})`,
-    });
+  const { error: notifError } = await notifClient.from("notifications").insert({
+    type: "new_submission",
+    message: `New sell submission: ${data.year} ${data.make} ${data.model} (KES ${data.askingPrice.toLocaleString()})`,
+  });
 
   if (notifError) {
     console.error("Failed to create notification:", notifError);
@@ -111,9 +109,7 @@ export async function createSellSubmission(
   } as SellSubmission;
 }
 
-export async function fetchSellSubmissions(
-  supabase?: SupabaseClient
-): Promise<SellSubmission[]> {
+export async function fetchSellSubmissions(supabase?: SupabaseClient): Promise<SellSubmission[]> {
   try {
     const client = getClient(supabase);
     const { data, error } = await client
@@ -136,14 +132,11 @@ export async function fetchSellSubmissions(
 export async function updateSellSubmissionStatus(
   id: string,
   status: "approved" | "rejected",
-  supabase?: SupabaseClient
+  supabase?: SupabaseClient,
 ): Promise<boolean> {
   try {
     const client = getClient(supabase);
-    const { error } = await client
-      .from("sell_submissions")
-      .update({ status })
-      .eq("id", id);
+    const { error } = await client.from("sell_submissions").update({ status }).eq("id", id);
 
     if (error) {
       console.error("Failed to update submission status:", error);
@@ -157,9 +150,7 @@ export async function updateSellSubmissionStatus(
   }
 }
 
-export async function fetchNotifications(
-  supabase?: SupabaseClient
-): Promise<Notification[]> {
+export async function fetchNotifications(supabase?: SupabaseClient): Promise<Notification[]> {
   try {
     const client = getClient(supabase);
     const { data, error } = await client
@@ -180,9 +171,7 @@ export async function fetchNotifications(
   }
 }
 
-export async function fetchUnreadNotificationCount(
-  supabase?: SupabaseClient
-): Promise<number> {
+export async function fetchUnreadNotificationCount(supabase?: SupabaseClient): Promise<number> {
   try {
     const client = getClient(supabase);
     const { count, error } = await client
@@ -204,7 +193,7 @@ export async function fetchUnreadNotificationCount(
 
 export async function deleteSellSubmission(
   id: string,
-  supabase?: SupabaseClient
+  supabase?: SupabaseClient,
 ): Promise<boolean> {
   try {
     const client = getClient(supabase);
@@ -228,10 +217,7 @@ export async function deleteSellSubmission(
       }
     }
 
-    const { error } = await client
-      .from("sell_submissions")
-      .delete()
-      .eq("id", id);
+    const { error } = await client.from("sell_submissions").delete().eq("id", id);
 
     if (error) {
       console.error("Failed to delete sell submission:", error);
@@ -247,14 +233,11 @@ export async function deleteSellSubmission(
 
 export async function markNotificationAsRead(
   id: string,
-  supabase?: SupabaseClient
+  supabase?: SupabaseClient,
 ): Promise<boolean> {
   try {
     const client = getClient(supabase);
-    const { error } = await client
-      .from("notifications")
-      .update({ read: true })
-      .eq("id", id);
+    const { error } = await client.from("notifications").update({ read: true }).eq("id", id);
 
     if (error) {
       console.error("Failed to mark notification as read:", error);
@@ -268,15 +251,10 @@ export async function markNotificationAsRead(
   }
 }
 
-export async function markAllNotificationsAsRead(
-  supabase?: SupabaseClient
-): Promise<boolean> {
+export async function markAllNotificationsAsRead(supabase?: SupabaseClient): Promise<boolean> {
   try {
     const client = getClient(supabase);
-    const { error } = await client
-      .from("notifications")
-      .update({ read: true })
-      .eq("read", false);
+    const { error } = await client.from("notifications").update({ read: true }).eq("read", false);
 
     if (error) {
       console.error("Failed to mark all notifications as read:", error);
@@ -290,16 +268,10 @@ export async function markAllNotificationsAsRead(
   }
 }
 
-export async function deleteNotification(
-  id: string,
-  supabase?: SupabaseClient
-): Promise<boolean> {
+export async function deleteNotification(id: string, supabase?: SupabaseClient): Promise<boolean> {
   try {
     const client = getClient(supabase);
-    const { error } = await client
-      .from("notifications")
-      .delete()
-      .eq("id", id);
+    const { error } = await client.from("notifications").delete().eq("id", id);
 
     if (error) {
       console.error("Failed to delete notification:", error);

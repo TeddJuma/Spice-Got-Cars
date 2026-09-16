@@ -28,23 +28,19 @@ function AboutPage() {
         <span className="text-xs font-bold uppercase tracking-widest text-brand-accent">
           Our story
         </span>
-        <h1 className="mt-2 text-3xl font-bold md:text-5xl">
-          Your Trusted automotive partner.
-        </h1>
+        <h1 className="mt-2 text-3xl font-bold md:text-5xl">Your Trusted automotive partner.</h1>
       </div>
 
       <div className="prose prose-slate max-w-none">
         <p className="text-lg text-slate-700">
-          Spice Got Cars is a car sales and reselling company built on a
-          simple principle: buyers deserve honest information, fair prices, and
-          a car that's ready to drive. From our yard on Kamiti Road in Kahawa west,
-          we deliver vehicles to families and businesses across Kenya.
+          Spice Got Cars is a car sales and reselling company built on a simple principle: buyers
+          deserve honest information, fair prices, and a car that's ready to drive. From our yard on
+          Kamiti Road in Kahawa west, we deliver vehicles to families and businesses across Kenya.
         </p>
         <p className="mt-4 text-slate-700">
-          Every car in our inventory is inspected before it goes on sale.
-          Ownership documents are verified, service history is checked where
-          available, and mechanical issues are addressed by our in-house team.
-          We stand behind the cars we sell.
+          Every car in our inventory is inspected before it goes on sale. Ownership documents are
+          verified, service history is checked where available, and mechanical issues are addressed
+          by our in-house team. We stand behind the cars we sell.
         </p>
       </div>
 
@@ -67,9 +63,7 @@ function AboutPage() {
       </div>
 
       <div className="mt-8 rounded-2xl bg-brand-navy p-6 text-center text-white md:mt-12 md:p-12">
-        <h2 className="text-2xl font-bold md:text-3xl">
-          Ready to find your next car?
-        </h2>
+        <h2 className="text-2xl font-bold md:text-3xl">Ready to find your next car?</h2>
         <p className="mt-2 text-slate-300">
           Browse the yard online or come visit us in Kahawa west.
         </p>
@@ -92,20 +86,10 @@ function AboutPage() {
   );
 }
 
-function Feature({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function Feature({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-      <div className="mb-3 grid size-10 place-items-center rounded-lg bg-emerald-50">
-        {icon}
-      </div>
+      <div className="mb-3 grid size-10 place-items-center rounded-lg bg-emerald-50">{icon}</div>
       <h3 className="font-bold">{title}</h3>
       <p className="mt-1 text-sm text-brand-muted">{body}</p>
     </div>

@@ -32,12 +32,11 @@ function Index() {
             Kahawa west, Nairobi
           </span> */}
           <h1 className="text-4xl leading-[1.1] font-bold text-white md:text-5xl lg:text-7xl">
-            Find a car that serves your needs{" "}
-            <span className="text-brand-accent">today</span>.
+            Find a car that serves your needs <span className="text-brand-accent">today</span>.
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-slate-200">
-            Quality cars, salvage vehicles, and flexible financing. Every
-            vehicle inspected, logbook-verified, and ready to drive off.
+            Quality cars, salvage vehicles, and flexible financing. Every vehicle inspected,
+            logbook-verified, and ready to drive off.
           </p>
 
           {/* Quick search */}
@@ -103,10 +102,22 @@ function Index() {
       {/* Trust bar */}
       <section className="border-b border-slate-100 bg-white py-6 md:py-8">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 md:grid-cols-4">
-          <TrustItem stat="500+" label="Cars delivered" icon={<Award className="size-5 text-brand-accent" />} />
+          <TrustItem
+            stat="500+"
+            label="Cars delivered"
+            icon={<Award className="size-5 text-brand-accent" />}
+          />
           {/* <TrustItem stat="12 yrs" label="Serving Kenya" icon={<Sparkles className="size-5 text-brand-accent" />} /> */}
-          <TrustItem stat="100%" label="Logbook verified" icon={<FileCheck className="size-5 text-brand-accent" />} />
-          <TrustItem stat="Finance" label="Flexible options" icon={<Banknote className="size-5 text-brand-accent" />} />
+          <TrustItem
+            stat="100%"
+            label="Logbook verified"
+            icon={<FileCheck className="size-5 text-brand-accent" />}
+          />
+          <TrustItem
+            stat="Finance"
+            label="Flexible options"
+            icon={<Banknote className="size-5 text-brand-accent" />}
+          />
         </div>
       </section>
 
@@ -115,9 +126,7 @@ function Index() {
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h2 className="text-3xl font-bold">Latest arrivals</h2>
-            <p className="text-brand-muted">
-               Hand-picked vehicles fresh in our Kahawa west yard.
-            </p>
+            <p className="text-brand-muted">Hand-picked vehicles fresh in our Kahawa west yard.</p>
           </div>
           <Link
             to="/inventory"
@@ -129,9 +138,7 @@ function Index() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {featured.length > 0 ? (
-            featured.map((car) => (
-              <ListingCard key={car.id} car={car} />
-            ))
+            featured.map((car) => <ListingCard key={car.id} car={car} />)
           ) : (
             <div className="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
               <p className="text-lg font-semibold text-brand-navy">No listings yet</p>
@@ -146,17 +153,18 @@ function Index() {
       {/* Sell CTA */}
       <section className="bg-slate-900 px-4 py-12 text-white md:py-20">
         <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold md:text-5xl">
-            Want to sell your car?
-          </h2>
+          <h2 className="mb-6 text-3xl font-bold md:text-5xl">Want to sell your car?</h2>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-slate-400">
-            Skip the marketplace headaches. Send us your car's details and our
-            team will get back to you with an offer or list it for our
-            nationwide buyer network.
+            Skip the marketplace headaches. Send us your car's details and our team will get back to
+            you with an offer or list it for our nationwide buyer network.
           </p>
           <div className="mb-12 grid gap-8 md:grid-cols-3">
             <SellStep n={1} title="Submit details" body="Send us photos and specs via our form." />
-            <SellStep n={2} title="Spice Got Cars review" body="We inspect and give a fair offer." />
+            <SellStep
+              n={2}
+              title="Spice Got Cars review"
+              body="We inspect and give a fair offer."
+            />
             <SellStep n={3} title="Fast sale" body="Cash offer or listed within 24 hours." />
           </div>
           <Link
@@ -171,39 +179,19 @@ function Index() {
   );
 }
 
-function TrustItem({
-  stat,
-  label,
-  icon,
-}: {
-  stat: string;
-  label: string;
-  icon: React.ReactNode;
-}) {
+function TrustItem({ stat, label, icon }: { stat: string; label: string; icon: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-red-50">
-        {icon}
-      </div>
+      <div className="grid size-10 shrink-0 place-items-center rounded-lg bg-red-50">{icon}</div>
       <div className="min-w-0">
         <div className="text-lg font-bold leading-tight">{stat}</div>
-        <div className="text-xs uppercase tracking-wider text-brand-muted">
-          {label}
-        </div>
+        <div className="text-xs uppercase tracking-wider text-brand-muted">{label}</div>
       </div>
     </div>
   );
 }
 
-function SellStep({
-  n,
-  title,
-  body,
-}: {
-  n: number;
-  title: string;
-  body: string;
-}) {
+function SellStep({ n, title, body }: { n: number; title: string; body: string }) {
   return (
     <div className="flex flex-col items-center">
       <div className="mb-4 grid size-12 place-items-center rounded-full bg-brand-accent font-bold">

@@ -33,8 +33,7 @@ function ContactPage() {
       <div className="mb-10">
         <h1 className="text-3xl font-bold md:text-4xl">Get in touch</h1>
         <p className="mt-2 text-brand-muted">
-          Most buyers reach us on WhatsApp - expect a reply within minutes
-          during business hours.
+          Most buyers reach us on WhatsApp - expect a reply within minutes during business hours.
         </p>
       </div>
 
@@ -123,7 +122,9 @@ function ContactPage() {
                 rel="noreferrer"
                 className="flex items-center gap-2 font-semibold text-brand-navy hover:text-brand-accent"
               >
-                <span className="flex size-4 items-center justify-center text-[10px] font-black">TT</span>
+                <span className="flex size-4 items-center justify-center text-[10px] font-black">
+                  TT
+                </span>
                 TikTok
               </a>
             </div>
@@ -159,9 +160,7 @@ function ContactItem({
         {icon}
       </div>
       <div className="min-w-0">
-        <div className="text-xs font-bold uppercase tracking-widest text-brand-muted">
-          {title}
-        </div>
+        <div className="text-xs font-bold uppercase tracking-widest text-brand-muted">{title}</div>
         <div className="mt-1 text-sm">{body}</div>
       </div>
     </div>

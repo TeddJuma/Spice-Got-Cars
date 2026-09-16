@@ -2,8 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAgentAuth } from "@/lib/agent-auth-context";
 import { Button } from "@/components/ui/button";
-import { Plus, LogOut, Image as ImageIcon, User } from "lucide-react";
+import { Plus, LogOut, Image as ImageIcon, User, MessageSquare, X } from "lucide-react";
 import { getAgentListings, submitAgentPayment, updateAgentProfile } from "@/lib/agent-actions";
+import ChatPanel from "@/components/messaging/ChatPanel";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/agents/dashboard")({
@@ -73,7 +74,10 @@ function AgentDashboard() {
   if (!agent) return null;
 
   const daysLeft = agent.approved_until
-    ? Math.max(0, Math.ceil((new Date(agent.approved_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    ? Math.max(
+        0,
+        Math.ceil((new Date(agent.approved_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      )
     : 0;
 
   return (
@@ -107,6 +111,14 @@ function AgentDashboard() {
               <Plus className="mr-2 size-4" /> Add Listing
             </Button>
           </Link>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAdminChat(true)}
+            className="border-brand-navy/20 text-brand-navy hover:bg-slate-50"
+          >
+            <MessageSquare className="mr-2 size-4 text-brand-accent" /> Chat with Admin
+          </Button>
           <Button variant="outline" size="sm" onClick={openProfile}>
             <User className="mr-2 size-4" /> Profile
           </Button>
@@ -226,11 +238,16 @@ function AgentDashboard() {
       <div className="mt-8 space-y-3">
         {listings.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 p-12 text-center">
-            <p className="text-brand-muted">No listings yet. Create your first listing to get started.</p>
+            <p className="text-brand-muted">
+              No listings yet. Create your first listing to get started.
+            </p>
           </div>
         ) : (
           listings.map((listing) => (
-            <div key={listing.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+            <div
+              key={listing.id}
+              className="overflow-hidden rounded-xl border border-slate-200 bg-white"
+            >
               <div className="flex items-center gap-4 p-4">
                 {listing.photos?.[0] ? (
                   <img src={listing.photos[0]} alt="" className="size-16 rounded-lg object-cover" />
@@ -249,7 +266,9 @@ function AgentDashboard() {
                 </div>
                 <div className="flex gap-2">
                   <Link to="/agents/listings/$id" params={{ id: listing.id }}>
-                    <Button variant="outline" size="sm">Edit</Button>
+                    <Button variant="outline" size="sm">
+                      Edit
+                    </Button>
                   </Link>
                 </div>
               </div>
@@ -264,7 +283,10 @@ function AgentDashboard() {
             <h3 className="text-lg font-bold text-brand-navy">Activate your account</h3>
             {paymentSuccess ? (
               <div className="mt-4 text-center">
-                <p className="text-sm text-brand-muted">Submission Received. The Spice Got Cars team will review your details, and contact you about the next steps. Verification may take up to 48 hours.</p>
+                <p className="text-sm text-brand-muted">
+                  Submission Received. The Spice Got Cars team will review your details, and contact
+                  you about the next steps. Verification may take up to 48 hours.
+                </p>
                 <button
                   type="button"
                   onClick={() => {
@@ -280,36 +302,43 @@ function AgentDashboard() {
             ) : (
               <>
                 <div className="mt-4 rounded-lg bg-slate-50 p-4 text-sm text-slate-600">
-                  <p className="font-semibold text-brand-navy">Activation fee: KES 2,000 for 30 days</p>
+                  <p className="font-semibold text-brand-navy">
+                    Activation fee: KES 2,000 for 30 days
+                  </p>
                   <p className="mt-2 font-semibold text-brand-navy">Mobile Money Paybill: 714888</p>
                   <p className="font-semibold text-brand-navy">Account Number: 134394</p>
                   <p className="font-semibold text-brand-navy">Business Name: Spice Got Cars</p>
                 </div>
-                <form onSubmit={async (e) => {
-                  e.preventDefault();
-                  if (!mpesaRef.trim() || !agent) return;
-                  setSubmittingPayment(true);
-                  try {
-                    const res = await submitAgentPayment({
-                      data: {
-                        agentId: agent.id,
-                        mpesaRef: mpesaRef.trim(),
-                      },
-                    });
-                    if (res.error) {
-                      toast.error(res.error.message || "Failed to submit payment reference.");
-                    } else {
-                      toast.success("Payment reference submitted successfully!");
-                      setPaymentSuccess(true);
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!mpesaRef.trim() || !agent) return;
+                    setSubmittingPayment(true);
+                    try {
+                      const res = await submitAgentPayment({
+                        data: {
+                          agentId: agent.id,
+                          mpesaRef: mpesaRef.trim(),
+                        },
+                      });
+                      if (res.error) {
+                        toast.error(res.error.message || "Failed to submit payment reference.");
+                      } else {
+                        toast.success("Payment reference submitted successfully!");
+                        setPaymentSuccess(true);
+                      }
+                    } catch (err: any) {
+                      toast.error(err?.message || "Failed to submit payment reference.");
+                    } finally {
+                      setSubmittingPayment(false);
                     }
-                  } catch (err: any) {
-                    toast.error(err?.message || "Failed to submit payment reference.");
-                  } finally {
-                    setSubmittingPayment(false);
-                  }
-                }} className="mt-4 space-y-3">
+                  }}
+                  className="mt-4 space-y-3"
+                >
                   <div>
-                    <label className="block text-sm font-medium text-brand-navy">M-PESA Reference Code</label>
+                    <label className="block text-sm font-medium text-brand-navy">
+                      M-PESA Reference Code
+                    </label>
                     <input
                       type="text"
                       required
@@ -338,6 +367,41 @@ function AgentDashboard() {
                 </form>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {showAdminChat && agent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-full bg-brand-navy text-white">
+                  <MessageSquare className="size-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-brand-navy">Dealership Admin Support</h3>
+                  <p className="text-xs text-brand-muted">
+                    Direct live chat with Spice Got Cars admin
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAdminChat(false)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="p-2">
+              <ChatPanel
+                listingId={`agent-${agent.id}`}
+                role="agent"
+                user={{ id: agent.id, name: agent.name, email: agent.email }}
+                onClose={() => setShowAdminChat(false)}
+              />
+            </div>
           </div>
         </div>
       )}

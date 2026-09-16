@@ -55,9 +55,7 @@ export const Route = createFileRoute("/inventory/$id")({
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-4 py-24 text-center">
       <h1 className="text-3xl font-bold">Listing not found</h1>
-      <p className="mt-2 text-brand-muted">
-        This car may have been sold or removed.
-      </p>
+      <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
       <Link
         to="/inventory"
         className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
@@ -95,60 +93,18 @@ function CarDetailPage() {
   const [inquirySuccess, setInquirySuccess] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const contactPhone = car.agentPhone || PHONE_TEL;
-
-  if (!car) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="text-3xl font-bold">Listing not found</h1>
-        <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
-        <Link
-          to="/inventory"
-          className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
-        >
-          Back to inventory
-        </Link>
-      </div>
-    );
-  }
-
-  const isSold = car.status === "sold";
-  const isReserved = car.status === "reserved";
-  const isAuction = car.isAuction && !isSold;
-  const auctionStatus = getAuctionStatus(car);
-  const supabase = createClient();
-
-  const backTo = isAuction ? "/auction/" : "/inventory";
-  const backLabel = isAuction ? "Back to auction" : "Back to inventory";
-
-  const handleInquirySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inquiryName.trim() || !inquiryPhone.trim()) return;
-    setInquirySubmitting(true);
-    try {
-      const { error } = await supabase.from("inquiries").insert({
-        listing_id: car.id,
-        name: inquiryName.trim(),
-        phone: inquiryPhone.trim(),
-      });
-      if (error) throw error;
-      setInquirySuccess(true);
-    } catch (err) {
-      console.error("Inquiry failed:", err);
-      alert("Failed to submit inquiry. Please try again.");
-    } finally {
-      setInquirySubmitting(false);
-    }
-  };
+  const isSold = car?.status === "sold";
+  const isReserved = car?.status === "reserved";
+  const isAuction = Boolean(car?.isAuction && !isSold);
 
   useEffect(() => {
-    if (!isAuction || !car.auctionWindows || car.auctionWindows.length === 0) {
+    if (!car || !isAuction || !car.auctionWindows || car.auctionWindows.length === 0) {
       setTimeLeft("");
       return;
     }
     const tick = () => {
       const now = new Date();
-      const activeWindow = car.auctionWindows?.find(w => {
+      const activeWindow = car.auctionWindows?.find((w) => {
         const start = new Date(w.startsAt);
         const end = new Date(w.endsAt);
         return now >= start && now < end;
@@ -173,10 +129,52 @@ function CarDetailPage() {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, [isAuction, car.auctionWindows]);
+  }, [car, isAuction]);
+
+  if (!car) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="text-3xl font-bold">Listing not found</h1>
+        <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
+        <Link
+          to="/inventory"
+          className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
+        >
+          Back to inventory
+        </Link>
+      </div>
+    );
+  }
+
+  const auctionStatus = getAuctionStatus(car);
+  const supabase = createClient();
+  const contactPhone = car.agentPhone || PHONE_TEL;
+
+  const backTo = isAuction ? "/auction/" : "/inventory";
+  const backLabel = isAuction ? "Back to auction" : "Back to inventory";
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inquiryName.trim() || !inquiryPhone.trim()) return;
+    setInquirySubmitting(true);
+    try {
+      const { error } = await supabase.from("inquiries").insert({
+        listing_id: car.id,
+        name: inquiryName.trim(),
+        phone: inquiryPhone.trim(),
+      });
+      if (error) throw error;
+      setInquirySuccess(true);
+    } catch (err) {
+      console.error("Inquiry failed:", err);
+      alert("Failed to submit inquiry. Please try again.");
+    } finally {
+      setInquirySubmitting(false);
+    }
+  };
 
   const displayPrice = isAuction
-    ? car.currentBidKes ?? car.startingBidKes ?? car.priceKes
+    ? (car.currentBidKes ?? car.startingBidKes ?? car.priceKes)
     : car.priceKes;
 
   return (
@@ -199,7 +197,11 @@ function CarDetailPage() {
             )}
           >
             <img
-              src={car.photos[activePhoto] || car.photos?.[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E"}
+              src={
+                car.photos[activePhoto] ||
+                car.photos?.[0] ||
+                "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E"
+              }
               alt={`${car.year} ${car.make} ${car.model}`}
               width={1280}
               height={960}
@@ -248,15 +250,11 @@ function CarDetailPage() {
           <div className="mt-8 space-y-8">
             <section>
               <h2 className="mb-3 text-xl font-bold">About the Car</h2>
-              <p className="leading-relaxed text-slate-700">
-                {car.description}
-              </p>
+              <p className="leading-relaxed text-slate-700">{car.description}</p>
             </section>
 
             <section>
-              <h2 className="mb-3 text-xl font-bold">
-                Trust & documentation
-              </h2>
+              <h2 className="mb-3 text-xl font-bold">Trust & documentation</h2>
               <ul className="space-y-2 text-sm">
                 <TrustLine
                   ok={car.logbookVerified}
@@ -279,16 +277,22 @@ function CarDetailPage() {
             </div>
             <h1 className="text-2xl font-bold leading-tight text-brand-navy">
               {car.year} {car.make} {car.model}
-              {car.trim && (
-                <span className="text-brand-muted"> {car.trim}</span>
-              )}
+              {car.trim && <span className="text-brand-muted"> {car.trim}</span>}
             </h1>
 
             {isAuction ? (
               <div className="mt-4 mb-6 space-y-3">
-                <div className={`flex items-center gap-2 ${auctionStatus.label === "Live now" ? "text-emerald-700" : auctionStatus.label === "Paused" ? "text-amber-700" : "text-slate-500"}`}>
+                <div
+                  className={`flex items-center gap-2 ${auctionStatus.label === "Live now" ? "text-emerald-700" : auctionStatus.label === "Paused" ? "text-amber-700" : "text-slate-500"}`}
+                >
                   <Timer className="size-5" />
-                  <span className="text-sm font-semibold">{auctionStatus.label === "Live now" ? "Time left" : auctionStatus.label === "Paused" ? "Status" : "Status"}</span>
+                  <span className="text-sm font-semibold">
+                    {auctionStatus.label === "Live now"
+                      ? "Time left"
+                      : auctionStatus.label === "Paused"
+                        ? "Status"
+                        : "Status"}
+                  </span>
                   {auctionStatus.label !== "Live now" && (
                     <span className="text-sm">{auctionStatus.description}</span>
                   )}
@@ -298,13 +302,13 @@ function CarDetailPage() {
                     {timeLeft || "Loading..."}
                   </div>
                 ) : (
-                  <div className={`text-xl font-black ${auctionStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}>
+                  <div
+                    className={`text-xl font-black ${auctionStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}
+                  >
                     {auctionStatus.label === "Paused" ? "Paused" : "Ended"}
                   </div>
                 )}
-                <div className="text-3xl font-black text-brand-navy">
-                  {formatKes(displayPrice)}
-                </div>
+                <div className="text-3xl font-black text-brand-navy">{formatKes(displayPrice)}</div>
                 <div className="text-sm text-brand-muted">
                   {car.bidCount ?? 0} bids · Highest: {car.highestBidder ?? "No bids yet"}
                 </div>
@@ -318,9 +322,7 @@ function CarDetailPage() {
               >
                 {formatKes(car.priceKes)}{" "}
                 {car.negotiable && !isSold && (
-                  <span className="text-sm font-normal text-brand-muted">
-                    Negotiable
-                  </span>
+                  <span className="text-sm font-normal text-brand-muted">Negotiable</span>
                 )}
               </div>
             )}
@@ -357,9 +359,7 @@ function CarDetailPage() {
                 <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-brand-muted">
                   Location
                 </h3>
-                {car.location && (
-                  <p className="mb-2 text-sm text-brand-navy">{car.location}</p>
-                )}
+                {car.location && <p className="mb-2 text-sm text-brand-navy">{car.location}</p>}
                 <LocationMap locationPin={car.locationPin} location={car.location} />
               </div>
             )}
@@ -373,7 +373,10 @@ function CarDetailPage() {
                 .
               </div>
             ) : isAuction ? (
-              <AuctionBidForm listingId={car.id} currentBid={car.currentBidKes ?? car.startingBidKes ?? car.priceKes} />
+              <AuctionBidForm
+                listingId={car.id}
+                currentBid={car.currentBidKes ?? car.startingBidKes ?? car.priceKes}
+              />
             ) : (
               <div className="space-y-3">
                 <button
@@ -415,16 +418,21 @@ function CarDetailPage() {
               <h2 className="text-2xl font-bold md:text-3xl">Auction terms and conditions</h2>
               <div className="mt-4 space-y-3 text-sm text-brand-muted">
                 <p>
-                  <span className="font-bold text-brand-navy">Deposit:</span> A refundable deposit of <span className="font-bold">KES 5,000</span> is required to place a bid.
+                  <span className="font-bold text-brand-navy">Deposit:</span> A refundable deposit
+                  of <span className="font-bold">KES 5,000</span> is required to place a bid.
                 </p>
                 <p>
-                  <span className="font-bold text-brand-navy">Payment:</span> Winners must complete full payment within <span className="font-bold">48 hours</span> of auction close.
+                  <span className="font-bold text-brand-navy">Payment:</span> Winners must complete
+                  full payment within <span className="font-bold">48 hours</span> of auction close.
                 </p>
                 <p>
-                  <span className="font-bold text-brand-navy">Refunds:</span> Non-winning bidders receive full deposit refunds within 3 business days.
+                  <span className="font-bold text-brand-navy">Refunds:</span> Non-winning bidders
+                  receive full deposit refunds within 3 business days.
                 </p>
                 <p>
-                  <span className="font-bold text-brand-navy">Bidding:</span> All bids are binding. By placing a bid, you agree to purchase the vehicle at your bid price if you are the highest bidder.
+                  <span className="font-bold text-brand-navy">Bidding:</span> All bids are binding.
+                  By placing a bid, you agree to purchase the vehicle at your bid price if you are
+                  the highest bidder.
                 </p>
               </div>
               <Link
@@ -518,10 +526,7 @@ function TrustLine({ ok, label }: { ok: boolean; label: string }) {
   return (
     <li className="flex items-start gap-2">
       <FileCheck
-        className={cn(
-          "mt-0.5 size-4 shrink-0",
-          ok ? "text-brand-accent" : "text-slate-300",
-        )}
+        className={cn("mt-0.5 size-4 shrink-0", ok ? "text-brand-accent" : "text-slate-300")}
       />
       <span className={ok ? "text-slate-700" : "text-brand-muted"}>{label}</span>
     </li>
@@ -579,7 +584,10 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+    >
       <h3 className="text-lg font-bold text-brand-navy">Place a bid</h3>
       <div>
         <label className="block text-sm font-medium text-brand-navy">Bid amount (KES)</label>
@@ -634,7 +642,9 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-brand-navy">Payment reference (M-PESA / Bank code)</label>
+        <label className="block text-sm font-medium text-brand-navy">
+          Payment reference (M-PESA / Bank code)
+        </label>
         <input
           type="text"
           required
@@ -657,7 +667,9 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
           className="mt-1"
         />
         <span>
-          I agree to the auction terms and conditions. I understand that a refundable deposit of KES 5,000 is required to place this bid, and payment must be completed within 48 hours if I win.
+          I agree to the auction terms and conditions. I understand that a refundable deposit of KES
+          5,000 is required to place this bid, and payment must be completed within 48 hours if I
+          win.
         </span>
       </label>
       <button

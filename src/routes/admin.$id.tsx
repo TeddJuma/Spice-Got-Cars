@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { createClient } from "@/lib/supabase";
@@ -49,11 +49,12 @@ export const Route = createFileRoute("/admin/$id")({
       listing: {
         ...data,
         photos: photos || [],
-        auctionWindows: windows?.map((w: any) => ({
-          id: w.id,
-          startsAt: w.starts_at,
-          endsAt: w.ends_at,
-        })) || [],
+        auctionWindows:
+          windows?.map((w: any) => ({
+            id: w.id,
+            startsAt: w.starts_at,
+            endsAt: w.ends_at,
+          })) || [],
       },
     };
   },
@@ -88,10 +89,10 @@ export const Route = createFileRoute("/admin/$id")({
 });
 
 type PhotoItem =
-  | { kind: "existing"; id: string; storagePath: string }
-  | { kind: "new"; file: File; url: string };
+  { kind: "existing"; id: string; storagePath: string } | { kind: "new"; file: File; url: string };
 
 function EditListingPage() {
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { listing } = Route.useLoaderData();
   const supabase = createClient();
@@ -128,7 +129,7 @@ function EditListingPage() {
       kind: "existing" as const,
       id: p.id,
       storagePath: p.storage_path,
-    }))
+    })),
   );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -138,9 +139,9 @@ function EditListingPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = "/login";
+      navigate({ to: "/login" });
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -231,7 +232,9 @@ function EditListingPage() {
           }));
 
         if (windowsToUpsert.length > 0) {
-          const { error: windowsError } = await supabase.from("auction_windows").insert(windowsToUpsert);
+          const { error: windowsError } = await supabase
+            .from("auction_windows")
+            .insert(windowsToUpsert);
           if (windowsError) {
             console.error("Failed to update auction windows:", windowsError);
           }
@@ -250,7 +253,7 @@ function EditListingPage() {
           supabase
             .from("listing_photos")
             .update({ sort_order: i })
-            .eq("id", (p as Extract<PhotoItem, { kind: "existing" }>).id)
+            .eq("id", (p as Extract<PhotoItem, { kind: "existing" }>).id),
         );
       if (orderUpdates.length > 0) {
         const results = await Promise.all(orderUpdates);
@@ -261,7 +264,7 @@ function EditListingPage() {
 
       // Upload any newly added photos in their current order.
       const newItems = photos.filter(
-        (p): p is Extract<PhotoItem, { kind: "new" }> => p.kind === "new"
+        (p): p is Extract<PhotoItem, { kind: "new" }> => p.kind === "new",
       );
       if (newItems.length > 0) {
         let uploadFailed = false;
@@ -492,10 +495,7 @@ function EditListingPage() {
             <Label className="!mt-0">Logbook verified</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch
-              checked={form.isAuction}
-              onCheckedChange={(v) => updateField("isAuction", v)}
-            />
+            <Switch checked={form.isAuction} onCheckedChange={(v) => updateField("isAuction", v)} />
             <Label className="!mt-0">Auction listing</Label>
           </div>
         </div>
@@ -525,11 +525,19 @@ function EditListingPage() {
 
             <div className="space-y-3">
               <Label>Auction Windows</Label>
-              <p className="text-xs text-brand-muted">Add one or more time windows when bidding is open. Bidding is only available during these windows.</p>
+              <p className="text-xs text-brand-muted">
+                Add one or more time windows when bidding is open. Bidding is only available during
+                these windows.
+              </p>
               {form.auctionWindows.map((window, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3">
+                <div
+                  key={index}
+                  className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3"
+                >
                   <div className="flex-1 min-w-[200px]">
-                    <label className="mb-1 block text-xs font-medium text-brand-muted">Starts</label>
+                    <label className="mb-1 block text-xs font-medium text-brand-muted">
+                      Starts
+                    </label>
                     <Input
                       type="datetime-local"
                       value={window.startsAt}
@@ -555,7 +563,10 @@ function EditListingPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      updateField("auctionWindows", form.auctionWindows.filter((_, i) => i !== index));
+                      updateField(
+                        "auctionWindows",
+                        form.auctionWindows.filter((_, i) => i !== index),
+                      );
                     }}
                     className="mt-5 rounded-lg p-2 text-red-600 hover:bg-red-50"
                   >
@@ -565,7 +576,12 @@ function EditListingPage() {
               ))}
               <button
                 type="button"
-                onClick={() => updateField("auctionWindows", [...form.auctionWindows, { startsAt: "", endsAt: "" }])}
+                onClick={() =>
+                  updateField("auctionWindows", [
+                    ...form.auctionWindows,
+                    { startsAt: "", endsAt: "" },
+                  ])
+                }
                 className="text-sm font-semibold text-brand-accent hover:underline"
               >
                 + Add auction window
@@ -603,11 +619,7 @@ function EditListingPage() {
                   }}
                   className={`relative cursor-move rounded-lg ${
                     dragIndex === i ? "opacity-40" : ""
-                  } ${
-                    dragOverIndex === i && dragIndex !== i
-                      ? "ring-2 ring-brand-accent"
-                      : ""
-                  }`}
+                  } ${dragOverIndex === i && dragIndex !== i ? "ring-2 ring-brand-accent" : ""}`}
                 >
                   <button
                     type="button"
@@ -667,8 +679,7 @@ function Lightbox({
 }) {
   const [viewerIndex, setViewerIndex] = useState(index);
   const photoCount = photos.length;
-  const step = (dir: number) =>
-    setViewerIndex((i) => (i + dir + photoCount) % photoCount);
+  const step = (dir: number) => setViewerIndex((i) => (i + dir + photoCount) % photoCount);
 
   return (
     <div

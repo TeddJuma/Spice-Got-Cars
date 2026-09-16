@@ -15,8 +15,17 @@ type Agent = {
 type AgentAuthContextType = {
   agent: Agent | null;
   loading: boolean;
-  signIn: (payload: { identifier: string; password: string }) => Promise<{ error: { message: string } | null }>;
-  signUp: (data: { name: string; email: string; phone: string; idNumber: string; password: string }) => Promise<{ error: { message: string } | null }>;
+  signIn: (payload: {
+    identifier: string;
+    password: string;
+  }) => Promise<{ error: { message: string } | null }>;
+  signUp: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    idNumber: string;
+    password: string;
+  }) => Promise<{ error: { message: string } | null }>;
   signOut: () => void;
 };
 
@@ -47,10 +56,7 @@ export function AgentAuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const signIn = async (payload: {
-    identifier: string;
-    password: string;
-  }) => {
+  const signIn = async (payload: { identifier: string; password: string }) => {
     const result = await agentLogin({ data: payload });
     if (result.error) {
       return result;

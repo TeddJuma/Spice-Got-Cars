@@ -34,19 +34,23 @@ export interface AuctionItem {
 
 export function AuctionCard({ item }: { item: AuctionItem }) {
   const [timeLeft, setTimeLeft] = useState("");
-  const [currentStatus, setCurrentStatus] = useState(getAuctionStatus({
-    ...item,
-    isAuction: true,
-    auctionWindows: item.auctionWindows,
-  }));
+  const [currentStatus, setCurrentStatus] = useState(
+    getAuctionStatus({
+      ...item,
+      isAuction: true,
+      auctionWindows: item.auctionWindows,
+    }),
+  );
 
   useEffect(() => {
     const tick = () => {
-      setCurrentStatus(getAuctionStatus({
-        ...item,
-        isAuction: true,
-        auctionWindows: item.auctionWindows,
-      }));
+      setCurrentStatus(
+        getAuctionStatus({
+          ...item,
+          isAuction: true,
+          auctionWindows: item.auctionWindows,
+        }),
+      );
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -60,7 +64,7 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
     }
     const tick = () => {
       const now = new Date();
-      const activeWindow = item.auctionWindows?.find(w => {
+      const activeWindow = item.auctionWindows?.find((w) => {
         const start = new Date(w.startsAt);
         const end = new Date(w.endsAt);
         return now >= start && now < end;
@@ -91,7 +95,9 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
   const statusColor = currentStatus.color.replace("bg-", "text-").replace("bg-", "bg-");
   const statusBg = currentStatus.color;
 
-  const photo = item.photos[0] || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
+  const photo =
+    item.photos[0] ||
+    "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' fill='%23e2e8f0'%3E%3Crect width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%2394a3b8' font-family='sans-serif' font-size='24'%3ENo Photo%3C/text%3E%3C/svg%3E";
 
   return (
     <div className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-xl">
@@ -125,16 +131,14 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
 
       <div className="p-5">
         <div className="mb-2 flex items-start justify-between gap-2">
-          <Link
-            to="/inventory/$id"
-            params={{ id: item.id }}
-            className="min-w-0 flex-1"
-          >
+          <Link to="/inventory/$id" params={{ id: item.id }} className="min-w-0 flex-1">
             <h3 className="truncate text-lg font-bold text-brand-navy">
               {item.make} {item.model}
             </h3>
           </Link>
-          <span className={`shrink-0 rounded px-2 py-1 text-[10px] font-bold uppercase ${statusBg} text-white`}>
+          <span
+            className={`shrink-0 rounded px-2 py-1 text-[10px] font-bold uppercase ${statusBg} text-white`}
+          >
             {currentStatus.label}
           </span>
         </div>
@@ -142,15 +146,21 @@ export function AuctionCard({ item }: { item: AuctionItem }) {
         <div className="mb-3 rounded-lg bg-slate-50 p-3">
           <div className="flex items-center gap-2 text-xs font-semibold text-brand-muted">
             <Timer className="size-4 text-brand-accent" />
-            <span>{currentStatus.label === "Live now" ? "Time left" : currentStatus.label === "Paused" ? "Status" : "Status"}</span>
+            <span>
+              {currentStatus.label === "Live now"
+                ? "Time left"
+                : currentStatus.label === "Paused"
+                  ? "Status"
+                  : "Status"}
+            </span>
           </div>
           {currentStatus.label === "Live now" && timeLeft && (
-            <div className="mt-1 text-xl font-black text-brand-navy">
-              {timeLeft}
-            </div>
+            <div className="mt-1 text-xl font-black text-brand-navy">{timeLeft}</div>
           )}
           {currentStatus.label !== "Live now" && (
-            <div className={`mt-1 text-lg font-black ${currentStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}>
+            <div
+              className={`mt-1 text-lg font-black ${currentStatus.label === "Ended" ? "text-slate-500" : "text-amber-700"}`}
+            >
               {currentStatus.label === "Paused" ? "Paused" : "Ended"}
             </div>
           )}

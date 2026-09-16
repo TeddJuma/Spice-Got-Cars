@@ -49,11 +49,7 @@ export const agentLogin = createServerFn({ method: "POST" })
     if (byEmail.data) {
       agentRow = byEmail.data;
     } else {
-      const byPhone = await supabase
-        .from("agents")
-        .select("*")
-        .eq("phone", trimmed)
-        .maybeSingle();
+      const byPhone = await supabase.from("agents").select("*").eq("phone", trimmed).maybeSingle();
 
       if (byPhone.data) {
         agentRow = byPhone.data;
@@ -78,16 +74,18 @@ export const agentLogin = createServerFn({ method: "POST" })
     }
 
     // Ensure date fields are strings for serialization
-    const createdAt = typeof agentRow.created_at === "string"
-      ? agentRow.created_at
-      : agentRow.created_at instanceof Date
-      ? agentRow.created_at.toISOString()
-      : null;
-    const approvedUntil = typeof agentRow.approved_until === "string"
-      ? agentRow.approved_until
-      : agentRow.approved_until instanceof Date
-      ? agentRow.approved_until.toISOString()
-      : null;
+    const createdAt =
+      typeof agentRow.created_at === "string"
+        ? agentRow.created_at
+        : agentRow.created_at instanceof Date
+          ? agentRow.created_at.toISOString()
+          : null;
+    const approvedUntil =
+      typeof agentRow.approved_until === "string"
+        ? agentRow.approved_until
+        : agentRow.approved_until instanceof Date
+          ? agentRow.approved_until.toISOString()
+          : null;
     return {
       success: true,
       agent: {
@@ -224,7 +222,10 @@ export const getAgentProfile = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
     if (!supabase) {
-      return { error: { message: "Supabase service role is not configured on the server" }, agent: null };
+      return {
+        error: { message: "Supabase service role is not configured on the server" },
+        agent: null,
+      };
     }
 
     const { data: agentRow, error } = await supabase
@@ -237,11 +238,12 @@ export const getAgentProfile = createServerFn({ method: "POST" })
       return { error: { message: error?.message || "Agent profile not found" }, agent: null };
     }
 
-    const approvedUntil = typeof agentRow.approved_until === "string"
-      ? agentRow.approved_until
-      : agentRow.approved_until instanceof Date
-      ? agentRow.approved_until.toISOString()
-      : null;
+    const approvedUntil =
+      typeof agentRow.approved_until === "string"
+        ? agentRow.approved_until
+        : agentRow.approved_until instanceof Date
+          ? agentRow.approved_until.toISOString()
+          : null;
 
     return {
       success: true,
@@ -253,11 +255,12 @@ export const getAgentProfile = createServerFn({ method: "POST" })
         id_number: agentRow.id_number,
         approved: agentRow.approved,
         approved_until: approvedUntil,
-        created_at: typeof agentRow.created_at === "string"
-          ? agentRow.created_at
-          : agentRow.created_at instanceof Date
-          ? agentRow.created_at.toISOString()
-          : null,
+        created_at:
+          typeof agentRow.created_at === "string"
+            ? agentRow.created_at
+            : agentRow.created_at instanceof Date
+              ? agentRow.created_at.toISOString()
+              : null,
       },
     };
   });
@@ -327,7 +330,10 @@ export const getAgentListings = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
     if (!supabase) {
-      return { error: { message: "Supabase service role is not configured on the server" }, listings: [] };
+      return {
+        error: { message: "Supabase service role is not configured on the server" },
+        listings: [],
+      };
     }
 
     const { data: listings, error } = await supabase
@@ -414,21 +420,23 @@ export const createAgentListing = createServerFn({ method: "POST" })
       if (!countError && (count || 0) >= 2) {
         return {
           error: {
-            message: "Unapproved accounts can only create up to 2 listings. Please activate your account.",
+            message:
+              "Unapproved accounts can only create up to 2 listings. Please activate your account.",
           },
         };
       }
     }
 
-    const auctionWindows = data.isAuction && (data as any).auctionWindows
-      ? (data as any).auctionWindows.map((w: any) => ({
-          listing_id: "",
-          starts_at: new Date(w.startsAt).toISOString(),
-          ends_at: new Date(w.endsAt).toISOString(),
-        }))
-      : [];
+    const auctionWindows =
+      data.isAuction && (data as any).auctionWindows
+        ? (data as any).auctionWindows.map((w: any) => ({
+            listing_id: "",
+            starts_at: new Date(w.startsAt).toISOString(),
+            ends_at: new Date(w.endsAt).toISOString(),
+          }))
+        : [];
 
-      const { data: listing, error: insertError } = await supabase
+    const { data: listing, error: insertError } = await supabase
       .from("listings")
       .insert({
         agent_id: data.agentId,
@@ -493,7 +501,10 @@ export const getAgentListingById = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
     if (!supabase) {
-      return { error: { message: "Supabase service role is not configured on the server" }, listing: null };
+      return {
+        error: { message: "Supabase service role is not configured on the server" },
+        listing: null,
+      };
     }
 
     const { data: listing, error } = await supabase
@@ -524,12 +535,18 @@ export const getAgentListingById = createServerFn({ method: "POST" })
       listing: {
         ...listing,
         photos: photos?.map((p: any) => p.storage_path) || [],
-        photoDetails: photos?.map((p: any) => ({ id: p.id, storagePath: p.storage_path, sortOrder: p.sort_order })) || [],
-        auctionWindows: windows?.map((w: any) => ({
-          id: w.id,
-          startsAt: w.starts_at,
-          endsAt: w.ends_at,
-        })) || [],
+        photoDetails:
+          photos?.map((p: any) => ({
+            id: p.id,
+            storagePath: p.storage_path,
+            sortOrder: p.sort_order,
+          })) || [],
+        auctionWindows:
+          windows?.map((w: any) => ({
+            id: w.id,
+            startsAt: w.starts_at,
+            endsAt: w.ends_at,
+          })) || [],
       },
     };
   });
@@ -614,7 +631,10 @@ export const uploadAgentListingPhotos = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const supabase = createServiceClient();
     if (!supabase) {
-      return { error: { message: "Supabase service role is not configured on the server" }, urls: [] };
+      return {
+        error: { message: "Supabase service role is not configured on the server" },
+        urls: [],
+      };
     }
 
     const { data: listing, error: listingError } = await supabase
@@ -637,10 +657,12 @@ export const uploadAgentListingPhotos = createServerFn({ method: "POST" })
 
       const buffer = Buffer.from(photo.base64, "base64");
 
-      const { error: uploadError } = await supabase.storage.from("car-photos").upload(path, buffer, {
-        contentType: photo.type,
-        upsert: false,
-      });
+      const { error: uploadError } = await supabase.storage
+        .from("car-photos")
+        .upload(path, buffer, {
+          contentType: photo.type,
+          upsert: false,
+        });
 
       if (uploadError) {
         console.error("Upload error:", uploadError);

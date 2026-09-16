@@ -4,9 +4,26 @@ import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon, Gavel, MessageSquare } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Bell,
+  Check,
+  X,
+  Search,
+  Phone,
+  MessageCircle,
+  Trash,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon,
+  Gavel,
+  MessageSquare,
+} from "lucide-react";
 import { updateAgentPaymentStatus } from "@/lib/agent-actions";
 import ChatButton from "@/components/messaging/ChatButton";
+import ChatPanel from "@/components/messaging/ChatPanel";
 import {
   fetchSellSubmissions,
   fetchNotifications,
@@ -45,19 +62,24 @@ function AdminIndexPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [adminChatModal, setAdminChatModal] = useState<{
+    listingId: string;
+    title: string;
+  } | null>(null);
 
   const loadData = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      const [submissionsData, notificationsData, unread, inquiriesData, agentsData] = await Promise.all([
-        fetchSellSubmissions(supabaseClient),
-        fetchNotifications(supabaseClient),
-        fetchUnreadNotificationCount(supabaseClient),
-        supabaseClient.from("inquiries").select("*").order("created_at", { ascending: false }),
-        supabaseClient.from("agents").select("*").order("created_at", { ascending: false }),
-      ]);
+      const [submissionsData, notificationsData, unread, inquiriesData, agentsData] =
+        await Promise.all([
+          fetchSellSubmissions(supabaseClient),
+          fetchNotifications(supabaseClient),
+          fetchUnreadNotificationCount(supabaseClient),
+          supabaseClient.from("inquiries").select("*").order("created_at", { ascending: false }),
+          supabaseClient.from("agents").select("*").order("created_at", { ascending: false }),
+        ]);
 
       setSubmissions(submissionsData);
       setNotifications(notificationsData);
@@ -94,11 +116,12 @@ function AdminIndexPage() {
             return {
               ...listing,
               photos: photos?.map((p: any) => p.storage_path) || [],
-              auctionWindows: windows?.map((w: any) => ({
-                id: w.id,
-                startsAt: w.starts_at,
-                endsAt: w.ends_at,
-              })) || [],
+              auctionWindows:
+                windows?.map((w: any) => ({
+                  id: w.id,
+                  startsAt: w.starts_at,
+                  endsAt: w.ends_at,
+                })) || [],
             };
           }),
         );
@@ -135,11 +158,12 @@ function AdminIndexPage() {
             return {
               ...listing,
               photos: photos?.map((p: any) => p.storage_path) || [],
-              auctionWindows: windows?.map((w: any) => ({
-                id: w.id,
-                startsAt: w.starts_at,
-                endsAt: w.ends_at,
-              })) || [],
+              auctionWindows:
+                windows?.map((w: any) => ({
+                  id: w.id,
+                  startsAt: w.starts_at,
+                  endsAt: w.ends_at,
+                })) || [],
             };
           }),
         );
@@ -189,7 +213,8 @@ function AdminIndexPage() {
       engine_size: "Unknown",
       body_type: "Other",
       condition: submission.condition,
-      description: submission.notes || `Customer submission: ${submission.make} ${submission.model}`,
+      description:
+        submission.notes || `Customer submission: ${submission.make} ${submission.model}`,
       status: "available",
       logbook_verified: false,
       listed_at: new Date().toISOString().split("T")[0],
@@ -229,7 +254,9 @@ function AdminIndexPage() {
       message: `Approved sell submission: ${submission.year} ${submission.make} ${submission.model}${asAuction ? " (Auction)" : ""}`,
     });
 
-    toast.success(asAuction ? "Submission approved as auction listing." : "Submission approved and listed.");
+    toast.success(
+      asAuction ? "Submission approved as auction listing." : "Submission approved and listed.",
+    );
     loadData();
   };
 
@@ -254,13 +281,64 @@ function AdminIndexPage() {
     if (!notification.read) {
       await markNotificationAsRead(notification.id, supabaseClient);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
     if (notification.type === "new_message") {
       setActiveTab("inquiries");
     }
+  };
+
+  const handleViewChatNotification = async (notification: Notification) => {
+    // 1. Mark as read
+    if (!notification.read) {
+      await markNotificationAsRead(notification.id, supabaseClient);
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
+      );
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    }
+
+    // 2. Extract listing ID from notification message if present
+    const matchListing = notification.message.match(/\[listing:([^\]]+)\]/);
+    let targetListingId = matchListing ? matchListing[1].trim() : "";
+
+    if (!targetListingId) {
+      const agentMatch = notification.message.match(/agent-[a-zA-Z0-9_-]+/);
+      if (agentMatch) {
+        targetListingId = agentMatch[0];
+      }
+    }
+
+    if (!targetListingId && inquiries.length > 0) {
+      const withListing = inquiries.find((i) => i.listing_id);
+      if (withListing) {
+        targetListingId = withListing.listing_id;
+      }
+    }
+
+    if (!targetListingId && listings.length > 0) {
+      targetListingId = listings[0].id;
+    }
+
+    if (targetListingId) {
+      const foundListing =
+        listings.find((l) => l.id === targetListingId) ||
+        auctions.find((a) => a.id === targetListingId);
+      const title = foundListing
+        ? `${foundListing.year} ${foundListing.make} ${foundListing.model}`
+        : targetListingId.startsWith("agent-")
+          ? "Agent Support Chat"
+          : "Customer Discussion";
+
+      setAdminChatModal({
+        listingId: targetListingId,
+        title,
+      });
+    }
+
+    setActiveTab("inquiries");
   };
 
   const handleDeleteNotification = async (id: string) => {
@@ -275,7 +353,12 @@ function AdminIndexPage() {
   };
 
   const handleDeleteAgent = async (id: string) => {
-    if (!confirm("Delete this agent? This will permanently remove their account and all associated data.")) return;
+    if (
+      !confirm(
+        "Delete this agent? This will permanently remove their account and all associated data.",
+      )
+    )
+      return;
     const { error } = await supabaseClient.from("agents").delete().eq("id", id);
     if (error) {
       toast.error("Failed to delete agent.");
@@ -331,18 +414,14 @@ function AdminIndexPage() {
 
   const filteredListings = listings.filter((l) => {
     if (!query) return true;
-    return `${l.year} ${l.make} ${l.model} ${l.status}`
-      .toLowerCase()
-      .includes(query);
+    return `${l.year} ${l.make} ${l.model} ${l.status}`.toLowerCase().includes(query);
   });
 
   const filteredSubmissions = submissions
     .filter((s) => s.status === "pending")
     .filter((s) => {
       if (!query) return true;
-      return `${s.year} ${s.make} ${s.model} ${s.status} ${s.name}`
-        .toLowerCase()
-        .includes(query);
+      return `${s.year} ${s.make} ${s.model} ${s.status} ${s.name}`.toLowerCase().includes(query);
     });
 
   const pendingCount = submissions.filter((s) => s.status === "pending").length;
@@ -439,7 +518,12 @@ function AdminIndexPage() {
             />
           </div>
           {activeTab === "notifications" && unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={handleMarkAllRead} className="w-full sm:w-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMarkAllRead}
+              className="w-full sm:w-auto"
+            >
               Mark all read
             </Button>
           )}
@@ -454,11 +538,7 @@ function AdminIndexPage() {
             </div>
           ) : (
             filteredListings.map((listing) => (
-              <AdminListingCard
-                key={listing.id}
-                listing={listing}
-                onDelete={handleDelete}
-              />
+              <AdminListingCard key={listing.id} listing={listing} onDelete={handleDelete} />
             ))
           )}
         </div>
@@ -472,11 +552,7 @@ function AdminIndexPage() {
             </div>
           ) : (
             auctions.map((listing) => (
-              <AdminListingCard
-                key={listing.id}
-                listing={listing}
-                onDelete={handleDelete}
-              />
+              <AdminListingCard key={listing.id} listing={listing} onDelete={handleDelete} />
             ))
           )}
         </div>
@@ -514,6 +590,7 @@ function AdminIndexPage() {
                 notification={notification}
                 onOpen={handleNotificationClick}
                 onDelete={handleDeleteNotification}
+                onViewChat={handleViewChatNotification}
               />
             ))
           )}
@@ -536,58 +613,76 @@ function AdminIndexPage() {
               }, {});
 
               return Object.entries(grouped).map(([listingId, items]) => {
-                const listing = listings.find((l) => l.id === listingId) || auctions.find((a) => a.id === listingId);
-                const title = listing ? `${listing.year} ${listing.make} ${listing.model}` : `Listing ${listingId.slice(0, 8)}...`;
-                const sorted = [...items].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                const listing =
+                  listings.find((l) => l.id === listingId) ||
+                  auctions.find((a) => a.id === listingId);
+                const title = listing
+                  ? `${listing.year} ${listing.make} ${listing.model}`
+                  : `Listing ${listingId.slice(0, 8)}...`;
+                const sorted = [...items].sort(
+                  (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+                );
 
                 return (
-                  <div key={listingId} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                  <div
+                    key={listingId}
+                    className="overflow-hidden rounded-xl border border-slate-200 bg-white"
+                  >
                     <div className="border-b border-slate-100 px-4 py-3">
                       <p className="font-semibold text-brand-navy">{title}</p>
-                      <p className="text-xs text-brand-muted">{items.length} inquiry{items.length > 1 ? "s" : ""}</p>
+                      <p className="text-xs text-brand-muted">
+                        {items.length} inquiry{items.length > 1 ? "s" : ""}
+                      </p>
                     </div>
                     <div className="divide-y divide-slate-100">
                       {sorted.map((inq) => (
-                        <div key={inq.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div
+                          key={inq.id}
+                          className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                        >
                           <div>
                             <p className="text-sm font-semibold text-brand-navy">{inq.name}</p>
                             <p className="text-sm text-brand-muted">{inq.phone}</p>
                           </div>
-<div className="flex items-center gap-2">
-                               {inq.listing_id && (
-                                 <ChatButton listingId={inq.listing_id} role="admin" user={user ?? { id: "admin", name: "Admin" }} />
-                               )}
-                               <a
-                                href={`tel:${inq.phone}`}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
-                              >
-                                <Phone className="size-3.5" />
-                                Call
-                              </a>
-                              <a
-                                href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                aria-label="WhatsApp"
-                                className="inline-flex items-center justify-center rounded-lg bg-[#25D366] p-1.5 text-white transition-transform hover:scale-105 active:scale-95"
-                              >
-                                <MessageCircle className="size-3.5" />
-                              </a>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteInquiry(inq.id)}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-red-700"
-                              >
-                                <Trash className="size-3.5" />
-                                Delete
-                              </button>
-                              <span className="text-xs text-brand-muted">
-                                {new Date(inq.created_at).toLocaleString("en-KE", {
-                                  dateStyle: "medium",
-                                  timeStyle: "short",
-                                })}
-                              </span>
-                            </div>
+                          <div className="flex items-center gap-2">
+                            {inq.listing_id && (
+                              <ChatButton
+                                listingId={inq.listing_id}
+                                role="admin"
+                                user={user ?? { id: "admin", name: "Admin" }}
+                              />
+                            )}
+                            <a
+                              href={`tel:${inq.phone}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
+                            >
+                              <Phone className="size-3.5" />
+                              Call
+                            </a>
+                            <a
+                              href={`https://wa.me/${inq.phone.replace(/[^0-9]/g, "")}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label="WhatsApp"
+                              className="inline-flex items-center justify-center rounded-lg bg-[#25D366] p-1.5 text-white transition-transform hover:scale-105 active:scale-95"
+                            >
+                              <MessageCircle className="size-3.5" />
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteInquiry(inq.id)}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-2.5 py-1.5 text-xs font-bold text-white hover:bg-red-700"
+                            >
+                              <Trash className="size-3.5" />
+                              Delete
+                            </button>
+                            <span className="text-xs text-brand-muted">
+                              {new Date(inq.created_at).toLocaleString("en-KE", {
+                                dateStyle: "medium",
+                                timeStyle: "short",
+                              })}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -608,13 +703,23 @@ function AdminIndexPage() {
           ) : (
             agents.map((ag) => {
               const daysLeft = ag.approved_until
-                ? Math.max(0, Math.ceil((new Date(ag.approved_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+                ? Math.max(
+                    0,
+                    Math.ceil(
+                      (new Date(ag.approved_until).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+                    ),
+                  )
                 : 0;
               return (
-                <div key={ag.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div
+                  key={ag.id}
+                  className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
                   <div>
                     <p className="font-semibold text-brand-navy">{ag.name}</p>
-                    <p className="text-sm text-brand-muted">{ag.email} · {ag.phone}</p>
+                    <p className="text-sm text-brand-muted">
+                      {ag.email} · {ag.phone}
+                    </p>
                     <p className="text-xs text-brand-muted">ID: {ag.id_number}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -626,6 +731,11 @@ function AdminIndexPage() {
                         {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
                       </span>
                     )}
+                    <ChatButton
+                      listingId={`agent-${ag.id}`}
+                      role="admin"
+                      user={user ?? { id: "admin", name: "Admin" }}
+                    />
                     <a
                       href={`tel:${ag.phone}`}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-2.5 py-1.5 text-xs font-bold text-white"
@@ -642,11 +752,7 @@ function AdminIndexPage() {
                     >
                       <MessageCircle className="size-3.5" />
                     </a>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleOpenPayments(ag.id)}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => handleOpenPayments(ag.id)}>
                       Payments
                     </Button>
                     <Button
@@ -654,10 +760,23 @@ function AdminIndexPage() {
                       size="sm"
                       onClick={async () => {
                         const newStatus = !ag.approved;
-                        const approvedUntil = newStatus ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() : null;
-                        await supabaseClient.from("agents").update({ approved: newStatus, approved_until: approvedUntil }).eq("id", ag.id);
-                        setAgents((prev) => prev.map((a) => a.id === ag.id ? { ...a, approved: newStatus, approved_until: approvedUntil } : a));
-                        toast.success(newStatus ? "Agent approved for 30 days." : "Agent approval revoked.");
+                        const approvedUntil = newStatus
+                          ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+                          : null;
+                        await supabaseClient
+                          .from("agents")
+                          .update({ approved: newStatus, approved_until: approvedUntil })
+                          .eq("id", ag.id);
+                        setAgents((prev) =>
+                          prev.map((a) =>
+                            a.id === ag.id
+                              ? { ...a, approved: newStatus, approved_until: approvedUntil }
+                              : a,
+                          ),
+                        );
+                        toast.success(
+                          newStatus ? "Agent approved for 30 days." : "Agent approval revoked.",
+                        );
                       }}
                     >
                       {ag.approved ? "Revoke" : "Approve"}
@@ -698,9 +817,14 @@ function AdminIndexPage() {
               ) : (
                 <div className="space-y-3">
                   {payments.map((p) => (
-                    <div key={p.id} className="flex flex-col gap-2 rounded-lg border border-slate-200 p-4">
+                    <div
+                      key={p.id}
+                      className="flex flex-col gap-2 rounded-lg border border-slate-200 p-4"
+                    >
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-brand-navy">KES {p.amount.toLocaleString()}</span>
+                        <span className="font-semibold text-brand-navy">
+                          KES {p.amount.toLocaleString()}
+                        </span>
                         <span className="text-xs text-brand-muted">
                           {new Date(p.created_at).toLocaleString("en-KE", {
                             dateStyle: "medium",
@@ -710,11 +834,15 @@ function AdminIndexPage() {
                       </div>
                       <p className="text-sm text-brand-muted">Reference: {p.mpesa_ref}</p>
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-bold ${
-                          p.status === "approved" ? "bg-emerald-50 text-emerald-700" :
-                          p.status === "rejected" ? "bg-red-50 text-red-700" :
-                          "bg-amber-50 text-amber-700"
-                        }`}>
+                        <span
+                          className={`inline-flex w-fit rounded-full px-2 py-0.5 text-xs font-bold ${
+                            p.status === "approved"
+                              ? "bg-emerald-50 text-emerald-700"
+                              : p.status === "rejected"
+                                ? "bg-red-50 text-red-700"
+                                : "bg-amber-50 text-amber-700"
+                          }`}
+                        >
                           {p.status}
                         </span>
                         <Button
@@ -729,6 +857,39 @@ function AdminIndexPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {adminChatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 items-center justify-center rounded-full bg-brand-navy text-white font-bold">
+                  <MessageSquare className="size-4 text-brand-accent" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-brand-navy">{adminChatModal.title}</h3>
+                  <p className="text-xs text-brand-muted">Target ID: {adminChatModal.listingId}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAdminChatModal(null)}
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            <div className="p-2 overflow-y-auto">
+              <ChatPanel
+                listingId={adminChatModal.listingId}
+                role="admin"
+                user={user ?? { id: "admin", name: "Admin" }}
+                onClose={() => setAdminChatModal(null)}
+              />
             </div>
           </div>
         </div>
@@ -833,9 +994,7 @@ function SubmissionCard({
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
                 Notes
               </p>
-              <p className="mt-1 text-sm italic text-brand-muted">
-                "{submission.notes}"
-              </p>
+              <p className="mt-1 text-sm italic text-brand-muted">"{submission.notes}"</p>
             </div>
           )}
 
@@ -852,11 +1011,7 @@ function SubmissionCard({
                     onClick={() => setViewerIndex(idx)}
                     className="overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
-                    <img
-                      src={url}
-                      alt={`Photo ${idx + 1}`}
-                      className="h-24 w-32 object-cover"
-                    />
+                    <img src={url} alt={`Photo ${idx + 1}`} className="h-24 w-32 object-cover" />
                   </button>
                 ))}
               </div>
@@ -882,18 +1037,10 @@ function SubmissionCard({
               <Button size="sm" onClick={() => onApprove(submission, false)}>
                 <Check className="mr-1 size-4" /> Approve as Listing
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => onApprove(submission, true)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => onApprove(submission, true)}>
                 <Gavel className="mr-1 size-4" /> Send to Auction
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onReject(submission.id)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => onReject(submission.id)}>
                 <X className="mr-1 size-4" /> Reject
               </Button>
             </div>
@@ -911,12 +1058,8 @@ function SubmissionCard({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
-        {label}
-      </dt>
-      <dd className="mt-0.5 truncate text-sm font-medium text-brand-navy">
-        {value}
-      </dd>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-brand-muted">{label}</dt>
+      <dd className="mt-0.5 truncate text-sm font-medium text-brand-navy">{value}</dd>
     </div>
   );
 }
@@ -932,8 +1075,7 @@ function Lightbox({
 }) {
   const [viewerIndex, setViewerIndex] = useState(index);
   const photoCount = photos.length;
-  const step = (dir: number) =>
-    setViewerIndex((i) => (i + dir + photoCount) % photoCount);
+  const step = (dir: number) => setViewerIndex((i) => (i + dir + photoCount) % photoCount);
 
   return (
     <div
@@ -984,13 +1126,7 @@ function Lightbox({
   );
 }
 
-function AdminListingCard({
-  listing,
-  onDelete,
-}: {
-  listing: any;
-  onDelete: (id: string) => void;
-}) {
+function AdminListingCard({ listing, onDelete }: { listing: any; onDelete: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [bids, setBids] = useState<any[]>([]);
@@ -998,9 +1134,7 @@ function AdminListingCard({
   const [expandedBid, setExpandedBid] = useState<any | null>(null);
   const photos: string[] = listing.photos ?? [];
   const price =
-    listing.price_kes != null
-      ? `KES ${Number(listing.price_kes).toLocaleString()}`
-      : "—";
+    listing.price_kes != null ? `KES ${Number(listing.price_kes).toLocaleString()}` : "—";
   const cardSupabase = createClient();
 
   const loadBids = async () => {
@@ -1030,11 +1164,7 @@ function AdminListingCard({
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-slate-50"
       >
         {photos[0] ? (
-          <img
-            src={photos[0]}
-            alt=""
-            className="size-12 shrink-0 rounded-lg object-cover"
-          />
+          <img src={photos[0]} alt="" className="size-12 shrink-0 rounded-lg object-cover" />
         ) : (
           <div className="grid size-12 shrink-0 place-items-center rounded-lg bg-slate-100 text-brand-muted">
             <ImageIcon className="size-6" />
@@ -1043,9 +1173,7 @@ function AdminListingCard({
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold text-brand-navy">
             {listing.year} {listing.make} {listing.model}
-            {listing.trim ? (
-              <span className="text-brand-muted"> {listing.trim}</span>
-            ) : null}
+            {listing.trim ? <span className="text-brand-muted"> {listing.trim}</span> : null}
           </p>
           <p className="truncate text-sm text-brand-muted">
             {price} · {listing.transmission} · {listing.body_type}
@@ -1056,9 +1184,7 @@ function AdminListingCard({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <Badge
-            variant={listing.status === "available" ? "default" : "secondary"}
-          >
+          <Badge variant={listing.status === "available" ? "default" : "secondary"}>
             {listing.status}
           </Badge>
           {listing.is_auction && (
@@ -1099,12 +1225,18 @@ function AdminListingCard({
             <Detail label="Listed" value={String(listing.listed_at)} />
             {listing.is_auction && (
               <div className="sm:col-span-2 lg:col-span-3">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">Auction Windows</p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">
+                  Auction Windows
+                </p>
                 {listing.auctionWindows && listing.auctionWindows.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {listing.auctionWindows.map((window: any) => (
-                      <span key={window.id} className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs">
-                        {new Date(window.startsAt).toLocaleString()} → {new Date(window.endsAt).toLocaleString()}
+                      <span
+                        key={window.id}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs"
+                      >
+                        {new Date(window.startsAt).toLocaleString()} →{" "}
+                        {new Date(window.endsAt).toLocaleString()}
                       </span>
                     ))}
                   </div>
@@ -1120,9 +1252,7 @@ function AdminListingCard({
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
                 Description
               </p>
-              <p className="mt-1 text-sm text-brand-muted">
-                {listing.description}
-              </p>
+              <p className="mt-1 text-sm text-brand-muted">{listing.description}</p>
             </div>
           )}
 
@@ -1139,11 +1269,7 @@ function AdminListingCard({
                     onClick={() => setViewerIndex(idx)}
                     className="overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
-                    <img
-                      src={url}
-                      alt={`Photo ${idx + 1}`}
-                      className="h-24 w-32 object-cover"
-                    />
+                    <img src={url} alt={`Photo ${idx + 1}`} className="h-24 w-32 object-cover" />
                   </button>
                 ))}
               </div>
@@ -1160,77 +1286,91 @@ function AdminListingCard({
               ) : bids.length === 0 ? (
                 <p className="text-sm text-brand-muted">No bids yet.</p>
               ) : (
-            <div className="space-y-2">
-              {bids.map((bid) => (
-                <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
-                    <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setExpandedBid(expandedBid?.id === bid.id ? null : bid)}
-                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-brand-navy transition hover:bg-slate-50"
-                  >
-                    {expandedBid?.id === bid.id ? "Hide bidder details" : "View bidder details"}
-                  </button>
-                  {expandedBid?.id === bid.id && (
-                    <div className="mt-3 space-y-2">
-                      <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">First name</p>
-                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_first_name || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Last name</p>
-                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_last_name || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Phone</p>
-                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_phone || "—"}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">National ID</p>
-                          <p className="text-sm font-medium text-brand-navy">{bid.national_id || "—"}</p>
-                        </div>
+                <div className="space-y-2">
+                  {bids.map((bid) => (
+                    <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-brand-navy">
+                          {formatKes(bid.bid_amount)}
+                        </span>
+                        <span className="text-xs text-brand-muted">
+                          {new Date(bid.created_at).toLocaleString()}
+                        </span>
                       </div>
-                      {bid.payment_reference && (
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Payment reference</p>
-                          <p className="text-sm font-medium text-brand-navy">{bid.payment_reference}</p>
+                      <button
+                        type="button"
+                        onClick={() => setExpandedBid(expandedBid?.id === bid.id ? null : bid)}
+                        className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-brand-navy transition hover:bg-slate-50"
+                      >
+                        {expandedBid?.id === bid.id ? "Hide bidder details" : "View bidder details"}
+                      </button>
+                      {expandedBid?.id === bid.id && (
+                        <div className="mt-3 space-y-2">
+                          <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                First name
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_first_name || "—"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Last name
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_last_name || "—"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Phone
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_phone || "—"}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                National ID
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.national_id || "—"}
+                              </p>
+                            </div>
+                          </div>
+                          {bid.payment_reference && (
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Payment reference
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.payment_reference}
+                              </p>
+                            </div>
+                          )}
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            <Button size="sm" variant="outline" asChild className="flex-1">
+                              <a href={`tel:${bid.bidder_phone}`}>
+                                <Phone className="mr-1 size-4" /> Call
+                              </a>
+                            </Button>
+                            <Button size="sm" variant="outline" asChild className="flex-1">
+                              <a
+                                href={`https://wa.me/${bid.bidder_phone.replace(/[^0-9]/g, "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <MessageCircle className="mr-1 size-4" /> WhatsApp
+                              </a>
+                            </Button>
+                          </div>
                         </div>
                       )}
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="flex-1"
-                        >
-                          <a href={`tel:${bid.bidder_phone}`}>
-                            <Phone className="mr-1 size-4" /> Call
-                          </a>
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="flex-1"
-                        >
-                          <a
-                            href={`https://wa.me/${bid.bidder_phone.replace(/[^0-9]/g, "")}`}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <MessageCircle className="mr-1 size-4" /> WhatsApp
-                          </a>
-                        </Button>
-                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
               )}
             </div>
           )}
@@ -1241,11 +1381,7 @@ function AdminListingCard({
                 <Pencil className="mr-1 size-4" /> Edit
               </Link>
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(listing.id)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => onDelete(listing.id)}>
               <Trash2 className="mr-1 size-4" /> Delete
             </Button>
           </div>
@@ -1253,11 +1389,7 @@ function AdminListingCard({
       )}
 
       {viewerIndex !== null && photos[viewerIndex] && (
-        <Lightbox
-          photos={photos}
-          index={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
+        <Lightbox photos={photos} index={viewerIndex} onClose={() => setViewerIndex(null)} />
       )}
     </div>
   );
@@ -1267,10 +1399,12 @@ function AdminNotificationCard({
   notification,
   onOpen,
   onDelete,
+  onViewChat,
 }: {
   notification: Notification;
   onOpen: (n: Notification) => void;
   onDelete: (id: string) => void;
+  onViewChat?: (n: Notification) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -1290,14 +1424,9 @@ function AdminNotificationCard({
       >
         <div className="flex min-w-0 items-center gap-3">
           {!notification.read && (
-            <span
-              className="size-2 shrink-0 rounded-full bg-brand-accent"
-              aria-label="Unread"
-            />
+            <span className="size-2 shrink-0 rounded-full bg-brand-accent" aria-label="Unread" />
           )}
-          <p className="truncate text-sm text-brand-navy">
-            {notification.message}
-          </p>
+          <p className="truncate text-sm text-brand-navy">{notification.message}</p>
         </div>
         <ChevronDown
           className={`size-5 shrink-0 text-brand-muted transition-transform ${
@@ -1315,18 +1444,20 @@ function AdminNotificationCard({
             <p className="mt-0.5 text-sm text-brand-navy">
               {new Date(notification.created_at).toLocaleString()}
             </p>
-            <p className="mt-1 text-xs text-brand-muted">
-              Type: {notification.type}
-            </p>
+            <p className="mt-1 text-xs text-brand-muted">Type: {notification.type}</p>
           </div>
           <div className="flex items-center gap-2">
             {notification.type === "new_message" && (
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="shrink-0 text-brand-accent hover:text-brand-navy"
-                onClick={() => { setActiveTab("inquiries"); handleNotificationClick(notification); }}
+                className="shrink-0 border-brand-accent text-brand-navy font-semibold hover:bg-brand-accent/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewChat?.(notification);
+                }}
               >
+                <MessageSquare className="mr-1.5 size-3.5 text-brand-accent" />
                 View chat
               </Button>
             )}
@@ -1344,4 +1475,3 @@ function AdminNotificationCard({
     </div>
   );
 }
-

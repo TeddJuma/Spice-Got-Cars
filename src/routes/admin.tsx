@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { fetchUnreadNotificationCount } from "@/data/sell-submissions";
@@ -10,6 +10,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
+  const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -25,9 +26,9 @@ function AdminPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = "/login";
+      navigate({ to: "/login" });
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   if (loading) {
     return (
@@ -44,9 +45,7 @@ function AdminPage() {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-brand-navy md:text-3xl">Inventory Admin</h1>
-          <p className="mt-1 text-sm text-brand-muted">
-            Manage your dealership listings.
-          </p>
+          <p className="mt-1 text-sm text-brand-muted">Manage your dealership listings.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link to="/admin/create">

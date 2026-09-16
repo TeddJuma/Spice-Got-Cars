@@ -3,23 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { Search, SlidersHorizontal, X } from "lucide-react";
-import {
-  type Car,
-  type Condition,
-  type FuelType,
-  type Transmission,
-} from "@/data/listings";
+import { type Car, type Condition, type FuelType, type Transmission } from "@/data/listings";
 import { ListingCard } from "@/components/listing-card";
 import { cn } from "@/lib/utils";
 import { fetchListings, fetchFilterOptions } from "@/data/listings-supabase";
 
-const sortOptions = [
-  "newest",
-  "price-asc",
-  "price-desc",
-  "year-desc",
-  "mileage-asc",
-] as const;
+const sortOptions = ["newest", "price-asc", "price-desc", "year-desc", "mileage-asc"] as const;
 type SortKey = (typeof sortOptions)[number];
 
 const searchSchema = z.object({
@@ -93,14 +82,11 @@ function InventoryPage() {
       if (search.make && car.make !== search.make) return false;
       if (search.model && car.model !== search.model) return false;
       if (search.location && car.location !== search.location) return false;
-      if (search.transmission && car.transmission !== search.transmission)
-        return false;
+      if (search.transmission && car.transmission !== search.transmission) return false;
       if (search.fuel && car.fuelType !== search.fuel) return false;
       if (search.condition && car.condition !== search.condition) return false;
-      if (search.minPrice != null && car.priceKes < search.minPrice)
-        return false;
-      if (search.maxPrice != null && car.priceKes > search.maxPrice)
-        return false;
+      if (search.minPrice != null && car.priceKes < search.minPrice) return false;
+      if (search.maxPrice != null && car.priceKes > search.maxPrice) return false;
       if (search.minYear != null && car.year < search.minYear) return false;
       if (search.maxYear != null && car.year > search.maxYear) return false;
       return true;
@@ -121,8 +107,7 @@ function InventoryPage() {
         break;
       default:
         out = [...out].sort(
-          (a, b) =>
-            new Date(b.listedAt).getTime() - new Date(a.listedAt).getTime(),
+          (a, b) => new Date(b.listedAt).getTime() - new Date(a.listedAt).getTime(),
         );
     }
     return out;
@@ -130,8 +115,7 @@ function InventoryPage() {
 
   const update = (patch: Record<string, unknown>) =>
     navigate({
-      search: (prev: Record<string, unknown>) =>
-        ({ ...prev, ...patch }) as never,
+      search: (prev: Record<string, unknown>) => ({ ...prev, ...patch }) as never,
     });
 
   const clearAll = () =>
@@ -170,8 +154,7 @@ function InventoryPage() {
       <div className="mb-6">
         <h1 className="text-3xl font-bold md:text-4xl">Inventory</h1>
         <p className="text-brand-muted">
-          {results.length}{" "}
-          {results.length === 1 ? "vehicle" : "vehicles"} available
+          {results.length} {results.length === 1 ? "vehicle" : "vehicles"} available
         </p>
       </div>
 
@@ -230,10 +213,7 @@ function InventoryPage() {
             <FilterSelect
               value={search.make}
               onChange={(v) => update({ make: v })}
-              options={[
-                ["", "All"],
-                ...filterOptions.makes.map((m) => [m, m] as [string, string]),
-              ]}
+              options={[["", "All"], ...filterOptions.makes.map((m) => [m, m] as [string, string])]}
             />
           </FilterGroup>
 
@@ -278,9 +258,9 @@ function InventoryPage() {
               onChange={(v) => update({ fuel: v })}
               options={[
                 ["", "All"],
-                ...(
-                  ["Petrol", "Diesel", "Hybrid", "Electric"] as FuelType[]
-                ).map((v) => [v, v] as [string, string]),
+                ...(["Petrol", "Diesel", "Hybrid", "Electric"] as FuelType[]).map(
+                  (v) => [v, v] as [string, string],
+                ),
               ]}
             />
           </FilterGroup>
@@ -291,9 +271,9 @@ function InventoryPage() {
               onChange={(v) => update({ condition: v })}
               options={[
                 ["", "All"],
-                ...(
-                  ["New", "Foreign Used", "Locally Used"] as Condition[]
-                ).map((v) => [v, v] as [string, string]),
+                ...(["New", "Foreign Used", "Locally Used"] as Condition[]).map(
+                  (v) => [v, v] as [string, string],
+                ),
               ]}
             />
           </FilterGroup>
@@ -332,9 +312,7 @@ function InventoryPage() {
         <div>
           {results.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-              <p className="text-lg font-semibold">
-                No cars match your filters.
-              </p>
+              <p className="text-lg font-semibold">No cars match your filters.</p>
               <p className="mt-1 text-sm text-brand-muted">
                 Try clearing some filters or a different search term.
               </p>
@@ -358,13 +336,7 @@ function InventoryPage() {
   );
 }
 
-function FilterGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-navy">

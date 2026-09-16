@@ -7,13 +7,9 @@ import { AuctionCard } from "@/components/auction-card";
 import { cn } from "@/lib/utils";
 import { createServerClient } from "@/lib/supabase-server";
 import { fetchFilterOptions } from "@/data/listings-supabase";
+import { SAMPLE_CARS } from "@/data/listings";
 
-const sortOptions = [
-  "ending-soon",
-  "price-asc",
-  "price-desc",
-  "newest",
-] as const;
+const sortOptions = ["ending-soon", "price-asc", "price-desc", "newest"] as const;
 type SortKey = (typeof sortOptions)[number];
 
 const searchSchema = z.object({
@@ -36,24 +32,51 @@ const PAGE_SIZE = 6;
 export const Route = createFileRoute("/auction/")({
   validateSearch: zodValidator(searchSchema),
   loader: async () => {
+    const fallbackAuctions = SAMPLE_CARS.filter((c) => c.isAuction).map((c) => ({
+      id: c.id,
+      make: c.make,
+      model: c.model,
+      trim: c.trim,
+      year: c.year,
+      starting_bid_kes: c.startingBidKes,
+      current_bid_kes: c.currentBidKes,
+      price_kes: c.priceKes,
+      negotiable: c.negotiable,
+      mileage_km: c.mileageKm,
+      transmission: c.transmission,
+      fuel_type: c.fuelType,
+      engine_size: c.engineSize,
+      body_type: c.bodyType,
+      condition: c.condition,
+      photos: c.photos,
+      description: c.description,
+      status: c.status,
+      logbook_verified: true,
+      auction_ends_at: c.auctionEndsAt,
+      bid_count: c.bidCount,
+      highest_bidder: c.highestBidder,
+      location: c.location,
+      location_pin: c.locationPin,
+      auctionWindows: c.auctionWindows,
+    }));
+
     const supabase = createServerClient();
+    const filterOptions = await fetchFilterOptions();
+
     if (!supabase) {
-      return { auctions: [], filterOptions: { makes: [], models: [], locations: [] } };
+      return { auctions: fallbackAuctions, filterOptions };
     }
 
-    const [listingsResult, filterOptions] = await Promise.all([
-      supabase
-        .from("listings")
-        .select("*")
-        .eq("is_auction", true)
-        .order("auction_ends_at", { ascending: true }),
-      fetchFilterOptions(),
-    ]);
+    const listingsResult = await supabase
+      .from("listings")
+      .select("*")
+      .eq("is_auction", true)
+      .order("auction_ends_at", { ascending: true });
 
     const data = listingsResult.data;
 
-    if (!data) {
-      return { auctions: [], filterOptions };
+    if (!data || data.length === 0) {
+      return { auctions: fallbackAuctions, filterOptions };
     }
 
     const withPhotos = await Promise.all(
@@ -73,11 +96,12 @@ export const Route = createFileRoute("/auction/")({
         return {
           ...listing,
           photos: photos?.map((p: any) => p.storage_path) || [],
-          auctionWindows: windows?.map((w: any) => ({
-            id: w.id,
-            startsAt: w.starts_at,
-            endsAt: w.ends_at,
-          })) || [],
+          auctionWindows:
+            windows?.map((w: any) => ({
+              id: w.id,
+              startsAt: w.starts_at,
+              endsAt: w.ends_at,
+            })) || [],
         };
       }),
     );
@@ -133,7 +157,14 @@ function AuctionPage() {
       condition: a.condition,
       photos: a.photos ?? [],
       description: a.description,
-      status: a.status === "sold" ? "sold" : a.status === "reserved" ? "ended" : a.auction_ends_at && new Date(a.auction_ends_at) < new Date() ? "ended" : "active",
+      status:
+        a.status === "sold"
+          ? "sold"
+          : a.status === "reserved"
+            ? "ended"
+            : a.auction_ends_at && new Date(a.auction_ends_at) < new Date()
+              ? "ended"
+              : "active",
       logbookVerified: a.logbook_verified,
       endsAt: a.auction_ends_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
       bidCount: a.bid_count ?? 0,
@@ -154,13 +185,10 @@ function AuctionPage() {
       if (search.make && item.make !== search.make) return false;
       if (search.model && item.model !== search.model) return false;
       if (search.location && item.location !== search.location) return false;
-      if (search.transmission && item.transmission !== search.transmission)
-        return false;
+      if (search.transmission && item.transmission !== search.transmission) return false;
       if (search.fuel && item.fuelType !== search.fuel) return false;
-      if (search.minPrice != null && item.currentBidKes < search.minPrice)
-        return false;
-      if (search.maxPrice != null && item.currentBidKes > search.maxPrice)
-        return false;
+      if (search.minPrice != null && item.currentBidKes < search.minPrice) return false;
+      if (search.maxPrice != null && item.currentBidKes > search.maxPrice) return false;
       if (search.minYear != null && item.year < search.minYear) return false;
       if (search.maxYear != null && item.year > search.maxYear) return false;
       return true;
@@ -174,30 +202,21 @@ function AuctionPage() {
         out = [...out].sort((a, b) => b.currentBidKes - a.currentBidKes);
         break;
       case "newest":
-        out = [...out].sort(
-          (a, b) =>
-            new Date(b.endsAt).getTime() - new Date(a.endsAt).getTime(),
-        );
+        out = [...out].sort((a, b) => new Date(b.endsAt).getTime() - new Date(a.endsAt).getTime());
         break;
       default:
-        out = [...out].sort(
-          (a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime(),
-        );
+        out = [...out].sort((a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime());
     }
     return out;
   }, [search, items]);
 
   const totalPages = Math.max(1, Math.ceil(results.length / PAGE_SIZE));
   const safePage = Math.min(search.page || 1, totalPages);
-  const pageItems = results.slice(
-    (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE,
-  );
+  const pageItems = results.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   const update = (patch: Record<string, unknown>) =>
     navigate({
-      search: (prev: Record<string, unknown>) =>
-        ({ ...prev, ...patch }) as never,
+      search: (prev: Record<string, unknown>) => ({ ...prev, ...patch }) as never,
     });
 
   const clearAll = () =>
@@ -234,15 +253,12 @@ function AuctionPage() {
     <div className="mx-auto max-w-7xl px-4 py-6 md:py-12">
       {/* Page header */}
       <div className="mb-8 rounded-2xl bg-brand-navy p-8 text-white md:p-12">
-        <h1 className="text-3xl font-bold md:text-5xl">
-          Auctions are live! Find hidden gems
-        </h1>
+        <h1 className="text-3xl font-bold md:text-5xl">Auctions are live! Find hidden gems</h1>
         <p className="mt-4 max-w-3xl text-lg text-slate-300">
           Bid on affordable damaged and used cars. A refundable deposit of{" "}
-          <span className="font-bold text-white">KES 5,000</span> is required
-          to place a bid. Payment must be completed within{" "}
-          <span className="font-bold text-white">48 hours</span> of winning.
-          Non-winners receive a full deposit refund within 3 business days.
+          <span className="font-bold text-white">KES 5,000</span> is required to place a bid.
+          Payment must be completed within <span className="font-bold text-white">48 hours</span> of
+          winning. Non-winners receive a full deposit refund within 3 business days.
         </p>
       </div>
 
@@ -309,10 +325,7 @@ function AuctionPage() {
             <FilterSelect
               value={search.make}
               onChange={(v) => update({ make: v, page: 1 })}
-              options={[
-                ["", "All"],
-                ...filterOptions.makes.map((m) => [m, m] as [string, string]),
-              ]}
+              options={[["", "All"], ...filterOptions.makes.map((m) => [m, m] as [string, string])]}
             />
           </FilterGroup>
 
@@ -398,9 +411,7 @@ function AuctionPage() {
         <div>
           {pageItems.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center">
-              <p className="text-lg font-semibold">
-                No auctions match your filters.
-              </p>
+              <p className="text-lg font-semibold">No auctions match your filters.</p>
               <p className="mt-1 text-sm text-brand-muted">
                 Try clearing some filters or check back later.
               </p>
@@ -423,36 +434,30 @@ function AuctionPage() {
               {totalPages > 1 && (
                 <div className="mt-10 flex items-center justify-center gap-2">
                   <button
-                    onClick={() =>
-                      update({ page: Math.max(1, safePage - 1) })
-                    }
+                    onClick={() => update({ page: Math.max(1, safePage - 1) })}
                     disabled={safePage <= 1}
                     className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (p) => (
-                        <button
-                          key={p}
-                          onClick={() => update({ page: p })}
-                          className={cn(
-                            "grid size-10 place-items-center rounded-lg text-sm font-bold transition-colors",
-                            p === safePage
-                              ? "bg-brand-navy text-white"
-                              : "border border-slate-200 bg-white hover:bg-slate-50",
-                          )}
-                        >
-                          {p}
-                        </button>
-                      ),
-                    )}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => update({ page: p })}
+                        className={cn(
+                          "grid size-10 place-items-center rounded-lg text-sm font-bold transition-colors",
+                          p === safePage
+                            ? "bg-brand-navy text-white"
+                            : "border border-slate-200 bg-white hover:bg-slate-50",
+                        )}
+                      >
+                        {p}
+                      </button>
+                    ))}
                   </div>
                   <button
-                    onClick={() =>
-                      update({ page: Math.min(totalPages, safePage + 1) })
-                    }
+                    onClick={() => update({ page: Math.min(totalPages, safePage + 1) })}
                     disabled={safePage >= totalPages}
                     className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -469,33 +474,27 @@ function AuctionPage() {
       <section className="mt-10 rounded-2xl border border-slate-200 bg-white p-5 md:p-8 md:py-12">
         <div className="grid gap-8 md:grid-cols-2 md:items-center">
           <div>
-            <h2 className="text-2xl font-bold md:text-3xl">
-              Auction terms and conditions
-            </h2>
+            <h2 className="text-2xl font-bold md:text-3xl">Auction terms and conditions</h2>
             <div className="mt-4 space-y-3 text-sm text-brand-muted">
               <p>
-                <span className="font-bold text-brand-navy">Deposit:</span> A
-                refundable deposit of <span className="font-bold">KES 5,000</span>{" "}
-                is required to place a bid. Deposits are held securely during
-                the auction period.
+                <span className="font-bold text-brand-navy">Deposit:</span> A refundable deposit of{" "}
+                <span className="font-bold">KES 5,000</span> is required to place a bid. Deposits
+                are held securely during the auction period.
               </p>
               <p>
-                <span className="font-bold text-brand-navy">Payment:</span>{" "}
-                Winners must complete full payment within{" "}
-                <span className="font-bold">48 hours</span> of auction close.
+                <span className="font-bold text-brand-navy">Payment:</span> Winners must complete
+                full payment within <span className="font-bold">48 hours</span> of auction close.
                 Payment can be made via bank transfer or mobile money.
               </p>
               <p>
-                <span className="font-bold text-brand-navy">Refunds:</span>{" "}
-                Non-winning bidders receive full deposit refunds within 3
-                business days. Refunds are processed to the original payment
-                method.
+                <span className="font-bold text-brand-navy">Refunds:</span> Non-winning bidders
+                receive full deposit refunds within 3 business days. Refunds are processed to the
+                original payment method.
               </p>
               <p>
-                <span className="font-bold text-brand-navy">Bidding:</span> All
-                bids are binding. By placing a bid, you agree to purchase the
-                vehicle at your bid price if you are the highest bidder at
-                auction close.
+                <span className="font-bold text-brand-navy">Bidding:</span> All bids are binding. By
+                placing a bid, you agree to purchase the vehicle at your bid price if you are the
+                highest bidder at auction close.
               </p>
             </div>
             <Link
@@ -518,13 +517,7 @@ function AuctionPage() {
   );
 }
 
-function FilterGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
       <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-brand-navy">
