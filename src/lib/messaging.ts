@@ -127,6 +127,27 @@ export async function listMessages(params: { conversationId: string; limit?: num
   return data as Message[];
 }
 
+/** Find existing conversation for a customer on a specific listing */
+export async function findConversationForCustomer(listingId: string, customerName: string, customerPhone: string) {
+  if (!supabase) {
+    throw new Error("Supabase client is not configured. Please refresh the page.");
+  }
+  try {
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("*")
+      .eq("listing_id", listingId)
+      .eq("customer_name", customerName)
+      .eq("customer_phone", customerPhone)
+      .maybeSingle();
+    if (error) throw error;
+    return data as Conversation | null;
+  } catch (e) {
+    console.error("[findConversationForCustomer] error:", e);
+    throw e;
+  }
+}
+
 /** Mark messages as read */
 export async function markMessagesRead(params: { conversationId: string; userId?: string | null }) {
   if (!supabase) {

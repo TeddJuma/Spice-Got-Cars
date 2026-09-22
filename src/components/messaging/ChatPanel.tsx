@@ -10,6 +10,7 @@ import {
   createMessage,
   listMessages,
   markMessagesRead,
+  findConversationForCustomer,
   Conversation,
   Message,
 } from "@/lib/messaging";
@@ -36,6 +37,7 @@ export default function ChatPanel({ listingId, role, user, onClose }: Props) {
   const [customerPhone, setCustomerPhone] = useState("");
   const [initError, setInitError] = useState<string | null>(null);
   const [showStartForm, setShowStartForm] = useState(false);
+  const [showLookupForm, setShowLookupForm] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -43,7 +45,22 @@ export default function ChatPanel({ listingId, role, user, onClose }: Props) {
         setInitError(null);
         if (role === "customer") {
           setLoading(false);
-          setShowStartForm(true);
+          // Check if there's stored customer info in localStorage
+          const storedName = localStorage.getItem(`chat_customer_name_${listingId}`);
+          const storedPhone = localStorage.getItem(`chat_customer_phone_${listingId}`);
+          if (storedName && storedPhone) {
+            // Try to find existing conversation
+            const existing = await findConversationForCustomer(listingId, storedName, storedPhone);
+            if (existing) {
+              setConversation(existing);
+              setCustomerName(storedName);
+              setCustomerPhone(storedPhone);
+            } else {
+              setShowLookupForm(true);
+            }
+          } else {
+            setShowLookupForm(true);
+          }
           return;
         }
         const convs = await listConversationsForUser(user?.id ?? "unknown", role);
@@ -75,9 +92,39 @@ export default function ChatPanel({ listingId, role, user, onClose }: Props) {
       const conv = await createConversation({ listingId, customerName, customerPhone });
       setConversation(conv);
       setShowStartForm(false);
+      setShowLookupForm(false);
+      // Store for persistence
+      localStorage.setItem(`chat_customer_name_${listingId}`, customerName);
+      localStorage.setItem(`chat_customer_phone_${listingId}`, customerPhone);
       toast.success("Conversation started.");
     } catch (e: any) {
       toast.error(e?.message || "Failed to start conversation.");
+    }
+  };
+
+  const handleLookupConversation = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!customerName || !customerPhone) return;
+    try {
+      setLoading(true);
+      const existing = await findConversationForCustomer(listingId, customerName, customerPhone);
+      if (existing) {
+        setConversation(existing);
+        setShowLookupForm(false);
+        localStorage.setItem(`chat_customer_name_${listingId}`, customerName);
+        localStorage.setItem(`chat_customer_phone_${listingId}`, customerPhone);
+        toast.success("Welcome back! Your previous conversation has been loaded.");
+      } else {
+        // No existing conversation, allow them to start a new one
+        setShowLookupForm(false);
+        setShowStartForm(true);
+        toast.info("No existing conversation found. You can start a new one below.");
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast.error("Failed to look up conversation.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -118,15 +165,33 @@ export default function ChatPanel({ listingId, role, user, onClose }: Props) {
     );
   }
 
+  if (role === "customer" && showLookupForm) {
+    return (
+      <div className="p-4 space-y-4">
+        <h3 className="text-lg font-medium">Continue your conversation</h3>
+        <p className="text-sm text-brand-muted">Enter your name and phone to find your existing chat.</p>
+        <form onSubmit={handleLookupConversation} className="space-y-2">
+          <Input placeholder="Your name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+          <Input placeholder="Phone number" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} required />
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Looking up..." : "Find my conversation"}
+          </Button>
+        </form>
+        <Button variant="outline" onClick={onClose}>Close</Button>
+      </div>
+    );
+  }
+
   if (role === "customer" && showStartForm) {
     return (
       <div className="p-4 space-y-4">
-        <h3 className="text-lg font-medium">Start a conversation</h3>
+        <h3 className="text-lg font-medium">Start a new conversation</h3>
         <form onSubmit={handleStartConversation} className="space-y-2">
           <Input placeholder="Your name" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
           <Input placeholder="Phone number" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} required />
           <Button type="submit" className="w-full">Start chat</Button>
         </form>
+        <Button variant="outline" onClick={() => setShowLookupForm(true)}>Back</Button>
         <Button variant="outline" onClick={onClose}>Close</Button>
       </div>
     );

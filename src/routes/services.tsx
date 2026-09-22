@@ -5,6 +5,7 @@ import {
   PHONE_PRIMARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
+import ChatButton from "@/components/messaging/ChatButton";
 
 export const Route = createFileRoute("/services")({
   component: ServicesPage,
@@ -130,6 +131,7 @@ function ServicesPage() {
             >
               <MessageCircle className="size-4" /> WhatsApp us
             </a>
+            <ChatButton listingId="general" role="customer" user={undefined} />
             <Link
               to="/inventory"
               className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-6 py-3 font-bold text-white transition-colors hover:bg-white/10"

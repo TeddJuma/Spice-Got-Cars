@@ -6,7 +6,8 @@ import {
   PHONE_PRIMARY_TEL,
   buildGeneralInquiryLink,
 } from "@/lib/whatsapp";
-import { Facebook, Instagram } from "lucide-react";
+import { Facebook, Instagram, Mail, MessageSquare } from "lucide-react";
+import ChatButton from "@/components/messaging/ChatButton";
 
 export function SiteFooter() {
   return (
@@ -83,12 +84,7 @@ export function SiteFooter() {
               Talk to us
             </h4>
             <div className="space-y-3 text-sm">
-              <a
-                href={`tel:${PHONE_PRIMARY_TEL}`}
-                className="block font-bold text-brand-navy"
-              >
-                {PHONE_PRIMARY_DISPLAY}
-              </a>
+              <ChatButton listingId="general" role="customer" user={undefined} />
               <a
                 href={buildGeneralInquiryLink()}
                 target="_blank"
@@ -101,10 +97,9 @@ export function SiteFooter() {
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="block text-brand-muted"
               >
-                {CONTACT_EMAIL}
               </a>
             </div>
-            <div className="mt-4 flex items-center gap-3">
+            <div className="mt-4 flex flex-wrap items-center gap-3">
               <a
                 href="https://www.facebook.com/people/Spice-Got-Cars/61555662586922/"
                 target="_blank"
@@ -131,6 +126,13 @@ export function SiteFooter() {
                 className="text-brand-muted transition-colors hover:text-brand-accent"
               >
                 <span className="flex size-5 items-center justify-center text-xs font-black">TT</span>
+              </a>
+              <a
+                href={`mailto:${CONTACT_EMAIL}`}
+                className="text-brand-muted transition-colors hover:text-brand-accent"
+                aria-label="Email"
+              >
+                <Mail className="size-5" />
               </a>
             </div>
           </div>

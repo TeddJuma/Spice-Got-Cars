@@ -91,6 +91,7 @@ function CarDetailPage() {
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [inquiryName, setInquiryName] = useState("");
   const [inquiryPhone, setInquiryPhone] = useState("");
+  const [inquiryNotes, setInquiryNotes] = useState("");
   const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const [inquirySuccess, setInquirySuccess] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
@@ -130,6 +131,7 @@ function CarDetailPage() {
         listing_id: car.id,
         name: inquiryName.trim(),
         phone: inquiryPhone.trim(),
+        notes: inquiryNotes.trim() || null,
       });
       if (error) throw error;
       setInquirySuccess(true);
@@ -459,6 +461,7 @@ function CarDetailPage() {
                     setInquirySuccess(false);
                     setInquiryName("");
                     setInquiryPhone("");
+                    setInquiryNotes("");
                   }}
                   className="mt-4 rounded-lg bg-brand-navy px-4 py-2 text-sm font-bold text-white"
                 >
@@ -487,6 +490,16 @@ function CarDetailPage() {
                     onChange={(e) => setInquiryPhone(e.target.value)}
                     className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
                     placeholder="+254 7XX XXX XXX"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-brand-navy">Notes (optional)</label>
+                  <textarea
+                    value={inquiryNotes}
+                    onChange={(e) => setInquiryNotes(e.target.value)}
+                    rows={3}
+                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-brand-accent focus:outline-none"
+                    placeholder="Any specific questions about this car?"
                   />
                 </div>
                 <div className="flex gap-2 pt-1">
@@ -563,7 +576,11 @@ function AuctionBidForm({ listingId, currentBid }: { listingId: string; currentB
       terms_accepted: terms,
     });
     if (error) {
-      toast.error("Failed to place bid. Try again.");
+      if (error.message?.includes("Payment reference not verified")) {
+        toast.error("This payment reference has not been approved yet. Please wait for admin verification before bidding.");
+      } else {
+        toast.error("Failed to place bid. Try again.");
+      }
       console.error(error);
     } else {
       toast.success("Bid placed successfully!");

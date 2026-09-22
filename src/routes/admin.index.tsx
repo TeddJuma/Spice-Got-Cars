@@ -546,14 +546,19 @@ function AdminIndexPage() {
                       <p className="font-semibold text-brand-navy">{title}</p>
                       <p className="text-xs text-brand-muted">{items.length} inquiry{items.length > 1 ? "s" : ""}</p>
                     </div>
-                    <div className="divide-y divide-slate-100">
+<div className="divide-y divide-slate-100">
                       {sorted.map((inq) => (
                         <div key={inq.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <p className="text-sm font-semibold text-brand-navy">{inq.name}</p>
                             <p className="text-sm text-brand-muted">{inq.phone}</p>
+                            {inq.notes && (
+                              <p className="text-xs text-brand-muted italic mt-1 max-w-xs truncate" title={inq.notes}>
+                                {inq.notes}
+                              </p>
+                            )}
                           </div>
-<div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2">
                                {inq.listing_id && (
                                  <ChatButton listingId={inq.listing_id} role="admin" user={user ?? { id: "admin", name: "Admin" }} />
                                )}
@@ -1166,6 +1171,13 @@ function AdminListingCard({
                   <div className="flex items-center justify-between">
                     <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
                     <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      bid.payment_verified
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-700"
+                    }`}>
+                      {bid.payment_verified ? "Payment Verified" : "Payment Pending"}
+                    </span>
                   </div>
                   <button
                     type="button"
@@ -1199,6 +1211,30 @@ function AdminListingCard({
                           <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Payment reference</p>
                           <p className="text-sm font-medium text-brand-navy">{bid.payment_reference}</p>
                         </div>
+                      )}
+                      {!bid.payment_verified && bid.payment_reference && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={async () => {
+                            const supabase = createClient();
+                            const { error } = await supabase
+                              .from("auction_bids")
+                              .update({ payment_verified: true })
+                              .eq("id", bid.id);
+                            if (error) {
+                              toast.error("Failed to verify payment.");
+                            } else {
+                              toast.success("Payment marked as verified.");
+                              setBids((prev) =>
+                                prev.map((b) => (b.id === bid.id ? { ...b, payment_verified: true } : b))
+                              );
+                            }
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          <Check className="mr-1 size-3.5" /> Mark Payment Verified
+                        </Button>
                       )}
                       <div className="flex flex-wrap gap-2 pt-2">
                         <Button
