@@ -20,6 +20,7 @@ Run **every** SQL file in `supabase/migrations/` (in filename order, oldest firs
 4. Repeat for each remaining migration file in order (e.g. `20250707_create_sell_submissions.sql`, `20250715_...`, `20250727_...`, `20250730_...`, `20250810_...`, `20250829_...`)
 
 These create:
+
 - `profiles`, `listings`, `listing_photos`, `sell_submissions`, `notifications`, `auction_windows`, `auction_bids` tables
 - a `car-photos` storage bucket
 - All Row Level Security (RLS) policies (including public insert on `sell_submissions` used by the /sell page)
@@ -78,6 +79,7 @@ These create:
 ## 9. Deploying
 
 When deploying to production:
+
 - Ensure your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` env vars are set in your hosting environment.
 - The same Supabase backend can serve both development and production, or create a separate project for production.
 - Photo uploads will go to the same `car-photos` storage bucket.

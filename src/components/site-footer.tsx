@@ -17,10 +17,9 @@ export function SiteFooter() {
           <div className="md:col-span-2">
             <h2>Spice Got Cars</h2>
             <p className="mb-6 max-w-sm text-brand-muted">
-              Your trusted automotive partner in Kahawa west. We deal in high-quality
-              foreign-used and clean locally used vehicles for buyers all
-              across Kenya. Import, buy &amp; sell, salvage cars, logbook loans,
-              trade-in, and finance options available.
+              Your trusted automotive partner in Kahawa west. We deal in high-quality foreign-used
+              and clean locally used vehicles for buyers all across Kenya. Import, buy & sell,
+              salvage cars, logbook loans, trade-in, and finance options available.
             </p>
             <div className="mb-4 overflow-hidden rounded-xl border border-slate-200">
               <iframe
@@ -33,12 +32,10 @@ export function SiteFooter() {
             </div>
             <div className="space-y-2 text-sm">
               <p>
-                <strong className="font-semibold">Location:</strong>{" "}
-                {RUAKA_ADDRESS}
+                <strong className="font-semibold">Location:</strong> {RUAKA_ADDRESS}
               </p>
               <p>
-                <strong className="font-semibold">Hours:</strong> Mon – Sat,
-                8:00 AM – 6:30 PM
+                <strong className="font-semibold">Hours:</strong> Mon – Sat, 8:00 AM – 6:30 PM
               </p>
             </div>
           </div>
@@ -93,11 +90,6 @@ export function SiteFooter() {
               >
                 Chat on WhatsApp
               </a>
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="block text-brand-muted"
-              >
-              </a>
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <a
@@ -125,7 +117,9 @@ export function SiteFooter() {
                 aria-label="TikTok"
                 className="text-brand-muted transition-colors hover:text-brand-accent"
               >
-                <span className="flex size-5 items-center justify-center text-xs font-black">TT</span>
+                <span className="flex size-5 items-center justify-center text-xs font-black">
+                  TT
+                </span>
               </a>
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
@@ -161,8 +155,7 @@ export function SiteFooter() {
         </div>
         <div className="border-t border-slate-100 pt-8 text-center">
           <p className="text-[10px] uppercase tracking-widest text-brand-muted">
-            © {new Date().getFullYear()} Spice Got Cars. All rights
-            reserved.
+            © {new Date().getFullYear()} Spice Got Cars. All rights reserved.
           </p>
         </div>
       </div>

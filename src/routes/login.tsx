@@ -1,37 +1,42 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/login")({
-  beforeLoad: ({ context }) => {
-    // If already logged in, redirect to admin
-    // We can't access auth context here directly since beforeLoad is server-side by default.
-    // We'll handle redirect in component instead.
-  },
   component: LoginPage,
 });
 
 function LoginPage() {
+  const navigate = useNavigate();
   const { signIn, user, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) {
-    window.location.href = "/admin";
-    return null;
-  }
+  useEffect(() => {
+    if (!loading && user) {
+      navigate({ to: "/admin" });
+    }
+  }, [user, loading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
 
-    const result = await signIn(email, password);
-    if (result.error) {
-      setError(result.error.message);
-    } else {
-      window.location.href = "/admin";
+    try {
+      const result = await signIn(email, password);
+      if (result.error) {
+        setError(result.error.message);
+      } else {
+        navigate({ to: "/admin" });
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to sign in");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -81,10 +86,10 @@ function LoginPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || submitting}
             className="w-full rounded-lg bg-brand-navy py-2.5 text-sm font-bold text-white transition-colors hover:bg-slate-800 disabled:opacity-60"
           >
-            {loading ? "Please wait..." : "Sign in"}
+            {submitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
       </div>

@@ -49,11 +49,39 @@ export default function useRealtimeMessages(conversationId: string | null) {
   }, [conversationId]);
 
   useEffect(() => {
-    if (!conversationId || !supabase) return;
-    const channel = supabase.channel("public:messages");
+    if (!conversationId) return;
+
+    const handleCustomMsg = (event: Event) => {
+      const customEvent = event as CustomEvent<Message>;
+      if (customEvent.detail && customEvent.detail.conversation_id === conversationId) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === customEvent.detail.id)) return prev;
+          return [...prev, customEvent.detail];
+        });
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("sgc-new-message", handleCustomMsg);
+    }
+
+    if (!supabase) {
+      return () => {
+        if (typeof window !== "undefined") {
+          window.removeEventListener("sgc-new-message", handleCustomMsg);
+        }
+      };
+    }
+
+    const channel = supabase.channel(`messages:${conversationId}`);
     const handler = (payload: any) => {
       const newMsg = payload.new as Message;
-      setMessages((prev) => [...prev, newMsg]);
+      if (newMsg) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+      }
     };
     channel
       .on(
@@ -69,14 +97,27 @@ export default function useRealtimeMessages(conversationId: string | null) {
       .subscribe();
 
     return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("sgc-new-message", handleCustomMsg);
+      }
       supabase.removeChannel(channel);
     };
   }, [conversationId]);
 
-  const sendMessage = async (content: string, senderId: string | null, senderRole: "admin" | "agent" | "customer") => {
+  const sendMessage = async (
+    content: string,
+    senderId: string | null,
+    senderRole: "admin" | "agent" | "customer",
+  ) => {
     if (!conversationId) return;
     try {
-      await createMessage({ conversationId, senderId, senderRole, content });
+      const newMsg = await createMessage({ conversationId, senderId, senderRole, content });
+      if (newMsg) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === newMsg.id)) return prev;
+          return [...prev, newMsg];
+        });
+      }
     } catch (e) {
       console.error("Failed to send message", e);
       throw e;

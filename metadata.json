@@ -1,0 +1,6 @@
+{
+  "name": "Spice Got Cars",
+  "description": "Car dealership and auction platform in Nairobi, Kenya for buying, selling, and bidding on verified vehicles.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,5 +1,5 @@
 import { createServerClient } from "../lib/supabase-server";
-import { type Car } from "./listings";
+import { type Car, SAMPLE_CARS } from "./listings";
 
 async function withTimeout<T>(promise: Promise<T>, ms = 12000): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined;
@@ -13,19 +13,26 @@ async function withTimeout<T>(promise: Promise<T>, ms = 12000): Promise<T> {
   }
 }
 
+function getFallbackFilterOptions() {
+  const makes = [...new Set(SAMPLE_CARS.map((c) => c.make))].sort();
+  const models = [...new Set(SAMPLE_CARS.map((c) => c.model))].sort();
+  const locations = [
+    ...new Set(SAMPLE_CARS.map((c) => c.location).filter(Boolean) as string[]),
+  ].sort();
+  return { makes, models, locations };
+}
+
 export async function fetchFilterOptions() {
   try {
     const supabase = createServerClient();
     if (!supabase) {
-      return { makes: [], models: [], locations: [] };
+      return getFallbackFilterOptions();
     }
 
-    const { data, error } = await supabase
-      .from("listings")
-      .select("make, model, location");
+    const { data, error } = await supabase.from("listings").select("make, model, location");
 
-    if (error || !data) {
-      return { makes: [], models: [], locations: [] };
+    if (error || !data || data.length === 0) {
+      return getFallbackFilterOptions();
     }
 
     const makes = [...new Set(data.map((l: any) => l.make).filter(Boolean))].sort();
@@ -34,8 +41,8 @@ export async function fetchFilterOptions() {
 
     return { makes, models, locations };
   } catch (err) {
-    console.error("Failed to fetch filter options:", err);
-    return { makes: [], models: [], locations: [] };
+    console.error("Failed to fetch filter options, using fallback:", err);
+    return getFallbackFilterOptions();
   }
 }
 
@@ -43,8 +50,7 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
   try {
     const supabase = createServerClient();
     if (!supabase) {
-      console.warn("Supabase is not configured");
-      return [];
+      return includeAuctions ? SAMPLE_CARS : SAMPLE_CARS.filter((c) => !c.isAuction);
     }
 
     const query = supabase
@@ -58,9 +64,8 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
 
     const { data, error } = await query;
 
-    if (error || !data) {
-      console.error("Supabase fetch error:", error);
-      return [];
+    if (error || !data || data.length === 0) {
+      return includeAuctions ? SAMPLE_CARS : SAMPLE_CARS.filter((c) => !c.isAuction);
     }
 
     const cars: Car[] = await Promise.all(
@@ -104,34 +109,43 @@ export async function fetchListings(includeAuctions = true): Promise<Car[]> {
           currentBidKes: row.current_bid_kes,
           bidCount: row.bid_count,
           highestBidder: row.highest_bidder,
-          auctionWindows: windows?.map((w) => ({
-            id: w.id,
-            startsAt: w.starts_at,
-            endsAt: w.ends_at,
-          })) || [],
+          auctionWindows:
+            windows?.map((w) => ({
+              id: w.id,
+              startsAt: w.starts_at,
+              endsAt: w.ends_at,
+            })) || [],
           agentName: row.agents?.name ?? undefined,
           agentPhone: row.agents?.phone ?? undefined,
         };
       }),
     );
 
-    return cars;
+    return cars.length > 0
+      ? cars
+      : includeAuctions
+        ? SAMPLE_CARS
+        : SAMPLE_CARS.filter((c) => !c.isAuction);
   } catch (err) {
-    console.error("Failed to fetch listings from Supabase:", err);
-    return [];
+    console.error("Failed to fetch listings from Supabase, using fallback:", err);
+    return includeAuctions ? SAMPLE_CARS : SAMPLE_CARS.filter((c) => !c.isAuction);
   }
 }
 
 export async function fetchListingById(id: string): Promise<Car | null> {
   try {
     const supabase = createServerClient();
-    if (!supabase) return null;
+    if (!supabase) {
+      return SAMPLE_CARS.find((c) => c.id === id) || null;
+    }
 
     const { data, error } = await withTimeout(
-      supabase.from("listings").select("*, agents(name, phone)").eq("id", id).single()
+      supabase.from("listings").select("*, agents(name, phone)").eq("id", id).single(),
     );
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return SAMPLE_CARS.find((c) => c.id === id) || null;
+    }
 
     const [photosRes, windowsRes] = await withTimeout(
       Promise.all([
@@ -145,7 +159,7 @@ export async function fetchListingById(id: string): Promise<Car | null> {
           .select("id, starts_at, ends_at")
           .eq("listing_id", id)
           .order("starts_at", { ascending: true }),
-      ])
+      ]),
     );
 
     const photos = photosRes.data;
@@ -178,11 +192,12 @@ export async function fetchListingById(id: string): Promise<Car | null> {
       currentBidKes: data.current_bid_kes,
       bidCount: data.bid_count,
       highestBidder: data.highest_bidder,
-      auctionWindows: windows?.map((w) => ({
-        id: w.id,
-        startsAt: w.starts_at,
-        endsAt: w.ends_at,
-      })) || [],
+      auctionWindows:
+        windows?.map((w) => ({
+          id: w.id,
+          startsAt: w.starts_at,
+          endsAt: w.ends_at,
+        })) || [],
       agentName: data.agents?.name ?? undefined,
       agentPhone: data.agents?.phone ?? undefined,
     };
@@ -191,4 +206,3 @@ export async function fetchListingById(id: string): Promise<Car | null> {
     return null;
   }
 }
-

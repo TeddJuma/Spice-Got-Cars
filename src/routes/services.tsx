@@ -1,10 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Ship, Repeat, Banknote, Handshake, Phone, MessageCircle, Car, FileText } from "lucide-react";
-import {
-  PHONE_PRIMARY_DISPLAY,
-  PHONE_PRIMARY_TEL,
-  buildGeneralInquiryLink,
-} from "@/lib/whatsapp";
+import { PHONE_PRIMARY_DISPLAY, PHONE_PRIMARY_TEL, buildGeneralInquiryLink } from "@/lib/whatsapp";
 import ChatButton from "@/components/messaging/ChatButton";
 
 export const Route = createFileRoute("/services")({

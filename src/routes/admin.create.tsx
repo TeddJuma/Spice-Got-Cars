@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { createClient } from "@/lib/supabase";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/admin/create")({
 });
 
 function CreateListingPage() {
+  const navigate = useNavigate();
   const { user, loading } = useAuth();
   const supabase = createClient();
 
@@ -54,9 +55,9 @@ function CreateListingPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      window.location.href = "/login";
+      navigate({ to: "/login" });
     }
-  }, [user, loading]);
+  }, [user, loading, navigate]);
 
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -134,7 +135,10 @@ function CreateListingPage() {
           logbook_verified: form.logbookVerified,
           listed_at: new Date().toISOString().split("T")[0],
           is_auction: form.isAuction,
-          auction_ends_at: form.isAuction && form.auctionEndsAt ? new Date(form.auctionEndsAt).toISOString() : null,
+          auction_ends_at:
+            form.isAuction && form.auctionEndsAt
+              ? new Date(form.auctionEndsAt).toISOString()
+              : null,
           location: form.location || null,
           location_pin: form.locationPin || null,
         })
@@ -146,7 +150,9 @@ function CreateListingPage() {
       if (photos.length > 0 && listing) {
         const uploadedPaths = await uploadPhotos(listing.id);
         if (uploadedPaths.length === 0 && photos.length > 0) {
-          setError("Listing created, but photo uploads failed. You can add photos later by editing the listing.");
+          setError(
+            "Listing created, but photo uploads failed. You can add photos later by editing the listing.",
+          );
         }
       }
 
@@ -160,7 +166,9 @@ function CreateListingPage() {
           }));
 
         if (windowsToInsert.length > 0) {
-          const { error: windowsError } = await supabase.from("auction_windows").insert(windowsToInsert);
+          const { error: windowsError } = await supabase
+            .from("auction_windows")
+            .insert(windowsToInsert);
           if (windowsError) {
             console.error("Failed to create auction windows:", windowsError);
           }
@@ -359,10 +367,7 @@ function CreateListingPage() {
             <Label className="!mt-0">Logbook verified</Label>
           </div>
           <div className="flex items-center gap-2">
-            <Switch
-              checked={form.isAuction}
-              onCheckedChange={(v) => updateField("isAuction", v)}
-            />
+            <Switch checked={form.isAuction} onCheckedChange={(v) => updateField("isAuction", v)} />
             <Label className="!mt-0">Auction listing</Label>
           </div>
         </div>
@@ -370,9 +375,15 @@ function CreateListingPage() {
         {form.isAuction && (
           <div className="space-y-3">
             <Label>Auction Windows</Label>
-            <p className="text-xs text-brand-muted">Add one or more time windows when bidding is open. Bidding is only available during these windows.</p>
+            <p className="text-xs text-brand-muted">
+              Add one or more time windows when bidding is open. Bidding is only available during
+              these windows.
+            </p>
             {form.auctionWindows.map((window, index) => (
-              <div key={index} className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3">
+              <div
+                key={index}
+                className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-3"
+              >
                 <div className="flex-1 min-w-[200px]">
                   <label className="mb-1 block text-xs font-medium text-brand-muted">Starts</label>
                   <Input
@@ -400,7 +411,10 @@ function CreateListingPage() {
                 <button
                   type="button"
                   onClick={() => {
-                    updateField("auctionWindows", form.auctionWindows.filter((_, i) => i !== index));
+                    updateField(
+                      "auctionWindows",
+                      form.auctionWindows.filter((_, i) => i !== index),
+                    );
                   }}
                   className="mt-5 rounded-lg p-2 text-red-600 hover:bg-red-50"
                 >
@@ -410,7 +424,12 @@ function CreateListingPage() {
             ))}
             <button
               type="button"
-              onClick={() => updateField("auctionWindows", [...form.auctionWindows, { startsAt: "", endsAt: "" }])}
+              onClick={() =>
+                updateField("auctionWindows", [
+                  ...form.auctionWindows,
+                  { startsAt: "", endsAt: "" },
+                ])
+              }
               className="text-sm font-semibold text-brand-accent hover:underline"
             >
               + Add auction window
@@ -457,11 +476,7 @@ function CreateListingPage() {
       </form>
 
       {viewerIndex !== null && photoUrls[viewerIndex] && (
-        <Lightbox
-          photos={photoUrls}
-          index={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
+        <Lightbox photos={photoUrls} index={viewerIndex} onClose={() => setViewerIndex(null)} />
       )}
     </div>
   );
@@ -478,8 +493,7 @@ function Lightbox({
 }) {
   const [viewerIndex, setViewerIndex] = useState(index);
   const photoCount = photos.length;
-  const step = (dir: number) =>
-    setViewerIndex((i) => (i + dir + photoCount) % photoCount);
+  const step = (dir: number) => setViewerIndex((i) => (i + dir + photoCount) % photoCount);
 
   return (
     <div

@@ -51,7 +51,9 @@ function AgentLoginPage() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-brand-navy">Email, phone, or ID number</label>
+            <label className="block text-sm font-medium text-brand-navy">
+              Email, phone, or ID number
+            </label>
             <input
               type="text"
               required

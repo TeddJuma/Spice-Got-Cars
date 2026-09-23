@@ -3,6 +3,8 @@ import { MessageSquare, X, Send, Bot, Loader2 } from "lucide-react";
 import { sendChatMessage } from "@/lib/chat-server";
 import { Link } from "@tanstack/react-router";
 
+const SITE_BASE_URL = "https://spicegotcars.co.ke";
+
 function isInternalUrl(url: string): boolean {
   if (url.startsWith("/")) return true;
   try {
@@ -22,7 +24,11 @@ function toInternalHref(url: string): string {
   try {
     const origin = typeof window !== "undefined" ? window.location.origin : SITE_BASE_URL;
     const parsed = new URL(url, origin);
-    if (parsed.origin === origin || parsed.hostname === "spicegotcars.co.ke" || parsed.hostname === "www.spicegotcars.co.ke") {
+    if (
+      parsed.origin === origin ||
+      parsed.hostname === "spicegotcars.co.ke" ||
+      parsed.hostname === "www.spicegotcars.co.ke"
+    ) {
       return parsed.pathname + parsed.search + parsed.hash;
     }
   } catch {
@@ -33,7 +39,8 @@ function toInternalHref(url: string): string {
 
 function renderInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const regex = /(\*\*[^*]+\*\*)|(\*[^*]+\*)|(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+)|(\/[^\s]+)/g;
+  const regex =
+    /(\*\*[^*]+\*\*)|(\*[^*]+\*)|(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+)|(\/[^\s]+)/g;
   let lastIndex = 0;
   let key = 0;
 
@@ -45,10 +52,18 @@ function renderInline(text: string): React.ReactNode[] {
 
     if (match[1]) {
       const boldText = match[1].slice(2, -2);
-      parts.push(<strong key={key++} className="font-semibold text-brand-navy">{boldText}</strong>);
+      parts.push(
+        <strong key={key++} className="font-semibold text-brand-navy">
+          {boldText}
+        </strong>,
+      );
     } else if (match[2]) {
       const italicText = match[2].slice(1, -1);
-      parts.push(<em key={key++} className="italic">{italicText}</em>);
+      parts.push(
+        <em key={key++} className="italic">
+          {italicText}
+        </em>,
+      );
     } else if (match[3]) {
       const linkText = match[4];
       let url = match[5];
@@ -145,13 +160,9 @@ function MessageContent({ content }: { content: string }) {
   return <>{elements}</>;
 }
 
-const SITE_BASE_URL = "https://spicegotcars.co.ke";
-
 export function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<
-    Array<{ role: "user" | "assistant"; content: string }>
-  >([
+  const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
     {
       role: "assistant",
       content:
@@ -187,26 +198,33 @@ export function FloatingChat() {
     setIsLoading(true);
 
     try {
-      console.log("[chat-ui] Sending message to server:", trimmed, "history length:", messages.length);
+      console.log(
+        "[chat-ui] Sending message to server:",
+        trimmed,
+        "history length:",
+        messages.length,
+      );
+      const pageContext =
+        typeof window !== "undefined"
+          ? `${window.location.pathname}${document.title ? ` — ${document.title}` : ""}`
+          : undefined;
+
       const result = await sendChatMessage({
         data: {
           message: trimmed,
           history: messages,
-        }
+          pageContext,
+        },
       });
       console.log("[chat-ui] Server response:", result);
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: result.reply },
-      ]);
+      setMessages((prev) => [...prev, { role: "assistant", content: result.reply }]);
     } catch (err: any) {
       console.error("[chat-ui] Chat frontend error:", err);
       setMessages((prev) => [
         ...prev,
         {
           role: "assistant",
-          content:
-            "Sorry, something went wrong. Please try again or reach us on WhatsApp.",
+          content: "Sorry, something went wrong. Please try again or reach us on WhatsApp.",
         },
       ]);
     } finally {
@@ -246,9 +264,7 @@ export function FloatingChat() {
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`flex ${
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
                     className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm ${
@@ -318,11 +334,7 @@ export function FloatingChat() {
         aria-label={isOpen ? "Close chat" : "Open chat"}
         className="fixed right-4 bottom-4 z-50 flex size-14 items-center justify-center rounded-full bg-brand-accent text-white shadow-2xl shadow-emerald-900/30 ring-4 ring-white transition-transform hover:scale-105 active:scale-95 sm:right-5 sm:bottom-5"
       >
-        {isOpen ? (
-          <X className="size-6" />
-        ) : (
-          <MessageSquare className="size-6" />
-        )}
+        {isOpen ? <X className="size-6" /> : <MessageSquare className="size-6" />}
         {!isOpen && (
           <span className="absolute -top-0.5 -right-0.5 flex size-3">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-white opacity-75" />
