@@ -4,7 +4,23 @@ import { createClient } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, Bell, Check, X, Search, Phone, MessageCircle, Trash, ChevronDown, ChevronLeft, ChevronRight, Image as ImageIcon, Gavel, MessageSquare } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Bell,
+  Check,
+  X,
+  Search,
+  Phone,
+  MessageCircle,
+  Trash,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Image as ImageIcon,
+  Gavel,
+  MessageSquare,
+} from "lucide-react";
 import { updateAgentPaymentStatus } from "@/lib/agent-actions";
 import ChatButton from "@/components/messaging/ChatButton";
 import ChatPanel from "@/components/messaging/ChatPanel";
@@ -265,7 +281,7 @@ function AdminIndexPage() {
     if (!notification.read) {
       await markNotificationAsRead(notification.id, supabaseClient);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
@@ -274,23 +290,12 @@ function AdminIndexPage() {
     }
   };
 
-  const handleDeleteNotification = async (id: string) => {
-    if (!confirm("Delete this notification?")) return;
-    const success = await deleteNotification(id, supabaseClient);
-    if (success) {
-      setNotifications((prev) => prev.filter((n) => n.id !== id));
-      toast.success("Notification deleted.");
-    } else {
-      toast.error("Failed to delete notification. Please try again.");
-    }
-  };
-
   const handleViewChatNotification = async (notification: Notification) => {
     // 1. Mark as read
     if (!notification.read) {
       await markNotificationAsRead(notification.id, supabaseClient);
       setNotifications((prev) =>
-        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n))
+        prev.map((n) => (n.id === notification.id ? { ...n, read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
@@ -334,6 +339,17 @@ function AdminIndexPage() {
     }
 
     setActiveTab("inquiries");
+  };
+
+  const handleDeleteNotification = async (id: string) => {
+    if (!confirm("Delete this notification?")) return;
+    const success = await deleteNotification(id, supabaseClient);
+    if (success) {
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      toast.success("Notification deleted.");
+    } else {
+      toast.error("Failed to delete notification. Please try again.");
+    }
   };
 
   const handleDeleteAgent = async (id: string) => {
@@ -522,11 +538,7 @@ function AdminIndexPage() {
             </div>
           ) : (
             filteredListings.map((listing) => (
-              <AdminListingCard
-                key={listing.id}
-                listing={listing}
-                onDelete={handleDelete}
-              />
+              <AdminListingCard key={listing.id} listing={listing} onDelete={handleDelete} />
             ))
           )}
         </div>
@@ -540,11 +552,7 @@ function AdminIndexPage() {
             </div>
           ) : (
             auctions.map((listing) => (
-              <AdminListingCard
-                key={listing.id}
-                listing={listing}
-                onDelete={handleDelete}
-              />
+              <AdminListingCard key={listing.id} listing={listing} onDelete={handleDelete} />
             ))
           )}
         </div>
@@ -887,7 +895,7 @@ function AdminIndexPage() {
           </div>
         </div>
       )}
-     </div>
+    </div>
   );
 }
 
@@ -987,9 +995,7 @@ function SubmissionCard({
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
                 Notes
               </p>
-              <p className="mt-1 text-sm italic text-brand-muted">
-                "{submission.notes}"
-              </p>
+              <p className="mt-1 text-sm italic text-brand-muted">"{submission.notes}"</p>
             </div>
           )}
 
@@ -1006,11 +1012,7 @@ function SubmissionCard({
                     onClick={() => setViewerIndex(idx)}
                     className="overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
-                    <img
-                      src={url}
-                      alt={`Photo ${idx + 1}`}
-                      className="h-24 w-32 object-cover"
-                    />
+                    <img src={url} alt={`Photo ${idx + 1}`} className="h-24 w-32 object-cover" />
                   </button>
                 ))}
               </div>
@@ -1036,18 +1038,10 @@ function SubmissionCard({
               <Button size="sm" onClick={() => onApprove(submission, false)}>
                 <Check className="mr-1 size-4" /> Approve as Listing
               </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => onApprove(submission, true)}
-              >
+              <Button size="sm" variant="secondary" onClick={() => onApprove(submission, true)}>
                 <Gavel className="mr-1 size-4" /> Send to Auction
               </Button>
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={() => onReject(submission.id)}
-              >
+              <Button variant="destructive" size="sm" onClick={() => onReject(submission.id)}>
                 <X className="mr-1 size-4" /> Reject
               </Button>
             </div>
@@ -1065,12 +1059,8 @@ function SubmissionCard({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
-        {label}
-      </dt>
-      <dd className="mt-0.5 truncate text-sm font-medium text-brand-navy">
-        {value}
-      </dd>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-brand-muted">{label}</dt>
+      <dd className="mt-0.5 truncate text-sm font-medium text-brand-navy">{value}</dd>
     </div>
   );
 }
@@ -1086,8 +1076,7 @@ function Lightbox({
 }) {
   const [viewerIndex, setViewerIndex] = useState(index);
   const photoCount = photos.length;
-  const step = (dir: number) =>
-    setViewerIndex((i) => (i + dir + photoCount) % photoCount);
+  const step = (dir: number) => setViewerIndex((i) => (i + dir + photoCount) % photoCount);
 
   return (
     <div
@@ -1138,13 +1127,7 @@ function Lightbox({
   );
 }
 
-function AdminListingCard({
-  listing,
-  onDelete,
-}: {
-  listing: any;
-  onDelete: (id: string) => void;
-}) {
+function AdminListingCard({ listing, onDelete }: { listing: any; onDelete: (id: string) => void }) {
   const [expanded, setExpanded] = useState(false);
   const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [bids, setBids] = useState<any[]>([]);
@@ -1152,9 +1135,7 @@ function AdminListingCard({
   const [expandedBid, setExpandedBid] = useState<any | null>(null);
   const photos: string[] = listing.photos ?? [];
   const price =
-    listing.price_kes != null
-      ? `KES ${Number(listing.price_kes).toLocaleString()}`
-      : "—";
+    listing.price_kes != null ? `KES ${Number(listing.price_kes).toLocaleString()}` : "—";
   const cardSupabase = createClient();
 
   const loadBids = async () => {
@@ -1184,11 +1165,7 @@ function AdminListingCard({
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-slate-50"
       >
         {photos[0] ? (
-          <img
-            src={photos[0]}
-            alt=""
-            className="size-12 shrink-0 rounded-lg object-cover"
-          />
+          <img src={photos[0]} alt="" className="size-12 shrink-0 rounded-lg object-cover" />
         ) : (
           <div className="grid size-12 shrink-0 place-items-center rounded-lg bg-slate-100 text-brand-muted">
             <ImageIcon className="size-6" />
@@ -1197,9 +1174,7 @@ function AdminListingCard({
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold text-brand-navy">
             {listing.year} {listing.make} {listing.model}
-            {listing.trim ? (
-              <span className="text-brand-muted"> {listing.trim}</span>
-            ) : null}
+            {listing.trim ? <span className="text-brand-muted"> {listing.trim}</span> : null}
           </p>
           <p className="truncate text-sm text-brand-muted">
             {price} · {listing.transmission} · {listing.body_type}
@@ -1210,9 +1185,7 @@ function AdminListingCard({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <Badge
-            variant={listing.status === "available" ? "default" : "secondary"}
-          >
+          <Badge variant={listing.status === "available" ? "default" : "secondary"}>
             {listing.status}
           </Badge>
           {listing.is_auction && (
@@ -1252,14 +1225,26 @@ function AdminListingCard({
             <Detail label="Condition" value={listing.condition} />
             <Detail label="Listed" value={String(listing.listed_at)} />
             {listing.is_auction && (
-              <Detail
-                label="Bid Ends By"
-                value={
-                  listing.auction_ends_at
-                    ? new Date(listing.auction_ends_at).toLocaleString()
-                    : "—"
-                }
-              />
+              <div className="sm:col-span-2 lg:col-span-3">
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-brand-muted">
+                  Auction Windows
+                </p>
+                {listing.auctionWindows && listing.auctionWindows.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {listing.auctionWindows.map((window: any) => (
+                      <span
+                        key={window.id}
+                        className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs"
+                      >
+                        {new Date(window.startsAt).toLocaleString()} →{" "}
+                        {new Date(window.endsAt).toLocaleString()}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-brand-muted">No auction windows set.</p>
+                )}
+              </div>
             )}
           </dl>
 
@@ -1268,9 +1253,7 @@ function AdminListingCard({
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-muted">
                 Description
               </p>
-              <p className="mt-1 text-sm text-brand-muted">
-                {listing.description}
-              </p>
+              <p className="mt-1 text-sm text-brand-muted">{listing.description}</p>
             </div>
           )}
 
@@ -1287,11 +1270,7 @@ function AdminListingCard({
                     onClick={() => setViewerIndex(idx)}
                     className="overflow-hidden rounded-lg border border-slate-200 transition hover:ring-2 hover:ring-brand-accent"
                   >
-                    <img
-                      src={url}
-                      alt={`Photo ${idx + 1}`}
-                      className="h-24 w-32 object-cover"
-                    />
+                    <img src={url} alt={`Photo ${idx + 1}`} className="h-24 w-32 object-cover" />
                   </button>
                 ))}
               </div>
@@ -1308,12 +1287,56 @@ function AdminListingCard({
               ) : bids.length === 0 ? (
                 <p className="text-sm text-brand-muted">No bids yet.</p>
               ) : (
+            <div className="space-y-2">
+              {bids.map((bid) => (
+                <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
+                    <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      bid.payment_verified
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-amber-50 text-amber-700"
+                    }`}>
+                      {bid.payment_verified ? "Payment Verified" : "Payment Pending"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedBid(expandedBid?.id === bid.id ? null : bid)}
+                    className="mt-2 w-full rounded-md border border-slate-200 px-3 py-2 text-left text-xs font-semibold text-brand-navy transition hover:bg-slate-50"
+                  >
+                    {expandedBid?.id === bid.id ? "Hide bidder details" : "View bidder details"}
+                  </button>
+                  {expandedBid?.id === bid.id && (
+                    <div className="mt-3 space-y-2">
+                      <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">First name</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_first_name || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Last name</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_last_name || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Phone</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.bidder_phone || "—"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">National ID</p>
+                          <p className="text-sm font-medium text-brand-navy">{bid.national_id || "—"}</p>
+                        </div>
                 <div className="space-y-2">
                   {bids.map((bid) => (
                     <div key={bid.id} className="rounded-lg border border-slate-200 p-3 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-brand-navy">{formatKes(bid.bid_amount)}</span>
-                        <span className="text-xs text-brand-muted">{new Date(bid.created_at).toLocaleString()}</span>
+                        <span className="font-semibold text-brand-navy">
+                          {formatKes(bid.bid_amount)}
+                        </span>
+                        <span className="text-xs text-brand-muted">
+                          {new Date(bid.created_at).toLocaleString()}
+                        </span>
                       </div>
                       <button
                         type="button"
@@ -1326,45 +1349,55 @@ function AdminListingCard({
                         <div className="mt-3 space-y-2">
                           <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">First name</p>
-                              <p className="text-sm font-medium text-brand-navy">{bid.bidder_first_name || "—"}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                First name
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_first_name || "—"}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Last name</p>
-                              <p className="text-sm font-medium text-brand-navy">{bid.bidder_last_name || "—"}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Last name
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_last_name || "—"}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Phone</p>
-                              <p className="text-sm font-medium text-brand-navy">{bid.bidder_phone || "—"}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Phone
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.bidder_phone || "—"}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">National ID</p>
-                              <p className="text-sm font-medium text-brand-navy">{bid.national_id || "—"}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                National ID
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.national_id || "—"}
+                              </p>
                             </div>
                           </div>
                           {bid.payment_reference && (
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">Payment reference</p>
-                              <p className="text-sm font-medium text-brand-navy">{bid.payment_reference}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-muted">
+                                Payment reference
+                              </p>
+                              <p className="text-sm font-medium text-brand-navy">
+                                {bid.payment_reference}
+                              </p>
                             </div>
                           )}
                           <div className="flex flex-wrap gap-2 pt-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="flex-1"
-                            >
+                            <Button size="sm" variant="outline" asChild className="flex-1">
                               <a href={`tel:${bid.bidder_phone}`}>
                                 <Phone className="mr-1 size-4" /> Call
                               </a>
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              asChild
-                              className="flex-1"
-                            >
+                            <Button size="sm" variant="outline" asChild className="flex-1">
                               <a
                                 href={`https://wa.me/${bid.bidder_phone.replace(/[^0-9]/g, "")}`}
                                 target="_blank"
@@ -1376,6 +1409,56 @@ function AdminListingCard({
                           </div>
                         </div>
                       )}
+                      {!bid.payment_verified && bid.payment_reference && (
+                        <Button
+                          size="sm"
+                          variant="default"
+                          onClick={async () => {
+                            const supabase = createClient();
+                            const { error } = await supabase
+                              .from("auction_bids")
+                              .update({ payment_verified: true })
+                              .eq("id", bid.id);
+                            if (error) {
+                              toast.error("Failed to verify payment.");
+                            } else {
+                              toast.success("Payment marked as verified.");
+                              setBids((prev) =>
+                                prev.map((b) => (b.id === bid.id ? { ...b, payment_verified: true } : b))
+                              );
+                            }
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          <Check className="mr-1 size-3.5" /> Mark Payment Verified
+                        </Button>
+                      )}
+                      <div className="flex flex-wrap gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="flex-1"
+                        >
+                          <a href={`tel:${bid.bidder_phone}`}>
+                            <Phone className="mr-1 size-4" /> Call
+                          </a>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="flex-1"
+                        >
+                          <a
+                            href={`https://wa.me/${bid.bidder_phone.replace(/[^0-9]/g, "")}`}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            <MessageCircle className="mr-1 size-4" /> WhatsApp
+                          </a>
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1389,11 +1472,7 @@ function AdminListingCard({
                 <Pencil className="mr-1 size-4" /> Edit
               </Link>
             </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => onDelete(listing.id)}
-            >
+            <Button variant="destructive" size="sm" onClick={() => onDelete(listing.id)}>
               <Trash2 className="mr-1 size-4" /> Delete
             </Button>
           </div>
@@ -1401,11 +1480,7 @@ function AdminListingCard({
       )}
 
       {viewerIndex !== null && photos[viewerIndex] && (
-        <Lightbox
-          photos={photos}
-          index={viewerIndex}
-          onClose={() => setViewerIndex(null)}
-        />
+        <Lightbox photos={photos} index={viewerIndex} onClose={() => setViewerIndex(null)} />
       )}
     </div>
   );
@@ -1415,10 +1490,12 @@ function AdminNotificationCard({
   notification,
   onOpen,
   onDelete,
+  onViewChat,
 }: {
   notification: Notification;
   onOpen: (n: Notification) => void;
   onDelete: (id: string) => void;
+  onViewChat?: (n: Notification) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -1438,14 +1515,9 @@ function AdminNotificationCard({
       >
         <div className="flex min-w-0 items-center gap-3">
           {!notification.read && (
-            <span
-              className="size-2 shrink-0 rounded-full bg-brand-accent"
-              aria-label="Unread"
-            />
+            <span className="size-2 shrink-0 rounded-full bg-brand-accent" aria-label="Unread" />
           )}
-          <p className="truncate text-sm text-brand-navy">
-            {notification.message}
-          </p>
+          <p className="truncate text-sm text-brand-navy">{notification.message}</p>
         </div>
         <ChevronDown
           className={`size-5 shrink-0 text-brand-muted transition-transform ${
@@ -1463,18 +1535,32 @@ function AdminNotificationCard({
             <p className="mt-0.5 text-sm text-brand-navy">
               {new Date(notification.created_at).toLocaleString()}
             </p>
-            <p className="mt-1 text-xs text-brand-muted">
-              Type: {notification.type}
-            </p>
+            <p className="mt-1 text-xs text-brand-muted">Type: {notification.type}</p>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="shrink-0 text-red-600 hover:text-red-700"
-            onClick={() => onDelete(notification.id)}
-          >
-            <Trash className="size-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {notification.type === "new_message" && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 border-brand-accent text-brand-navy font-semibold hover:bg-brand-accent/10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewChat?.(notification);
+                }}
+              >
+                <MessageSquare className="mr-1.5 size-3.5 text-brand-accent" />
+                View chat
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="shrink-0 text-red-600 hover:text-red-700"
+              onClick={() => onDelete(notification.id)}
+            >
+              <Trash className="size-4" />
+            </Button>
+          </div>
         </div>
       )}
     </div>

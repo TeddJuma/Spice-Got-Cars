@@ -94,8 +94,6 @@ function CarDetailPage() {
   const [inquirySuccess, setInquirySuccess] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
 
-  const contactPhone = car.agentPhone || PHONE_TEL;
-
   if (!car) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
@@ -111,11 +109,7 @@ function CarDetailPage() {
     );
   }
 
-  const isSold = car.status === "sold";
-  const isReserved = car.status === "reserved";
-  const isAuction = car.isAuction && !isSold;
-  const auctionStatus = getAuctionStatus(car);
-  const supabase = createClient();
+  const contactPhone = car.agentPhone || PHONE_TEL;
 
   const backTo = isAuction ? "/auction/" : "/inventory";
   const backLabel = isAuction ? "Back to auction" : "Back to inventory";
@@ -172,29 +166,8 @@ function CarDetailPage() {
     };
     tick();
     const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [car, isAuction]);
-
-  if (!car) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
-        <h1 className="text-3xl font-bold">Listing not found</h1>
-        <p className="mt-2 text-brand-muted">This car may have been sold or removed.</p>
-        <Link
-          to="/inventory"
-          className="mt-6 inline-block rounded-lg bg-brand-navy px-5 py-2 text-sm font-bold text-white"
-        >
-          Back to inventory
-        </Link>
-      </div>
-    );
-  }
-
-  const supabase = createClient();
-  const contactPhone = car.agentPhone || PHONE_TEL;
-
-  const backTo = isAuction ? "/auction/" : "/inventory";
-  const backLabel = isAuction ? "Back to auction" : "Back to inventory";
+    ;
+  }, []);  // Close useEffect hook
 
   const displayPrice = isAuction
     ? (car.currentBidKes ?? car.startingBidKes ?? car.priceKes)

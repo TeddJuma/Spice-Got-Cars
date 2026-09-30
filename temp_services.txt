@@ -1,0 +1,50 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Ship, Repeat, Banknote, Handshake, Phone, MessageCircle, Car, FileText } from "lucide-react";
+import { PHONE_PRIMARY_DISPLAY, PHONE_PRIMARY_TEL, buildGeneralInquiryLink } from "@/lib/whatsapp";
+import ChatButton from "@/components/messaging/ChatButton";
+
+export const Route = createFileRoute("/services")({
+  component: ServicesPage,
+  head: () => ({
+    meta: [
+      { title: "Services - Spice Got Cars" },
+      {
+        name: "description",
+        content:
+          "Spice Got Cars services: car imports, buy & sell used cars, salvage cars, logbook loans, trade-ins, and flexible finance options in Nairobi, Kenya.",
+      },
+      { property: "og:title", content: "Services - Spice Got Cars" },
+      {
+        property: "og:description",
+        content:
+          "Import cars, buy & sell used cars, salvage cars, logbook loans, trade-in, and finance options across Kenya.",
+      },
+      { property: "og:url", content: "/services" },
+    ],
+    links: [{ rel: "canonical", href: "/services" }],
+  }),
+});
+
+const services = [
+  {
+    icon: Ship,
+    title: "Import Cars",
+    body: "Order your next car directly from Japan, UK, or Dubai. We handle sourcing, shipping, clearing, and registration end-to-end - you receive a road-ready vehicle at our Kahawa west yard.",
+    points: ["Verified auction sourcing", "Transparent landed pricing", "Duty & clearing handled"],
+  },
+  {
+    icon: Handshake,
+    title: "Buy & Sell Used Cars",
+    body: "Browse a curated stock of foreign-used and clean locally used vehicles - every unit logbook-verified. Selling? We list your car to our nationwide buyer network.",
+    points: ["Inspected inventory", "Nationwide buyer reach", "Fast, fair valuations"],
+  },
+  {
+    icon: Repeat,
+    title: "Trade-In",
+    body: "Upgrade without the hassle. Trade in your current car against any vehicle in our yard - we value it on the spot and apply the offer directly to your next purchase.",
+    points: ["Same-day valuation", "Instant offset on price", "No middlemen"],
+  },
+  {
+    icon: Banknote,
+    title: "Finance Options",
+    body: "Drive off with flexible financing through our partner banks and SACCOs. We help structure asset finance with competitive rates and short approval timelines.",
